@@ -7,7 +7,7 @@ import { AccountAssociations } from "./AccountAssociations";
 import { Button } from "@/components/ui/button";
 import { LogOut, User, Store, Truck } from "lucide-react";
 import syuzanaImage from "@/assets/syuzana-real.png";
-import aliImage from "@/assets/ali.png";
+import aliImage from "@/assets/ali-real.png";
 import trilogyImage from "@/assets/trilogy.png";
 
 interface AdminDashboardProps {
@@ -150,7 +150,7 @@ export function AdminDashboard({ onLogout, currentUser }: AdminDashboardProps) {
             <MetricsCards data={searchResults} type={searchType} />
             
             {/* Account Associations */}
-            <AccountAssociations data={searchResults} />
+            <AccountAssociations data={searchResults} type={searchType} />
             
             {/* Notes Section */}
             <NotesSection entityId={searchResults.id} entityName={searchResults.name} />

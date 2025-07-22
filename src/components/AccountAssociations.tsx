@@ -14,9 +14,10 @@ import {
 
 interface AccountAssociationsProps {
   data: any;
+  type?: string;
 }
 
-export function AccountAssociations({ data }: AccountAssociationsProps) {
+export function AccountAssociations({ data, type }: AccountAssociationsProps) {
   // Mock associated accounts data
   const associations = {
     emails: [
@@ -163,54 +164,58 @@ export function AccountAssociations({ data }: AccountAssociationsProps) {
         </CardContent>
       </Card>
 
-      {/* Payment Methods */}
-      <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-lg">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CreditCard className="w-5 h-5 text-primary" />
-            Payment Methods
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {associations.paymentMethods.map((method, index) => (
-            <div key={index} className="flex items-center justify-between p-2 bg-muted/50 rounded">
-              <div className="flex items-center gap-2">
-                <CreditCard className="w-4 h-4" />
-                <span className="text-sm">{method.type} ****{method.last4}</span>
+      {/* Payment Methods - Hide for retailers */}
+      {type !== "retail" && (
+        <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CreditCard className="w-5 h-5 text-primary" />
+              Payment Methods
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {associations.paymentMethods.map((method, index) => (
+              <div key={index} className="flex items-center justify-between p-2 bg-muted/50 rounded">
+                <div className="flex items-center gap-2">
+                  <CreditCard className="w-4 h-4" />
+                  <span className="text-sm">{method.type} ****{method.last4}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">{method.expiry}</span>
+                  {method.isDefault && (
+                    <Badge variant="outline" className="text-xs">Default</Badge>
+                  )}
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">{method.expiry}</span>
-                {method.isDefault && (
-                  <Badge variant="outline" className="text-xs">Default</Badge>
-                )}
-              </div>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
+            ))}
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Addresses */}
-      <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-lg">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MapPin className="w-5 h-5 text-primary" />
-            Saved Addresses
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {associations.addresses.map((address, index) => (
-            <div key={index} className="p-3 border rounded-lg">
-              <div className="flex items-center justify-between mb-1">
-                <span className="font-medium text-sm">{address.type}</span>
-                {address.isDefault && (
-                  <Badge variant="outline" className="text-xs">Default</Badge>
-                )}
+      {/* Addresses - Hide for retailers */}
+      {type !== "retail" && (
+        <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-primary" />
+              Saved Addresses
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {associations.addresses.map((address, index) => (
+              <div key={index} className="p-3 border rounded-lg">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-medium text-sm">{address.type}</span>
+                  {address.isDefault && (
+                    <Badge variant="outline" className="text-xs">Default</Badge>
+                  )}
+                </div>
+                <p className="text-sm text-muted-foreground">{address.address}</p>
               </div>
-              <p className="text-sm text-muted-foreground">{address.address}</p>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
+            ))}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Account Security */}
       <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-lg lg:col-span-2">
