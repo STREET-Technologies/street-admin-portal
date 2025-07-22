@@ -26,45 +26,85 @@ export function SearchBar({ onSearch }: SearchBarProps) {
       const searchTerm = value.slice(6).toLowerCase();
       const userSuggestions = [];
       
-      // Syuzana suggestions
-      if ("syuzana".includes(searchTerm) || "syuzana@street.london".includes(searchTerm) || 
-          "+447542016022".includes(searchTerm) || "usr001".includes(searchTerm) || 
-          "uid_syuzana_001_2024".includes(searchTerm)) {
-        userSuggestions.push("Syuzana O", "syuzana@street.london", "+447542016022", "USR001", "uid_syuzana_001_2024");
+      // Syuzana suggestions - only show matching ones
+      if ("syuzana".includes(searchTerm) && searchTerm.length > 0) {
+        userSuggestions.push("Syuzana O");
+      }
+      if ("syuzana@street.london".includes(searchTerm) && searchTerm.length > 0) {
+        userSuggestions.push("syuzana@street.london");
+      }
+      if ("+447542016022".includes(searchTerm) && searchTerm.length > 0) {
+        userSuggestions.push("+447542016022");
+      }
+      if ("usr001".includes(searchTerm) && searchTerm.length > 0) {
+        userSuggestions.push("USR001");
+      }
+      if ("uid_syuzana_001_2024".includes(searchTerm) && searchTerm.length > 0) {
+        userSuggestions.push("uid_syuzana_001_2024");
       }
       
-      // Ali suggestions  
-      if ("ali".includes(searchTerm) || "ali@street.london".includes(searchTerm) || 
-          "+447770237011".includes(searchTerm) || "usr002".includes(searchTerm) || 
-          "uid_ali_002_2024".includes(searchTerm)) {
-        userSuggestions.push("Ali Al Nasiri", "ali@street.london", "+447770237011", "USR002", "uid_ali_002_2024");
+      // Ali suggestions - only show matching ones
+      if ("ali".includes(searchTerm) && searchTerm.length > 0) {
+        userSuggestions.push("Ali Al Nasiri");
+      }
+      if ("ali@street.london".includes(searchTerm) && searchTerm.length > 0) {
+        userSuggestions.push("ali@street.london");
+      }
+      if ("+447770237011".includes(searchTerm) && searchTerm.length > 0) {
+        userSuggestions.push("+447770237011");
+      }
+      if ("usr002".includes(searchTerm) && searchTerm.length > 0) {
+        userSuggestions.push("USR002");
+      }
+      if ("uid_ali_002_2024".includes(searchTerm) && searchTerm.length > 0) {
+        userSuggestions.push("uid_ali_002_2024");
       }
       
-      setSuggestions(userSuggestions);
+      setSuggestions([...new Set(userSuggestions)]);
     } else if (value.startsWith("/retail ") && value.length > 8) {
       // Show retail suggestions when typing after "/retail "
       const searchTerm = value.slice(8).toLowerCase();
       const retailSuggestions = [];
       
-      if ("trilogy".includes(searchTerm) || "info@trilogylondon.com".includes(searchTerm) || 
-          "020 7937 7972".includes(searchTerm) || "ret001".includes(searchTerm) || 
-          "uid_trilogy_ret_001_2023".includes(searchTerm)) {
-        retailSuggestions.push("Trilogy London", "info@trilogylondon.com", "020 7937 7972", "RET001", "uid_trilogy_ret_001_2023");
+      if ("trilogy".includes(searchTerm) && searchTerm.length > 0) {
+        retailSuggestions.push("Trilogy London");
+      }
+      if ("info@trilogylondon.com".includes(searchTerm) && searchTerm.length > 0) {
+        retailSuggestions.push("info@trilogylondon.com");
+      }
+      if ("020 7937 7972".includes(searchTerm) && searchTerm.length > 0) {
+        retailSuggestions.push("020 7937 7972");
+      }
+      if ("ret001".includes(searchTerm) && searchTerm.length > 0) {
+        retailSuggestions.push("RET001");
+      }
+      if ("uid_trilogy_ret_001_2023".includes(searchTerm) && searchTerm.length > 0) {
+        retailSuggestions.push("uid_trilogy_ret_001_2023");
       }
       
-      setSuggestions(retailSuggestions);
+      setSuggestions([...new Set(retailSuggestions)]);
     } else if (value.startsWith("/courier ") && value.length > 9) {
       // Show courier suggestions when typing after "/courier "
       const searchTerm = value.slice(9).toLowerCase();
       const courierSuggestions = [];
       
-      if ("ali".includes(searchTerm) || "ali@street.london".includes(searchTerm) || 
-          "+447770237011".includes(searchTerm) || "cou001".includes(searchTerm) || 
-          "uid_ali_cou_001_2024".includes(searchTerm)) {
-        courierSuggestions.push("Ali Al Nasiri", "ali@street.london", "+447770237011", "COU001", "uid_ali_cou_001_2024");
+      if ("ali".includes(searchTerm) && searchTerm.length > 0) {
+        courierSuggestions.push("Ali Al Nasiri");
+      }
+      if ("ali@street.london".includes(searchTerm) && searchTerm.length > 0) {
+        courierSuggestions.push("ali@street.london");
+      }
+      if ("+447770237011".includes(searchTerm) && searchTerm.length > 0) {
+        courierSuggestions.push("+447770237011");
+      }
+      if ("cou001".includes(searchTerm) && searchTerm.length > 0) {
+        courierSuggestions.push("COU001");
+      }
+      if ("uid_ali_cou_001_2024".includes(searchTerm) && searchTerm.length > 0) {
+        courierSuggestions.push("uid_ali_cou_001_2024");
       }
       
-      setSuggestions(courierSuggestions);
+      setSuggestions([...new Set(courierSuggestions)]);
     } else {
       setSuggestions([]);
     }
