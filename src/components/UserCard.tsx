@@ -108,6 +108,10 @@ export function UserCard({ data, type }: UserCardProps) {
               {type === "retail" && (
                 <>
                   <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Category:</span>
+                    <span className="text-sm font-bold">{data.category}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">Total Orders:</span>
                     <span className="text-sm font-bold">{data.totalOrders}</span>
                   </div>

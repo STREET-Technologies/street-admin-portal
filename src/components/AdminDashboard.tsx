@@ -69,7 +69,8 @@ export function AdminDashboard({ onLogout, currentUser }: AdminDashboardProps) {
           deviceId: "DEV_iPad_Pro_Retail_001",
           uid: "uid_trilogy_ret_001_2023",
           address: "22 Kensington Church St, London W8 4EP",
-          contact: "Lee"
+          contact: "Lee",
+          category: "Clothing"
         });
       }
     } else if (type === "courier") {
