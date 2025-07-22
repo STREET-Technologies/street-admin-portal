@@ -3,7 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Plus, MessageSquare, Clock } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Plus, MessageSquare, Clock, AlertTriangle, AlertCircle, Info } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface NotesSectionProps {
   entityId: string;
@@ -47,7 +49,9 @@ export function NotesSection({ entityId, entityName }: NotesSectionProps) {
   ]);
   
   const [newNote, setNewNote] = useState("");
+  const [selectedPriority, setSelectedPriority] = useState<"low" | "medium" | "high">("medium");
   const [isAddingNote, setIsAddingNote] = useState(false);
+  const { toast } = useToast();
 
   const handleAddNote = () => {
     if (newNote.trim()) {
@@ -56,12 +60,18 @@ export function NotesSection({ entityId, entityName }: NotesSectionProps) {
         content: newNote.trim(),
         author: "Current User", // In real app, get from auth context
         timestamp: new Date().toISOString(),
-        priority: "medium"
+        priority: selectedPriority
       };
       
       setNotes([note, ...notes]);
       setNewNote("");
+      setSelectedPriority("medium");
       setIsAddingNote(false);
+      
+      toast({
+        title: "Note Added",
+        description: `${selectedPriority.toUpperCase()} priority note has been saved.`,
+      });
     }
   };
 
@@ -83,6 +93,19 @@ export function NotesSection({ entityId, entityName }: NotesSectionProps) {
         return "border-l-green-500 bg-green-50";
       default:
         return "border-l-gray-300 bg-gray-50";
+    }
+  };
+
+  const getPriorityIcon = (priority: string) => {
+    switch (priority) {
+      case "high":
+        return <AlertTriangle className="w-3 h-3" />;
+      case "medium":
+        return <AlertCircle className="w-3 h-3" />;
+      case "low":
+        return <Info className="w-3 h-3" />;
+      default:
+        return <Info className="w-3 h-3" />;
     }
   };
 
@@ -116,25 +139,56 @@ export function NotesSection({ entityId, entityName }: NotesSectionProps) {
               onChange={(e) => setNewNote(e.target.value)}
               className="mb-3 min-h-[100px] border-border focus:ring-primary"
             />
-            <div className="flex gap-2 justify-end">
-              <Button
-                onClick={() => {
-                  setIsAddingNote(false);
-                  setNewNote("");
-                }}
-                variant="outline"
-                size="sm"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleAddNote}
-                className="street-gradient text-black font-medium"
-                size="sm"
-                disabled={!newNote.trim()}
-              >
-                Save Note
-              </Button>
+            <div className="flex items-center justify-between">
+              {/* Priority Selector - Left Side */}
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-muted-foreground">Priority:</span>
+                <div className="flex gap-1">
+                  {(['high', 'medium', 'low'] as const).map((priority) => (
+                    <Button
+                      key={priority}
+                      onClick={() => setSelectedPriority(priority)}
+                      variant={selectedPriority === priority ? "default" : "outline"}
+                      size="sm"
+                      className={`h-7 px-2 text-xs ${
+                        selectedPriority === priority
+                          ? priority === 'high'
+                            ? 'bg-red-500 hover:bg-red-600 text-white'
+                            : priority === 'medium'
+                            ? 'bg-yellow-500 hover:bg-yellow-600 text-white'
+                            : 'bg-green-500 hover:bg-green-600 text-white'
+                          : 'hover:bg-muted'
+                      }`}
+                    >
+                      {getPriorityIcon(priority)}
+                      <span className="ml-1 capitalize">{priority}</span>
+                    </Button>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Action Buttons - Right Side */}
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => {
+                    setIsAddingNote(false);
+                    setNewNote("");
+                    setSelectedPriority("medium");
+                  }}
+                  variant="outline"
+                  size="sm"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleAddNote}
+                  className="street-gradient text-black font-medium"
+                  size="sm"
+                  disabled={!newNote.trim()}
+                >
+                  Save Note
+                </Button>
+              </div>
             </div>
           </div>
         )}
@@ -163,14 +217,20 @@ export function NotesSection({ entityId, entityName }: NotesSectionProps) {
                         <Clock className="w-3 h-3" />
                         {date} at {time}
                       </div>
-                      {note.priority && note.priority !== "low" && (
-                        <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                          note.priority === "high" 
-                            ? "bg-red-100 text-red-700" 
-                            : "bg-yellow-100 text-yellow-700"
-                        }`}>
-                          {note.priority.toUpperCase()}
-                        </span>
+                      {note.priority && (
+                        <Badge 
+                          variant="outline" 
+                          className={`text-xs ${
+                            note.priority === "high" 
+                              ? "border-red-500 text-red-700 bg-red-50" 
+                              : note.priority === "medium"
+                              ? "border-yellow-500 text-yellow-700 bg-yellow-50"
+                              : "border-green-500 text-green-700 bg-green-50"
+                          }`}
+                        >
+                          {getPriorityIcon(note.priority)}
+                          <span className="ml-1">{note.priority.toUpperCase()}</span>
+                        </Badge>
                       )}
                     </div>
                     <p className="text-sm text-gray-700 leading-relaxed">{note.content}</p>
