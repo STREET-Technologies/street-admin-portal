@@ -9,7 +9,6 @@ import { LogOut, User, Store, Truck } from "lucide-react";
 import syuzanaImage from "@/assets/syuzana-real.png";
 import aliImage from "@/assets/ali-real.png";
 import trilogyImage from "@/assets/trilogy.png";
-import CourierMap from "./CourierMap";
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -160,16 +159,12 @@ export function AdminDashboard({ onLogout, currentUser }: AdminDashboardProps) {
 
         {/* Default State */}
         {!searchResults && (
-          <div className="py-8">
-            <div className="text-center mb-8">
-              <div className="street-logo text-6xl text-muted-foreground/20 mb-4">STREET</div>
-              <h2 className="street-title text-2xl text-muted-foreground mb-2">Live Courier Tracking</h2>
-              <p className="text-muted-foreground mb-4">Real-time view of couriers in Notting Hill Gate & Kensington</p>
-            </div>
+          <div className="text-center py-20">
+            <div className="street-logo text-8xl text-muted-foreground/20 mb-4">STREET</div>
+            <h2 className="street-title text-2xl text-muted-foreground mb-2">Welcome to STREET Admin</h2>
+            <p className="text-muted-foreground mb-8">Use the search bar above to find users, retailers, or couriers</p>
             
-            <CourierMap />
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto mt-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
               <div className="p-6 rounded-lg border bg-white/50 backdrop-blur-sm">
                 <User className="w-8 h-8 text-primary mx-auto mb-3" />
                 <h3 className="font-semibold mb-2">Search Users</h3>
