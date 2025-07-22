@@ -6,7 +6,7 @@ import { MetricsCards } from "./MetricsCards";
 import { AccountAssociations } from "./AccountAssociations";
 import { Button } from "@/components/ui/button";
 import { LogOut, User, Store, Truck } from "lucide-react";
-import syuzanaImage from "@/assets/syuzana.png";
+import syuzanaImage from "@/assets/syuzana-real.png";
 import aliImage from "@/assets/ali.png";
 import trilogyImage from "@/assets/trilogy.png";
 
