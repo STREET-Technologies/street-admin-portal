@@ -109,9 +109,6 @@ export function Login({ onLogin }: LoginProps) {
           </CardContent>
         </Card>
 
-        {/* Floating elements for visual appeal */}
-        <div className="absolute -top-10 -left-10 w-20 h-20 street-gradient rounded-full opacity-20 street-pulse"></div>
-        <div className="absolute -bottom-10 -right-10 w-32 h-32 street-gradient rounded-full opacity-10 street-pulse"></div>
       </div>
     </div>
   );

@@ -6,6 +6,9 @@ import { MetricsCards } from "./MetricsCards";
 import { AccountAssociations } from "./AccountAssociations";
 import { Button } from "@/components/ui/button";
 import { LogOut, User, Store, Truck } from "lucide-react";
+import syuzanaImage from "@/assets/syuzana.png";
+import aliImage from "@/assets/ali.png";
+import trilogyImage from "@/assets/trilogy.png";
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -18,49 +21,74 @@ export function AdminDashboard({ onLogout, currentUser }: AdminDashboardProps) {
 
   const handleSearch = (query: string, type: string) => {
     setSearchType(type);
-    // Mock data based on search type
+    
+    // Search logic based on query and type
     if (type === "user") {
-      setSearchResults({
-        id: "USR001",
-        name: "Alex Johnson",
-        email: "alex.johnson@gmail.com",
-        phone: "+1 555-0123",
-        avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
-        status: "Active",
-        joinDate: "2024-01-15",
-        totalOrders: 47,
-        totalSpent: 2840.50,
-        deviceId: "DEV_iPhone_15_Pro_Max_001",
-        uid: "uid_alex_001_2024"
-      });
+      // Check if searching for Syuzana or Ali
+      if (query.toLowerCase().includes("syuzana") || query.includes("syuzana@street.london") || query.includes("+447542016022")) {
+        setSearchResults({
+          id: "USR001",
+          name: "Syuzana O",
+          email: "syuzana@street.london",
+          phone: "+447542016022",
+          avatar: syuzanaImage,
+          status: "Active",
+          joinDate: "2024-01-15",
+          totalOrders: 47,
+          totalSpent: 2840.50,
+          deviceId: "DEV_iPhone_15_Pro_Max_001",
+          uid: "uid_syuzana_001_2024"
+        });
+      } else if (query.toLowerCase().includes("ali") || query.includes("ali@street.london") || query.includes("+447770237011")) {
+        setSearchResults({
+          id: "USR002",
+          name: "Ali Al Nasiri",
+          email: "ali@street.london",
+          phone: "+447770237011",
+          avatar: aliImage,
+          status: "Active",
+          joinDate: "2024-02-20",
+          totalOrders: 23,
+          totalSpent: 1450.75,
+          deviceId: "DEV_Samsung_Galaxy_S24_001",
+          uid: "uid_ali_002_2024"
+        });
+      }
     } else if (type === "retail") {
-      setSearchResults({
-        id: "RET001",
-        name: "Urban Style Boutique",
-        email: "info@urbanstyle.com",
-        phone: "+1 555-0456",
-        avatar: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=100&h=100&fit=crop",
-        status: "Active",
-        joinDate: "2023-08-20",
-        totalOrders: 234,
-        totalRevenue: 15680.75,
-        deviceId: "DEV_iPad_Pro_Retail_001",
-        uid: "uid_urban_ret_001_2023"
-      });
+      if (query.toLowerCase().includes("trilogy")) {
+        setSearchResults({
+          id: "RET001",
+          name: "Trilogy London",
+          email: "info@trilogylondon.com",
+          phone: "020 7937 7972",
+          avatar: trilogyImage,
+          status: "Active",
+          joinDate: "2023-08-20",
+          totalOrders: 234,
+          totalRevenue: 15680.75,
+          deviceId: "DEV_iPad_Pro_Retail_001",
+          uid: "uid_trilogy_ret_001_2023",
+          address: "22 Kensington Church St, London W8 4EP",
+          contact: "Lee"
+        });
+      }
     } else if (type === "courier") {
-      setSearchResults({
-        id: "COU001",
-        name: "Mike Rodriguez",
-        email: "mike.courier@street.com",
-        phone: "+1 555-0789",
-        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face",
-        status: "Online",
-        joinDate: "2024-03-10",
-        totalDeliveries: 156,
-        averageRating: 4.8,
-        deviceId: "DEV_Samsung_Galaxy_Courier_001",
-        uid: "uid_mike_cou_001_2024"
-      });
+      // Default courier example if Ali is searched as courier
+      if (query.toLowerCase().includes("ali")) {
+        setSearchResults({
+          id: "COU001",
+          name: "Ali Al Nasiri",
+          email: "ali@street.london",
+          phone: "+447770237011",
+          avatar: aliImage,
+          status: "Online",
+          joinDate: "2024-03-10",
+          totalDeliveries: 156,
+          averageRating: 4.8,
+          deviceId: "DEV_Samsung_Galaxy_Courier_001",
+          uid: "uid_ali_cou_001_2024"
+        });
+      }
     }
   };
 

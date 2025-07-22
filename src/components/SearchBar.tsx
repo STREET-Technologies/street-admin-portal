@@ -30,9 +30,12 @@ export function SearchBar({ onSearch }: SearchBarProps) {
     e.preventDefault();
     
     if (query.startsWith("/")) {
-      const command = query.slice(1).toLowerCase();
-      if (["user", "retail", "courier"].includes(command)) {
-        onSearch("", command);
+      const parts = query.split(" ");
+      const command = parts[0].slice(1).toLowerCase();
+      const searchTerm = parts.slice(1).join(" ");
+      
+      if (["user", "retail", "courier"].includes(command) && searchTerm.trim()) {
+        onSearch(searchTerm, command);
       }
     } else if (query.trim()) {
       // Default to user search if no command
@@ -43,9 +46,8 @@ export function SearchBar({ onSearch }: SearchBarProps) {
   };
 
   const selectSuggestion = (suggestion: string) => {
-    setQuery(`/${suggestion}`);
+    setQuery(`/${suggestion} `);
     setSuggestions([]);
-    onSearch("", suggestion);
   };
 
   return (
@@ -56,13 +58,13 @@ export function SearchBar({ onSearch }: SearchBarProps) {
           <Input
             value={query}
             onChange={(e) => handleInputChange(e.target.value)}
-            placeholder="Search users, retailers, couriers... (try /user, /retail, /courier)"
+            placeholder="Search: /user Syuzana O or /retail Trilogy London or /courier name"
             className="pl-12 pr-24 h-14 text-lg border-2 focus:border-primary bg-white/95 backdrop-blur-sm"
           />
           <Button
             type="submit"
             className="absolute right-2 top-2 h-10 street-gradient text-black font-bold"
-            disabled={!query.trim()}
+            disabled={!query.trim() || (query.startsWith("/") && query.split(" ").length < 2)}
           >
             <Search className="w-4 h-4 mr-2" />
             Search
@@ -82,7 +84,7 @@ export function SearchBar({ onSearch }: SearchBarProps) {
               <Command className="w-4 h-4 text-primary" />
               /{suggestion}
               <span className="text-sm text-muted-foreground ml-auto">
-                Search {suggestion === "retail" ? "retailers" : `${suggestion}s`}
+                Add name, email, phone or ID
               </span>
             </button>
           ))}
@@ -92,16 +94,16 @@ export function SearchBar({ onSearch }: SearchBarProps) {
       {/* Quick Command Guide */}
       <div className="flex items-center justify-center gap-6 mt-4 text-sm text-muted-foreground">
         <div className="flex items-center gap-2">
-          <code className="bg-muted px-2 py-1 rounded">/user</code>
-          <span>Search Users</span>
+          <code className="bg-muted px-2 py-1 rounded">/user Syuzana O</code>
+          <span>Search by name, email, phone, ID</span>
         </div>
         <div className="flex items-center gap-2">
-          <code className="bg-muted px-2 py-1 rounded">/retail</code>
-          <span>Search Retailers</span>
+          <code className="bg-muted px-2 py-1 rounded">/retail Trilogy</code>
+          <span>Search retailers by name</span>
         </div>
         <div className="flex items-center gap-2">
-          <code className="bg-muted px-2 py-1 rounded">/courier</code>
-          <span>Search Couriers</span>
+          <code className="bg-muted px-2 py-1 rounded">/courier Ali</code>
+          <span>Search couriers by name</span>
         </div>
       </div>
     </div>
