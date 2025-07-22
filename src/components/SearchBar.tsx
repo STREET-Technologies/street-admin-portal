@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Command } from "lucide-react";
+import { Search, Command, User } from "lucide-react";
 
 interface SearchBarProps {
   onSearch: (query: string, type: string) => void;
@@ -15,12 +15,45 @@ export function SearchBar({ onSearch }: SearchBarProps) {
     setQuery(value);
     
     // Show command suggestions
-    if (value.startsWith("/")) {
+    if (value.startsWith("/") && !value.includes(" ")) {
       const commands = ["user", "retail", "courier"];
       const filtered = commands.filter(cmd => 
         cmd.toLowerCase().includes(value.slice(1).toLowerCase())
       );
       setSuggestions(filtered);
+    } else if (value.startsWith("/user ") && value.length > 6) {
+      // Show user name suggestions when typing after "/user "
+      const searchTerm = value.slice(6).toLowerCase();
+      const userSuggestions = [];
+      
+      if ("syuzana".includes(searchTerm) && searchTerm.length >= 4) {
+        userSuggestions.push("Syuzana O");
+      }
+      if ("ali".includes(searchTerm) && searchTerm.length >= 3) {
+        userSuggestions.push("Ali Al Nasiri");
+      }
+      
+      setSuggestions(userSuggestions);
+    } else if (value.startsWith("/retail ") && value.length > 8) {
+      // Show retail suggestions when typing after "/retail "
+      const searchTerm = value.slice(8).toLowerCase();
+      const retailSuggestions = [];
+      
+      if ("trilogy".includes(searchTerm) && searchTerm.length >= 4) {
+        retailSuggestions.push("Trilogy London");
+      }
+      
+      setSuggestions(retailSuggestions);
+    } else if (value.startsWith("/courier ") && value.length > 9) {
+      // Show courier suggestions when typing after "/courier "
+      const searchTerm = value.slice(9).toLowerCase();
+      const courierSuggestions = [];
+      
+      if ("ali".includes(searchTerm) && searchTerm.length >= 3) {
+        courierSuggestions.push("Ali Al Nasiri");
+      }
+      
+      setSuggestions(courierSuggestions);
     } else {
       setSuggestions([]);
     }
@@ -46,8 +79,20 @@ export function SearchBar({ onSearch }: SearchBarProps) {
   };
 
   const selectSuggestion = (suggestion: string) => {
-    setQuery(`/${suggestion} `);
-    setSuggestions([]);
+    if (["user", "retail", "courier"].includes(suggestion)) {
+      // Command suggestion selected
+      setQuery(`/${suggestion} `);
+      setSuggestions([]);
+    } else {
+      // Name suggestion selected - complete the search
+      const currentCommand = query.split(" ")[0];
+      setQuery(`${currentCommand} ${suggestion}`);
+      setSuggestions([]);
+      
+      // Trigger search with the selected name
+      const commandType = currentCommand.slice(1);
+      onSearch(suggestion, commandType);
+    }
   };
 
   return (
@@ -58,7 +103,7 @@ export function SearchBar({ onSearch }: SearchBarProps) {
           <Input
             value={query}
             onChange={(e) => handleInputChange(e.target.value)}
-            placeholder="Search: /user Syuzana O or /retail Trilogy London or /courier name"
+            placeholder="Search: /user name or /retail name or /courier name"
             className="pl-12 pr-24 h-14 text-lg border-2 focus:border-primary bg-white/95 backdrop-blur-sm"
           />
           <Button
@@ -81,11 +126,23 @@ export function SearchBar({ onSearch }: SearchBarProps) {
               onClick={() => selectSuggestion(suggestion)}
               className="w-full px-4 py-3 text-left hover:bg-muted flex items-center gap-3 capitalize"
             >
-              <Command className="w-4 h-4 text-primary" />
-              /{suggestion}
-              <span className="text-sm text-muted-foreground ml-auto">
-                Add name, email, phone or ID
-              </span>
+              {["user", "retail", "courier"].includes(suggestion) ? (
+                <>
+                  <Command className="w-4 h-4 text-primary" />
+                  /{suggestion}
+                  <span className="text-sm text-muted-foreground ml-auto">
+                    Add name, email, phone or ID
+                  </span>
+                </>
+              ) : (
+                <>
+                  <User className="w-4 h-4 text-primary" />
+                  {suggestion}
+                  <span className="text-sm text-muted-foreground ml-auto">
+                    Select user
+                  </span>
+                </>
+              )}
             </button>
           ))}
         </div>
@@ -94,15 +151,15 @@ export function SearchBar({ onSearch }: SearchBarProps) {
       {/* Quick Command Guide */}
       <div className="flex items-center justify-center gap-6 mt-4 text-sm text-muted-foreground">
         <div className="flex items-center gap-2">
-          <code className="bg-muted px-2 py-1 rounded">/user Syuzana O</code>
+          <code className="bg-muted px-2 py-1 rounded">/user name</code>
           <span>Search by name, email, phone, ID</span>
         </div>
         <div className="flex items-center gap-2">
-          <code className="bg-muted px-2 py-1 rounded">/retail Trilogy</code>
+          <code className="bg-muted px-2 py-1 rounded">/retail name</code>
           <span>Search retailers by name</span>
         </div>
         <div className="flex items-center gap-2">
-          <code className="bg-muted px-2 py-1 rounded">/courier Ali</code>
+          <code className="bg-muted px-2 py-1 rounded">/courier name</code>
           <span>Search couriers by name</span>
         </div>
       </div>

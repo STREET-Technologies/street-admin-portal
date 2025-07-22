@@ -50,7 +50,7 @@ export function Login({ onLogin }: LoginProps) {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="admin@street.com"
+                  placeholder="example@street.london"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
