@@ -178,7 +178,7 @@ export function AdminDashboard({ onLogout, currentUser }: AdminDashboardProps) {
             <AccountAssociations data={searchResults} type={searchType} />
             
             {/* Notes Section */}
-            <NotesSection entityId={searchResults.id} entityName={searchResults.name} />
+            <NotesSection entityId={searchResults.id} entityName={searchResults.name} entityType={searchType} />
           </div>
         )}
 

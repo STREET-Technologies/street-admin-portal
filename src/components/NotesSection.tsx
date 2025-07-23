@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 interface NotesSectionProps {
   entityId: string;
   entityName: string;
+  entityType?: string;
 }
 
 interface Note {
@@ -21,32 +22,52 @@ interface Note {
   priority?: "low" | "medium" | "high";
 }
 
-export function NotesSection({ entityId, entityName }: NotesSectionProps) {
-  const [notes, setNotes] = useState<Note[]>([
-    {
-      id: "1",
-      content: "Customer contacted support regarding delayed delivery. Issue resolved with compensation offered.",
-      author: "Sarah Johnson",
-      authorAvatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face",
-      timestamp: "2024-01-20T14:30:00Z",
-      priority: "medium"
-    },
-    {
-      id: "2", 
-      content: "VIP customer - provide priority support and expedited shipping on all orders.",
-      author: "Mike Chen",
-      authorAvatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
-      timestamp: "2024-01-15T09:15:00Z",
-      priority: "high"
-    },
-    {
-      id: "3",
-      content: "Regular customer, no issues reported. Prefers contactless delivery.",
-      author: "Emma Davis",
-      timestamp: "2024-01-10T16:45:00Z",
-      priority: "low"
+export function NotesSection({ entityId, entityName, entityType }: NotesSectionProps) {
+  // Entity-specific notes storage key
+  const notesStorageKey = `notes_${entityType || 'entity'}_${entityId}`;
+  
+  // Load entity-specific notes from localStorage or use defaults
+  const getEntityNotes = () => {
+    const stored = localStorage.getItem(notesStorageKey);
+    if (stored) {
+      return JSON.parse(stored);
     }
-  ]);
+    
+    // Default notes based on entity
+    if (entityId === "USR001") {
+      return [
+        {
+          id: "1",
+          content: "Customer contacted support regarding delayed delivery. Issue resolved with compensation offered.",
+          author: "Sarah Johnson",
+          authorAvatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face",
+          timestamp: "2024-01-20T14:30:00Z",
+          priority: "medium"
+        },
+        {
+          id: "2", 
+          content: "VIP customer - provide priority support and expedited shipping on all orders.",
+          author: "Mike Chen",
+          authorAvatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
+          timestamp: "2024-01-15T09:15:00Z",
+          priority: "high"
+        }
+      ];
+    } else if (entityId === "RET001") {
+      return [
+        {
+          id: "1",
+          content: "Excellent retail partner. Consistent high-quality products and reliable delivery schedules.",
+          author: "Emma Davis",
+          timestamp: "2024-01-10T16:45:00Z",
+          priority: "low"
+        }
+      ];
+    }
+    return [];
+  };
+
+  const [notes, setNotes] = useState<Note[]>(getEntityNotes());
   
   const [newNote, setNewNote] = useState("");
   const [selectedPriority, setSelectedPriority] = useState<"low" | "medium" | "high">("medium");
@@ -63,7 +84,12 @@ export function NotesSection({ entityId, entityName }: NotesSectionProps) {
         priority: selectedPriority
       };
       
-      setNotes([note, ...notes]);
+      const updatedNotes = [note, ...notes];
+      setNotes(updatedNotes);
+      
+      // Save to localStorage for persistence
+      localStorage.setItem(notesStorageKey, JSON.stringify(updatedNotes));
+      
       setNewNote("");
       setSelectedPriority("medium");
       setIsAddingNote(false);
@@ -86,13 +112,13 @@ export function NotesSection({ entityId, entityName }: NotesSectionProps) {
   const getPriorityColor = (priority?: string) => {
     switch (priority) {
       case "high":
-        return "border-l-red-500 bg-red-50";
+        return "border-l-red-500";
       case "medium":
-        return "border-l-yellow-500 bg-yellow-50";
+        return "border-l-yellow-500";
       case "low":
-        return "border-l-green-500 bg-green-50";
+        return "border-l-green-500";
       default:
-        return "border-l-gray-300 bg-gray-50";
+        return "border-l-gray-300";
     }
   };
 
@@ -220,12 +246,12 @@ export function NotesSection({ entityId, entityName }: NotesSectionProps) {
                       {note.priority && (
                         <Badge 
                           variant="outline" 
-                          className={`text-xs ${
+                          className={`text-xs border-0 ${
                             note.priority === "high" 
-                              ? "border-red-500 text-red-700 bg-red-50" 
+                              ? "text-red-700" 
                               : note.priority === "medium"
-                              ? "border-yellow-500 text-yellow-700 bg-yellow-50"
-                              : "border-green-500 text-green-700 bg-green-50"
+                              ? "text-yellow-700"
+                              : "text-green-700"
                           }`}
                         >
                           {getPriorityIcon(note.priority)}
