@@ -33,38 +33,32 @@ export function NotesSection({ entityId, entityName, entityType }: NotesSectionP
       return JSON.parse(stored);
     }
     
-    // Default notes based on entity
-    if (entityId === "USR001") {
-      return [
-        {
-          id: "1",
-          content: "Customer contacted support regarding delayed delivery. Issue resolved with compensation offered.",
-          author: "Sarah Johnson",
-          authorAvatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face",
-          timestamp: "2024-01-20T14:30:00Z",
-          priority: "medium"
-        },
-        {
-          id: "2", 
-          content: "VIP customer - provide priority support and expedited shipping on all orders.",
-          author: "Mike Chen",
-          authorAvatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
-          timestamp: "2024-01-15T09:15:00Z",
-          priority: "high"
-        }
-      ];
-    } else if (entityId === "RET001") {
-      return [
-        {
-          id: "1",
-          content: "Excellent retail partner. Consistent high-quality products and reliable delivery schedules.",
-          author: "Emma Davis",
-          timestamp: "2024-01-10T16:45:00Z",
-          priority: "low"
-        }
-      ];
-    }
-    return [];
+    // Default example notes for all entities
+    return [
+      {
+        id: "1",
+        content: "Customer contacted support regarding delayed delivery. Issue resolved with compensation offered.",
+        author: "Sarah Johnson",
+        authorAvatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face",
+        timestamp: "2024-01-20T14:30:00Z",
+        priority: "medium"
+      },
+      {
+        id: "2", 
+        content: "VIP customer - provide priority support and expedited shipping on all orders.",
+        author: "Mike Chen",
+        authorAvatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
+        timestamp: "2024-01-15T09:15:00Z",
+        priority: "high"
+      },
+      {
+        id: "3",
+        content: "Regular customer, no issues reported. Prefers contactless delivery.",
+        author: "Emma Davis",
+        timestamp: "2024-01-10T16:45:00Z",
+        priority: "low"
+      }
+    ];
   };
 
   const [notes, setNotes] = useState<Note[]>(getEntityNotes());
