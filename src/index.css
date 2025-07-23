@@ -110,16 +110,26 @@ All colors MUST be HSL.
 
   /* STREET Brand Typography */
   .street-logo {
-    font-family: 'Inter', sans-serif;
-    font-weight: 900;
+    font-family: 'Hanson', sans-serif;
+    font-weight: 700;
     letter-spacing: 0.1em;
     text-transform: uppercase;
   }
 
   .street-title {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Hanson', sans-serif;
     font-weight: 700;
     letter-spacing: 0.05em;
+  }
+
+  .street-body-title {
+    font-family: 'Barlow', sans-serif;
+    font-weight: 900;
+  }
+
+  .street-body {
+    font-family: 'Barlow', sans-serif;
+    font-weight: 400;
   }
 
   /* STREET Brand Gradients */
