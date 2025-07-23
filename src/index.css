@@ -19,7 +19,7 @@ All colors MUST be HSL.
     --popover-foreground: 0 0% 0%;
 
     /* STREET Lime Green Primary */
-    --primary: 75 100% 50%;
+    --primary: 107 100% 50%;
     --primary-foreground: 0 0% 0%;
 
     /* STREET Black Secondary */
@@ -31,7 +31,7 @@ All colors MUST be HSL.
     --muted-foreground: 0 0% 64%;
 
     /* STREET Accent */
-    --accent: 75 100% 50%;
+    --accent: 107 100% 50%;
     --accent-foreground: 0 0% 0%;
 
     --destructive: 0 84% 60%;
@@ -39,7 +39,7 @@ All colors MUST be HSL.
 
     --border: 0 0% 90%;
     --input: 0 0% 95%;
-    --ring: 75 100% 50%;
+    --ring: 107 100% 50%;
 
     --radius: 0.5rem;
 
