@@ -135,7 +135,7 @@ export function NotesSection({ entityId, entityName, entityType }: NotesSectionP
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <MessageSquare className="w-6 h-6 text-primary" />
-            <CardTitle className="street-title text-xl">Employee Notes</CardTitle>
+            <CardTitle className="street-title text-xl">Internal Notes</CardTitle>
             <span className="text-sm text-muted-foreground">({notes.length} notes)</span>
           </div>
           <Button
