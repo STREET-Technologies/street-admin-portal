@@ -243,99 +243,119 @@ export function UserCard({ data, type }: UserCardProps) {
       
       <CardContent className="space-y-6">
         {/* Contact Information */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {type === "retail" ? (
           <div className="space-y-3">
-            <h4 className="font-semibold text-lg">
-              {type === "retail" ? "Contact & Business Information" : "Contact Information"}
-            </h4>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium w-16">Email:</span>
-                <span className="text-sm">{data.email}</span>
+            <h4 className="font-semibold text-lg">Contact & Business Information</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <div className="flex items-start gap-2">
+                  <span className="text-sm font-medium w-20">Email:</span>
+                  <span className="text-sm">{data.email}</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-sm font-medium w-20">Phone:</span>
+                  <span className="text-sm">{data.phone}</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-sm font-medium w-20">Category:</span>
+                  <span className="text-sm">{data.category || "Restaurant"}</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-sm font-medium w-20">Owner:</span>
+                  <span className="text-sm">{data.owner || "John Doe"}</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Calendar className="w-4 h-4 text-muted-foreground mt-0.5" />
+                  <span className="text-sm">Joined {new Date(data.joinDate).toLocaleDateString()}</span>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium w-16">Phone:</span>
-                <span className="text-sm">{data.phone}</span>
-              </div>
-              {type === "retail" && (
-                <>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium w-16">Category:</span>
-                    <span className="text-sm">{data.category}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm">Business Location</span>
-                  </div>
-                </>
-              )}
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-muted-foreground" />
-                <span className="text-sm">Joined {new Date(data.joinDate).toLocaleDateString()}</span>
+              
+              <div className="space-y-2">
+                <div className="flex items-start gap-2">
+                  <span className="text-sm font-medium w-24">POC Manager:</span>
+                  <span className="text-sm">{data.pocManager || "Sarah Johnson"}</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-sm font-medium w-24">Signed Up By:</span>
+                  <span className="text-sm">{data.signedUpBy || "Umaan"}</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-sm font-medium w-24">POS System:</span>
+                  <span className="text-sm">{data.posSystem || "Shopify"}</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-sm font-medium w-24">Commission:</span>
+                  <span className="text-sm font-bold text-green-600">{data.commissionRate || "10%"}</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <MapPin className="w-4 h-4 text-muted-foreground mt-0.5" />
+                  <span className="text-sm">{data.address || "63 Weymouth St, London W1G 8LS, United Kingdom"}</span>
+                </div>
               </div>
             </div>
           </div>
-          
-          {/* Performance Metrics */}
-          <div className="space-y-3">
-            <h4 className="font-semibold text-lg">Performance</h4>
-            <div className="space-y-2">
-              {type === "user" && (
-                <>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Total Orders:</span>
-                    <Button 
-                      variant="ghost" 
-                      className="text-sm font-bold p-0 h-auto hover:text-primary"
-                      onClick={() => setOrdersDialogOpen(true)}
-                    >
-                      {data.totalOrders}
-                    </Button>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Total Spent:</span>
-                    <span className="text-sm font-bold text-green-600">${data.totalSpent.toFixed(2)}</span>
-                  </div>
-                </>
-              )}
-              
-              {type === "retail" && (
-                <>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Total Orders:</span>
-                    <Button 
-                      variant="ghost" 
-                      className="text-sm font-bold p-0 h-auto hover:text-primary"
-                      onClick={() => setOrdersDialogOpen(true)}
-                    >
-                      {data.totalOrders}
-                    </Button>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Total Revenue:</span>
-                    <span className="text-sm font-bold text-green-600">${data.totalRevenue.toFixed(2)}</span>
-                  </div>
-                </>
-              )}
-              
-              {type === "courier" && (
-                <>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Deliveries:</span>
-                    <span className="text-sm font-bold">{data.totalDeliveries}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Rating:</span>
-                    <div className="flex items-center gap-1">
-                      <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                      <span className="text-sm font-bold">{data.averageRating}</span>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-3">
+              <h4 className="font-semibold text-lg">Contact Information</h4>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium w-16">Email:</span>
+                  <span className="text-sm">{data.email}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium w-16">Phone:</span>
+                  <span className="text-sm">{data.phone}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm">Joined {new Date(data.joinDate).toLocaleDateString()}</span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Performance Metrics for Users and Couriers */}
+            <div className="space-y-3">
+              <h4 className="font-semibold text-lg">Performance</h4>
+              <div className="space-y-2">
+                {type === "user" && (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">Total Orders:</span>
+                      <Button 
+                        variant="ghost" 
+                        className="text-sm font-bold p-0 h-auto hover:text-primary"
+                        onClick={() => setOrdersDialogOpen(true)}
+                      >
+                        {data.totalOrders}
+                      </Button>
                     </div>
-                  </div>
-                </>
-              )}
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">Total Spent:</span>
+                      <span className="text-sm font-bold text-green-600">${data.totalSpent.toFixed(2)}</span>
+                    </div>
+                  </>
+                )}
+                
+                {type === "courier" && (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">Deliveries:</span>
+                      <span className="text-sm font-bold">{data.totalDeliveries}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">Rating:</span>
+                      <div className="flex items-center gap-1">
+                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                        <span className="text-sm font-bold">{data.averageRating}</span>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        )}
         
         {/* Recent Orders Section */}
         {(type === "user" || type === "retail") && (
