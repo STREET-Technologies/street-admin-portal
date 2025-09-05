@@ -3,7 +3,9 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { MapPin, Calendar, Star, TrendingUp, Camera, Package, ChevronRight, DollarSign } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { MapPin, Calendar, Star, TrendingUp, Camera, Package, ChevronRight, DollarSign, Edit, Save, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { OrdersDialog } from "@/components/OrdersDialog";
 import { InvoicesDialog } from "@/components/InvoicesDialog";
@@ -18,6 +20,8 @@ export function UserCard({ data, type }: UserCardProps) {
   const [isHovering, setIsHovering] = useState(false);
   const [ordersDialogOpen, setOrdersDialogOpen] = useState(false);
   const [invoicesDialogOpen, setInvoicesDialogOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState(data);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -135,6 +139,25 @@ export function UserCard({ data, type }: UserCardProps) {
 
   const recentInvoices = sampleInvoices.slice(0, 5);
 
+  const handleSave = () => {
+    // In a real app, this would save to API
+    Object.assign(data, editData);
+    setIsEditing(false);
+    toast({
+      title: "Profile Updated",
+      description: "Changes have been saved successfully.",
+    });
+  };
+
+  const handleCancel = () => {
+    setEditData(data);
+    setIsEditing(false);
+  };
+
+  const updateEditData = (field: string, value: string) => {
+    setEditData(prev => ({ ...prev, [field]: value }));
+  };
+
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -180,63 +203,109 @@ export function UserCard({ data, type }: UserCardProps) {
   return (
     <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-xl">
       <CardHeader className="pb-4">
-        <div className="flex items-start gap-4">
-          <div 
-            className="relative"
-            onMouseEnter={() => setIsHovering(true)}
-            onMouseLeave={() => setIsHovering(false)}
-          >
-            <Avatar className="w-20 h-20 ring-4 ring-primary/20">
-              <AvatarImage src={avatarUrl} alt={data.name} />
-              <AvatarFallback className="text-lg font-bold bg-primary/10">
-                {getInitials(data.name)}
-              </AvatarFallback>
-            </Avatar>
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-start gap-4">
+            <div 
+              className="relative"
+              onMouseEnter={() => setIsHovering(true)}
+              onMouseLeave={() => setIsHovering(false)}
+            >
+              <Avatar className="w-20 h-20 ring-4 ring-primary/20">
+                <AvatarImage src={avatarUrl} alt={editData.name} />
+                <AvatarFallback className="text-lg font-bold bg-primary/10">
+                  {getInitials(editData.name)}
+                </AvatarFallback>
+              </Avatar>
+              
+              {/* Hover Overlay with Edit Button */}
+              {isHovering && (
+                <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center transition-all duration-200">
+                  <Button
+                    onClick={triggerFileUpload}
+                    size="sm"
+                    className="bg-white/90 hover:bg-white text-black p-2 h-8 w-8 rounded-full"
+                  >
+                    <Camera className="w-4 h-4" />
+                  </Button>
+                </div>
+              )}
+              
+              {/* Hidden File Input */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="hidden"
+              />
+            </div>
             
-            {/* Hover Overlay with Edit Button */}
-            {isHovering && (
-              <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center transition-all duration-200">
-                <Button
-                  onClick={triggerFileUpload}
-                  size="sm"
-                  className="bg-white/90 hover:bg-white text-black p-2 h-8 w-8 rounded-full"
-                >
-                  <Camera className="w-4 h-4" />
-                </Button>
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                {isEditing ? (
+                  <Input
+                    value={editData.name}
+                    onChange={(e) => updateEditData('name', e.target.value)}
+                    className="text-2xl font-bold street-title h-auto border-0 px-0 focus-visible:ring-0"
+                  />
+                ) : (
+                  <h3 className="street-title text-2xl">{editData.name}</h3>
+                )}
+                
+                {isEditing ? (
+                  <Select value={editData.status} onValueChange={(value) => updateEditData('status', value)}>
+                    <SelectTrigger className="w-32">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="inactive">Inactive</SelectItem>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="online">Online</SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Badge 
+                    className={`${getStatusColor(editData.status)} font-medium`}
+                    variant="outline"
+                  >
+                    {editData.status}
+                  </Badge>
+                )}
               </div>
-            )}
-            
-            {/* Hidden File Input */}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleImageUpload}
-              className="hidden"
-            />
+              
+              <div className="space-y-1 text-muted-foreground">
+                <p className="flex items-center gap-2">
+                  <span className="font-medium">ID:</span>
+                  <code className="bg-muted px-2 py-1 rounded text-sm">{editData.id}</code>
+                </p>
+                <p className="flex items-center gap-2">
+                  <span className="font-medium">UID:</span>
+                  <code className="bg-muted px-2 py-1 rounded text-sm">{editData.uid}</code>
+                </p>
+              </div>
+            </div>
           </div>
           
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              <h3 className="street-title text-2xl">{data.name}</h3>
-              <Badge 
-                className={`${getStatusColor(data.status)} font-medium`}
-                variant="outline"
-              >
-                {data.status}
-              </Badge>
-            </div>
-            
-            <div className="space-y-1 text-muted-foreground">
-              <p className="flex items-center gap-2">
-                <span className="font-medium">ID:</span>
-                <code className="bg-muted px-2 py-1 rounded text-sm">{data.id}</code>
-              </p>
-              <p className="flex items-center gap-2">
-                <span className="font-medium">UID:</span>
-                <code className="bg-muted px-2 py-1 rounded text-sm">{data.uid}</code>
-              </p>
-            </div>
+          {/* Edit Controls */}
+          <div className="flex gap-2">
+            {isEditing ? (
+              <>
+                <Button onClick={handleSave} size="sm" className="h-8">
+                  <Save className="w-4 h-4 mr-1" />
+                  Save
+                </Button>
+                <Button onClick={handleCancel} size="sm" variant="outline" className="h-8">
+                  <X className="w-4 h-4 mr-1" />
+                  Cancel
+                </Button>
+              </>
+            ) : (
+              <Button onClick={() => setIsEditing(true)} size="sm" variant="outline" className="h-8">
+                <Edit className="w-4 h-4 mr-1" />
+                Edit
+              </Button>
+            )}
           </div>
         </div>
       </CardHeader>
@@ -250,46 +319,119 @@ export function UserCard({ data, type }: UserCardProps) {
               <div className="space-y-2">
                 <div className="flex items-start gap-2">
                   <span className="text-sm font-medium w-20">Email:</span>
-                  <span className="text-sm">{data.email}</span>
+                  {isEditing ? (
+                    <Input
+                      type="email"
+                      value={editData.email}
+                      onChange={(e) => updateEditData('email', e.target.value)}
+                      className="text-sm h-8"
+                    />
+                  ) : (
+                    <span className="text-sm">{editData.email}</span>
+                  )}
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="text-sm font-medium w-20">Phone:</span>
-                  <span className="text-sm">{data.phone}</span>
+                  {isEditing ? (
+                    <Input
+                      value={editData.phone}
+                      onChange={(e) => updateEditData('phone', e.target.value)}
+                      className="text-sm h-8"
+                    />
+                  ) : (
+                    <span className="text-sm">{editData.phone}</span>
+                  )}
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="text-sm font-medium w-20">Category:</span>
-                  <span className="text-sm">{data.category || "Restaurant"}</span>
+                  {isEditing ? (
+                    <Input
+                      value={editData.category || "Restaurant"}
+                      onChange={(e) => updateEditData('category', e.target.value)}
+                      className="text-sm h-8"
+                    />
+                  ) : (
+                    <span className="text-sm">{editData.category || "Restaurant"}</span>
+                  )}
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="text-sm font-medium w-20">Owner:</span>
-                  <span className="text-sm">{data.owner || "John Doe"}</span>
+                  {isEditing ? (
+                    <Input
+                      value={editData.owner || "John Doe"}
+                      onChange={(e) => updateEditData('owner', e.target.value)}
+                      className="text-sm h-8"
+                    />
+                  ) : (
+                    <span className="text-sm">{editData.owner || "John Doe"}</span>
+                  )}
                 </div>
                 <div className="flex items-start gap-2">
                   <Calendar className="w-4 h-4 text-muted-foreground mt-0.5" />
-                  <span className="text-sm">Joined {new Date(data.joinDate).toLocaleDateString()}</span>
+                  <span className="text-sm">Joined {new Date(editData.joinDate).toLocaleDateString()}</span>
                 </div>
               </div>
               
               <div className="space-y-2">
                 <div className="flex items-start gap-2">
                   <span className="text-sm font-medium w-24">POC Manager:</span>
-                  <span className="text-sm">{data.pocManager || "Sarah Johnson"}</span>
+                  {isEditing ? (
+                    <Input
+                      value={editData.pocManager || "Sarah Johnson"}
+                      onChange={(e) => updateEditData('pocManager', e.target.value)}
+                      className="text-sm h-8"
+                    />
+                  ) : (
+                    <span className="text-sm">{editData.pocManager || "Sarah Johnson"}</span>
+                  )}
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="text-sm font-medium w-24">Signed Up By:</span>
-                  <span className="text-sm">{data.signedUpBy || "Umaan"}</span>
+                  {isEditing ? (
+                    <Input
+                      value={editData.signedUpBy || "Umaan"}
+                      onChange={(e) => updateEditData('signedUpBy', e.target.value)}
+                      className="text-sm h-8"
+                    />
+                  ) : (
+                    <span className="text-sm">{editData.signedUpBy || "Umaan"}</span>
+                  )}
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="text-sm font-medium w-24">POS System:</span>
-                  <span className="text-sm">{data.posSystem || "Shopify"}</span>
+                  {isEditing ? (
+                    <Input
+                      value={editData.posSystem || "Shopify"}
+                      onChange={(e) => updateEditData('posSystem', e.target.value)}
+                      className="text-sm h-8"
+                    />
+                  ) : (
+                    <span className="text-sm">{editData.posSystem || "Shopify"}</span>
+                  )}
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="text-sm font-medium w-24">Commission:</span>
-                  <span className="text-sm font-bold text-green-600">{data.commissionRate || "10%"}</span>
+                  {isEditing ? (
+                    <Input
+                      value={editData.commissionRate || "10%"}
+                      onChange={(e) => updateEditData('commissionRate', e.target.value)}
+                      className="text-sm h-8"
+                    />
+                  ) : (
+                    <span className="text-sm font-bold text-green-600">{editData.commissionRate || "10%"}</span>
+                  )}
                 </div>
                 <div className="flex items-start gap-2">
                   <MapPin className="w-4 h-4 text-muted-foreground mt-0.5" />
-                  <span className="text-sm">{data.address || "63 Weymouth St, London W1G 8LS, United Kingdom"}</span>
+                  {isEditing ? (
+                    <Input
+                      value={editData.address || "63 Weymouth St, London W1G 8LS, United Kingdom"}
+                      onChange={(e) => updateEditData('address', e.target.value)}
+                      className="text-sm h-8"
+                    />
+                  ) : (
+                    <span className="text-sm">{editData.address || "63 Weymouth St, London W1G 8LS, United Kingdom"}</span>
+                  )}
                 </div>
               </div>
             </div>
@@ -301,15 +443,32 @@ export function UserCard({ data, type }: UserCardProps) {
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium w-16">Email:</span>
-                  <span className="text-sm">{data.email}</span>
+                  {isEditing ? (
+                    <Input
+                      type="email"
+                      value={editData.email}
+                      onChange={(e) => updateEditData('email', e.target.value)}
+                      className="text-sm h-8"
+                    />
+                  ) : (
+                    <span className="text-sm">{editData.email}</span>
+                  )}
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium w-16">Phone:</span>
-                  <span className="text-sm">{data.phone}</span>
+                  {isEditing ? (
+                    <Input
+                      value={editData.phone}
+                      onChange={(e) => updateEditData('phone', e.target.value)}
+                      className="text-sm h-8"
+                    />
+                  ) : (
+                    <span className="text-sm">{editData.phone}</span>
+                  )}
                 </div>
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm">Joined {new Date(data.joinDate).toLocaleDateString()}</span>
+                  <span className="text-sm">Joined {new Date(editData.joinDate).toLocaleDateString()}</span>
                 </div>
               </div>
             </div>
@@ -327,12 +486,12 @@ export function UserCard({ data, type }: UserCardProps) {
                         className="text-sm font-bold p-0 h-auto hover:text-primary"
                         onClick={() => setOrdersDialogOpen(true)}
                       >
-                        {data.totalOrders}
+                        {editData.totalOrders}
                       </Button>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">Total Spent:</span>
-                      <span className="text-sm font-bold text-green-600">${data.totalSpent.toFixed(2)}</span>
+                      <span className="text-sm font-bold text-green-600">${editData.totalSpent?.toFixed(2)}</span>
                     </div>
                   </>
                 )}
@@ -341,13 +500,13 @@ export function UserCard({ data, type }: UserCardProps) {
                   <>
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">Deliveries:</span>
-                      <span className="text-sm font-bold">{data.totalDeliveries}</span>
+                      <span className="text-sm font-bold">{editData.totalDeliveries}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">Rating:</span>
                       <div className="flex items-center gap-1">
                         <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                        <span className="text-sm font-bold">{data.averageRating}</span>
+                        <span className="text-sm font-bold">{editData.averageRating}</span>
                       </div>
                     </div>
                   </>
