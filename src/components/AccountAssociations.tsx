@@ -112,68 +112,70 @@ export function AccountAssociations({ data, type }: AccountAssociationsProps) {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      {/* Contact Information */}
-      <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-lg">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Mail className="w-5 h-5 text-primary" />
-            Contact Methods
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Email Addresses */}
-          <div>
-            <h4 className="font-medium mb-2 flex items-center gap-2">
-              <Mail className="w-4 h-4" />
-              Email Addresses
-            </h4>
-            <div className="space-y-2">
-              {associations.emails.map((email, index) => (
-                <div key={index} className="flex items-center justify-between p-2 bg-muted/50 rounded">
-                  <span className="text-sm">{email.email}</span>
-                  <div className="flex gap-1">
-                    {email.primary && (
-                      <Badge variant="outline" className="text-xs">Primary</Badge>
-                    )}
-                    <Badge 
-                      variant={email.verified ? "default" : "destructive"}
-                      className="text-xs"
-                    >
-                      {email.verified ? "Verified" : "Unverified"}
-                    </Badge>
+      {/* Contact Information - Hide for retailers */}
+      {type !== "retail" && (
+        <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Mail className="w-5 h-5 text-primary" />
+              Contact Methods
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Email Addresses */}
+            <div>
+              <h4 className="font-medium mb-2 flex items-center gap-2">
+                <Mail className="w-4 h-4" />
+                Email Addresses
+              </h4>
+              <div className="space-y-2">
+                {associations.emails.map((email, index) => (
+                  <div key={index} className="flex items-center justify-between p-2 bg-muted/50 rounded">
+                    <span className="text-sm">{email.email}</span>
+                    <div className="flex gap-1">
+                      {email.primary && (
+                        <Badge variant="outline" className="text-xs">Primary</Badge>
+                      )}
+                      <Badge 
+                        variant={email.verified ? "default" : "destructive"}
+                        className="text-xs"
+                      >
+                        {email.verified ? "Verified" : "Unverified"}
+                      </Badge>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
 
-          {/* Phone Numbers */}
-          <div>
-            <h4 className="font-medium mb-2 flex items-center gap-2">
-              <Phone className="w-4 h-4" />
-              Phone Numbers
-            </h4>
-            <div className="space-y-2">
-              {associations.phones.map((phone, index) => (
-                <div key={index} className="flex items-center justify-between p-2 bg-muted/50 rounded">
-                  <span className="text-sm">{phone.phone}</span>
-                  <div className="flex gap-1">
-                    {phone.primary && (
-                      <Badge variant="outline" className="text-xs">Primary</Badge>
-                    )}
-                    <Badge 
-                      variant={phone.verified ? "default" : "destructive"}
-                      className="text-xs"
-                    >
-                      {phone.verified ? "Verified" : "Unverified"}
-                    </Badge>
+            {/* Phone Numbers */}
+            <div>
+              <h4 className="font-medium mb-2 flex items-center gap-2">
+                <Phone className="w-4 h-4" />
+                Phone Numbers
+              </h4>
+              <div className="space-y-2">
+                {associations.phones.map((phone, index) => (
+                  <div key={index} className="flex items-center justify-between p-2 bg-muted/50 rounded">
+                    <span className="text-sm">{phone.phone}</span>
+                    <div className="flex gap-1">
+                      {phone.primary && (
+                        <Badge variant="outline" className="text-xs">Primary</Badge>
+                      )}
+                      <Badge 
+                        variant={phone.verified ? "default" : "destructive"}
+                        className="text-xs"
+                      >
+                        {phone.verified ? "Verified" : "Unverified"}
+                      </Badge>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Device Information */}
       <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-lg">
