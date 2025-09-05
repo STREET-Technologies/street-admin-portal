@@ -1,7 +1,10 @@
+import { useState, useRef } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MapPin, Calendar, Star, TrendingUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { MapPin, Calendar, Star, TrendingUp, Camera } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface UserCardProps {
   data: any;
@@ -9,6 +12,31 @@ interface UserCardProps {
 }
 
 export function UserCard({ data, type }: UserCardProps) {
+  const [avatarUrl, setAvatarUrl] = useState(data.avatar);
+  const [isHovering, setIsHovering] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setAvatarUrl(result);
+        toast({
+          title: "Avatar Updated",
+          description: "Profile picture has been updated successfully.",
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const triggerFileUpload = () => {
+    fileInputRef.current?.click();
+  };
+
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case "active":
@@ -35,12 +63,40 @@ export function UserCard({ data, type }: UserCardProps) {
     <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-xl">
       <CardHeader className="pb-4">
         <div className="flex items-start gap-4">
-          <Avatar className="w-20 h-20 ring-4 ring-primary/20">
-            <AvatarImage src={data.avatar} alt={data.name} />
-            <AvatarFallback className="text-lg font-bold bg-primary/10">
-              {getInitials(data.name)}
-            </AvatarFallback>
-          </Avatar>
+          <div 
+            className="relative"
+            onMouseEnter={() => setIsHovering(true)}
+            onMouseLeave={() => setIsHovering(false)}
+          >
+            <Avatar className="w-20 h-20 ring-4 ring-primary/20">
+              <AvatarImage src={avatarUrl} alt={data.name} />
+              <AvatarFallback className="text-lg font-bold bg-primary/10">
+                {getInitials(data.name)}
+              </AvatarFallback>
+            </Avatar>
+            
+            {/* Hover Overlay with Edit Button */}
+            {isHovering && (
+              <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center transition-all duration-200">
+                <Button
+                  onClick={triggerFileUpload}
+                  size="sm"
+                  className="bg-white/90 hover:bg-white text-black p-2 h-8 w-8 rounded-full"
+                >
+                  <Camera className="w-4 h-4" />
+                </Button>
+              </div>
+            )}
+            
+            {/* Hidden File Input */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="hidden"
+            />
+          </div>
           
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
