@@ -32,11 +32,11 @@ export function AdminDashboard({ onLogout, currentUser }: AdminDashboardProps) {
                             query.includes("uid_syuzana_001_2024");
       
       // Check if searching for Ali by any identifier  
-      const aliMatches = query.toLowerCase().includes("ali") || 
-                        query.includes("ali@street.london") || 
+      const aliMatches = query.toLowerCase().includes("Ali") || 
+                        query.includes("Ali@street.london") || 
                         query.includes("+447770237011") ||
                         query.includes("USR002") ||
-                        query.includes("uid_ali_002_2024");
+                        query.includes("uid_Ali_002_2024");
 
       if (syuzanaMatches) {
         setSearchResults({
@@ -93,11 +93,11 @@ export function AdminDashboard({ onLogout, currentUser }: AdminDashboardProps) {
         });
       }
     } else if (type === "courier") {
-      const aliCourierMatches = query.toLowerCase().includes("ali") ||
-                               query.includes("ali@street.london") ||
+      const aliCourierMatches = query.toLowerCase().includes("Ali") ||
+                               query.includes("Ali@street.london") ||
                                query.includes("+447770237011") ||
                                query.includes("COU001") ||
-                               query.includes("uid_ali_cou_001_2024");
+                               query.includes("uid_Ali_cou_001_2024");
       
       if (aliCourierMatches) {
         setSearchResults({
@@ -190,8 +190,8 @@ export function AdminDashboard({ onLogout, currentUser }: AdminDashboardProps) {
             <p className="text-muted-foreground mb-8">Use the search bar above to find users, retailers, or couriers</p>
             
             <div className="max-w-4xl mx-auto bg-red-50 border border-red-200 rounded-lg p-6">
-              <h3 className="font-semibold text-red-800 mb-3 text-lg">⚠️ Compliance Notice</h3>
-              <p className="text-red-700 leading-relaxed">
+              <h3 className="font-semibold text-black mb-3 text-lg">⚠️ Compliance Notice</h3>
+              <p className="text-black leading-relaxed">
                 Access to this portal is restricted to authorised employees for legitimate business purposes only. Any access, retrieval, or use of user information must be directly related to your job responsibilities. It is strictly prohibited to search for, access, or use user details for personal, non-business, or unauthorised purposes (including but not limited to information relating to friends, family members, celebrities, or other individuals of personal interest). Unauthorised access, use, or disclosure of user information constitutes a breach of company policy and may result in disciplinary action, up to and including termination of employment, as well as potential legal consequences.
               </p>
             </div>
