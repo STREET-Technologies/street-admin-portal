@@ -34,16 +34,16 @@ export function UserCard({ data, type }: UserCardProps) {
       dateTime: "2024-09-05T10:30:00Z",
       status: "delivered",
       rating: 5,
-      items: ["Burger", "Fries", "Coke"]
+      items: ["Black T-Shirt", "Blue Jeans", "White Sneakers"]
     },
     {
       id: "ORD-002", 
       amount: 28.50,
-      location: "Mall Food Court",
+      location: "Fashion District",
       dateTime: "2024-09-04T15:45:00Z",
       status: "delivered",
       rating: 4,
-      items: ["Pizza", "Garlic Bread"]
+      items: ["Red Lipstick", "Foundation"]
     },
     {
       id: "ORD-003",
@@ -52,7 +52,7 @@ export function UserCard({ data, type }: UserCardProps) {
       dateTime: "2024-09-03T12:20:00Z", 
       status: "completed",
       rating: 5,
-      items: ["Sushi Set", "Miso Soup", "Green Tea"]
+      items: ["Kids Dress", "Leather Boots", "Silver Necklace"]
     },
     {
       id: "ORD-004",
@@ -61,7 +61,7 @@ export function UserCard({ data, type }: UserCardProps) {
       dateTime: "2024-09-02T18:15:00Z",
       status: "delivered", 
       rating: 3,
-      items: ["Sandwich", "Salad", "Juice"]
+      items: ["Denim Jacket", "Canvas Shoes", "Sunglasses"]
     },
     {
       id: "ORD-005",
@@ -70,7 +70,7 @@ export function UserCard({ data, type }: UserCardProps) {
       dateTime: "2024-09-01T14:30:00Z",
       status: "delivered",
       rating: 4,
-      items: ["Pasta", "Caesar Salad", "Wine"]
+      items: ["Evening Dress", "High Heels", "Perfume"]
     },
     {
       id: "ORD-006",
@@ -78,7 +78,7 @@ export function UserCard({ data, type }: UserCardProps) {
       location: "City Center",
       dateTime: "2024-08-31T11:45:00Z",
       status: "cancelled",
-      items: ["Coffee", "Pastry"]
+      items: ["Face Cream", "Mascara"]
     },
     {
       id: "ORD-007",
@@ -87,7 +87,7 @@ export function UserCard({ data, type }: UserCardProps) {
       dateTime: "2024-08-30T19:20:00Z",
       status: "delivered",
       rating: 5,
-      items: ["Steak", "Sides", "Dessert"]
+      items: ["Designer Handbag", "Silk Scarf", "Gold Earrings"]
     }
   ];
 
