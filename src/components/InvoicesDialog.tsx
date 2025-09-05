@@ -22,10 +22,11 @@ interface InvoicesDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   invoices: Invoice[];
-  retailerName: string;
+  userType: string;
+  userName: string;
 }
 
-export function InvoicesDialog({ open, onOpenChange, invoices, retailerName }: InvoicesDialogProps) {
+export function InvoicesDialog({ open, onOpenChange, invoices, userType, userName }: InvoicesDialogProps) {
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case "paid":
@@ -56,7 +57,7 @@ export function InvoicesDialog({ open, onOpenChange, invoices, retailerName }: I
       <DialogContent className="max-w-4xl max-h-[80vh]">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold">
-            Invoices - {retailerName}
+            {userType === "retail" ? `${userName} - All Invoices` : `${userName} - Invoices`}
           </DialogTitle>
           <DialogDescription>
             Complete list of invoices and payment history
