@@ -3,9 +3,10 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { MapPin, Calendar, Star, TrendingUp, Camera, Package, ChevronRight } from "lucide-react";
+import { MapPin, Calendar, Star, TrendingUp, Camera, Package, ChevronRight, DollarSign } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { OrdersDialog } from "@/components/OrdersDialog";
+import { InvoicesDialog } from "@/components/InvoicesDialog";
 
 interface UserCardProps {
   data: any;
@@ -16,6 +17,7 @@ export function UserCard({ data, type }: UserCardProps) {
   const [avatarUrl, setAvatarUrl] = useState(data.avatar);
   const [isHovering, setIsHovering] = useState(false);
   const [ordersDialogOpen, setOrdersDialogOpen] = useState(false);
+  const [invoicesDialogOpen, setInvoicesDialogOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -86,6 +88,52 @@ export function UserCard({ data, type }: UserCardProps) {
   ];
 
   const recentOrders = sampleOrders.slice(0, 5);
+
+  // Sample invoices data for retailers
+  const sampleInvoices = [
+    {
+      id: "INV-001",
+      amount: 1250.00,
+      paidAmount: 1250.00,
+      dateTime: "2024-09-05T09:00:00Z",
+      status: "paid" as const,
+      description: "Monthly commission payout"
+    },
+    {
+      id: "INV-002", 
+      amount: 850.75,
+      paidAmount: 425.38,
+      dateTime: "2024-09-04T14:30:00Z",
+      status: "partial" as const,
+      description: "Weekly order commissions"
+    },
+    {
+      id: "INV-003",
+      amount: 2100.50,
+      paidAmount: 0,
+      dateTime: "2024-09-03T11:15:00Z",
+      status: "pending" as const,
+      description: "Bi-weekly settlement"
+    },
+    {
+      id: "INV-004",
+      amount: 675.25,
+      paidAmount: 675.25,
+      dateTime: "2024-09-02T16:45:00Z",
+      status: "paid" as const,
+      description: "Order processing fees"
+    },
+    {
+      id: "INV-005",
+      amount: 950.00,
+      paidAmount: 0,
+      dateTime: "2024-08-30T08:20:00Z",
+      status: "overdue" as const,
+      description: "Late payment - August commissions"
+    }
+  ];
+
+  const recentInvoices = sampleInvoices.slice(0, 5);
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -321,6 +369,50 @@ export function UserCard({ data, type }: UserCardProps) {
           </div>
         )}
 
+        {/* Payments Section for Retailers */}
+        {type === "retail" && (
+          <div className="space-y-3">
+            <h4 className="font-semibold text-lg">Payments</h4>
+            <div className="space-y-2">
+              {recentInvoices.slice(0, 5).map((invoice) => (
+                <div key={invoice.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <DollarSign className="w-4 h-4 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm font-medium">#{invoice.id}</p>
+                      <p className="text-xs text-muted-foreground">{invoice.description}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-green-600">${invoice.paidAmount.toFixed(2)}</p>
+                    <p className="text-xs text-muted-foreground">
+                      <Badge 
+                        className={`text-xs ${
+                          invoice.status === 'paid' ? 'bg-green-100 text-green-800' :
+                          invoice.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                          invoice.status === 'partial' ? 'bg-blue-100 text-blue-800' :
+                          'bg-red-100 text-red-800'
+                        }`}
+                        variant="outline"
+                      >
+                        {invoice.status}
+                      </Badge>
+                    </p>
+                  </div>
+                </div>
+              ))}
+              <Button 
+                variant="outline" 
+                className="w-full mt-3"
+                onClick={() => setInvoicesDialogOpen(true)}
+              >
+                More Invoices
+                <ChevronRight className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* Device Information */}
         <div className="bg-muted/50 rounded-lg p-4">
           <h4 className="font-semibold mb-2">Device Information</h4>
@@ -336,6 +428,13 @@ export function UserCard({ data, type }: UserCardProps) {
         orders={sampleOrders}
         userType={type}
         userName={data.name}
+      />
+      
+      <InvoicesDialog 
+        open={invoicesDialogOpen}
+        onOpenChange={setInvoicesDialogOpen}
+        invoices={sampleInvoices}
+        retailerName={data.name}
       />
     </Card>
   );
