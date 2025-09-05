@@ -3,8 +3,9 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { MapPin, Calendar, Star, TrendingUp, Camera } from "lucide-react";
+import { MapPin, Calendar, Star, TrendingUp, Camera, Package, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { OrdersDialog } from "@/components/OrdersDialog";
 
 interface UserCardProps {
   data: any;
@@ -14,8 +15,77 @@ interface UserCardProps {
 export function UserCard({ data, type }: UserCardProps) {
   const [avatarUrl, setAvatarUrl] = useState(data.avatar);
   const [isHovering, setIsHovering] = useState(false);
+  const [ordersDialogOpen, setOrdersDialogOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+
+  // Sample orders data - in a real app this would come from props or API
+  const sampleOrders = [
+    {
+      id: "ORD-001",
+      amount: 45.99,
+      location: "Downtown Plaza",
+      dateTime: "2024-09-05T10:30:00Z",
+      status: "delivered",
+      rating: 5,
+      items: ["Burger", "Fries", "Coke"]
+    },
+    {
+      id: "ORD-002", 
+      amount: 28.50,
+      location: "Mall Food Court",
+      dateTime: "2024-09-04T15:45:00Z",
+      status: "delivered",
+      rating: 4,
+      items: ["Pizza", "Garlic Bread"]
+    },
+    {
+      id: "ORD-003",
+      amount: 62.75,
+      location: "Business District",
+      dateTime: "2024-09-03T12:20:00Z", 
+      status: "completed",
+      rating: 5,
+      items: ["Sushi Set", "Miso Soup", "Green Tea"]
+    },
+    {
+      id: "ORD-004",
+      amount: 35.25,
+      location: "University Campus",
+      dateTime: "2024-09-02T18:15:00Z",
+      status: "delivered", 
+      rating: 3,
+      items: ["Sandwich", "Salad", "Juice"]
+    },
+    {
+      id: "ORD-005",
+      amount: 52.00,
+      location: "Shopping Center",
+      dateTime: "2024-09-01T14:30:00Z",
+      status: "delivered",
+      rating: 4,
+      items: ["Pasta", "Caesar Salad", "Wine"]
+    },
+    {
+      id: "ORD-006",
+      amount: 23.99,
+      location: "City Center",
+      dateTime: "2024-08-31T11:45:00Z",
+      status: "cancelled",
+      items: ["Coffee", "Pastry"]
+    },
+    {
+      id: "ORD-007",
+      amount: 78.50,
+      location: "Riverside District", 
+      dateTime: "2024-08-30T19:20:00Z",
+      status: "delivered",
+      rating: 5,
+      items: ["Steak", "Sides", "Dessert"]
+    }
+  ];
+
+  const recentOrders = sampleOrders.slice(0, 5);
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -166,7 +236,13 @@ export function UserCard({ data, type }: UserCardProps) {
                 <>
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">Total Orders:</span>
-                    <span className="text-sm font-bold">{data.totalOrders}</span>
+                    <Button 
+                      variant="ghost" 
+                      className="text-sm font-bold p-0 h-auto hover:text-primary"
+                      onClick={() => setOrdersDialogOpen(true)}
+                    >
+                      {data.totalOrders}
+                    </Button>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">Total Spent:</span>
@@ -179,7 +255,13 @@ export function UserCard({ data, type }: UserCardProps) {
                 <>
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">Total Orders:</span>
-                    <span className="text-sm font-bold">{data.totalOrders}</span>
+                    <Button 
+                      variant="ghost" 
+                      className="text-sm font-bold p-0 h-auto hover:text-primary"
+                      onClick={() => setOrdersDialogOpen(true)}
+                    >
+                      {data.totalOrders}
+                    </Button>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">Total Revenue:</span>
@@ -207,6 +289,38 @@ export function UserCard({ data, type }: UserCardProps) {
           </div>
         </div>
         
+        {/* Recent Orders Section */}
+        {(type === "user" || type === "retail") && (
+          <div className="space-y-3">
+            <h4 className="font-semibold text-lg">Recent Orders</h4>
+            <div className="space-y-2">
+              {recentOrders.slice(0, 5).map((order) => (
+                <div key={order.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <Package className="w-4 h-4 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm font-medium">#{order.id}</p>
+                      <p className="text-xs text-muted-foreground">{order.location}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-green-600">${order.amount.toFixed(2)}</p>
+                    <p className="text-xs text-muted-foreground">{new Date(order.dateTime).toLocaleDateString()}</p>
+                  </div>
+                </div>
+              ))}
+              <Button 
+                variant="outline" 
+                className="w-full mt-3"
+                onClick={() => setOrdersDialogOpen(true)}
+              >
+                More Orders
+                <ChevronRight className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* Device Information */}
         <div className="bg-muted/50 rounded-lg p-4">
           <h4 className="font-semibold mb-2">Device Information</h4>
@@ -215,6 +329,14 @@ export function UserCard({ data, type }: UserCardProps) {
           </p>
         </div>
       </CardContent>
+      
+      <OrdersDialog 
+        open={ordersDialogOpen}
+        onOpenChange={setOrdersDialogOpen}
+        orders={sampleOrders}
+        userType={type}
+        userName={data.name}
+      />
     </Card>
   );
 }
