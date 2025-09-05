@@ -1,90 +1,97 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, DollarSign, Package, Star, Users, Truck } from "lucide-react";
+import { calculateDaysSince } from "@/utils/statusUtils";
+import type { User, Retailer, Courier, EntityType } from "@/types";
 
 interface MetricsCardsProps {
-  data: any;
-  type: string;
+  data: User | Retailer | Courier;
+  type: EntityType;
 }
 
 export function MetricsCards({ data, type }: MetricsCardsProps) {
   const getMetrics = () => {
     switch (type) {
-      case "user":
+      case "user": {
+        const userData = data as User;
         return [
           {
             title: "Total Orders",
-            value: data.totalOrders,
+            value: userData.totalOrders,
             icon: Package,
             color: "text-blue-600",
             bgColor: "bg-blue-100"
           },
           {
             title: "Total Spent",
-            value: `£${data.totalSpent.toFixed(2)}`,
+            value: `£${userData.totalSpent.toFixed(2)}`,
             icon: DollarSign,
             color: "text-green-600",
             bgColor: "bg-green-100"
           },
           {
             title: "Avg Order Value",
-            value: `£${(data.totalSpent / data.totalOrders).toFixed(2)}`,
+            value: `£${(userData.totalSpent / userData.totalOrders).toFixed(2)}`,
             icon: TrendingUp,
             color: "text-purple-600",
             bgColor: "bg-purple-100"
           },
           {
             title: "Member Since",
-            value: `${Math.floor((Date.now() - new Date(data.joinDate).getTime()) / (1000 * 60 * 60 * 24))} days`,
+            value: `${calculateDaysSince(userData.joinDate)} days`,
             icon: Users,
             color: "text-orange-600",
             bgColor: "bg-orange-100"
           }
         ];
+      }
       
-      case "retail":
+      case "retail": {
+        const retailerData = data as Retailer;
         return [
           {
             title: "Total Orders",
-            value: data.totalOrders,
+            value: retailerData.totalOrders,
             icon: Package,
             color: "text-blue-600",
             bgColor: "bg-blue-100"
           },
           {
             title: "Total Revenue",
-            value: `£${data.totalRevenue.toFixed(2)}`,
+            value: `£${retailerData.totalRevenue.toFixed(2)}`,
             icon: DollarSign,
             color: "text-green-600",
             bgColor: "bg-green-100"
           },
           {
             title: "Avg Order Value",
-            value: `£${(data.totalRevenue / data.totalOrders).toFixed(2)}`,
+            value: `£${(retailerData.totalRevenue / retailerData.totalOrders).toFixed(2)}`,
             icon: TrendingUp,
             color: "text-purple-600",
             bgColor: "bg-purple-100"
           },
           {
             title: "Partner Since",
-            value: `${Math.floor((Date.now() - new Date(data.joinDate).getTime()) / (1000 * 60 * 60 * 24))} days`,
+            value: `${calculateDaysSince(retailerData.joinDate)} days`,
             icon: Users,
             color: "text-orange-600",
             bgColor: "bg-orange-100"
           }
         ];
+      }
       
-      case "courier":
+      case "courier": {
+        const courierData = data as Courier;
         return [
           {
             title: "Total Deliveries",
-            value: data.totalDeliveries,
+            value: courierData.totalDeliveries,
             icon: Truck,
             color: "text-blue-600",
             bgColor: "bg-blue-100"
           },
           {
             title: "Average Rating",
-            value: `${data.averageRating}/5.0`,
+            value: `${courierData.averageRating}/5.0`,
             icon: Star,
             color: "text-yellow-600",
             bgColor: "bg-yellow-100"
@@ -98,12 +105,13 @@ export function MetricsCards({ data, type }: MetricsCardsProps) {
           },
           {
             title: "Active Since",
-            value: `${Math.floor((Date.now() - new Date(data.joinDate).getTime()) / (1000 * 60 * 60 * 24))} days`,
+            value: `${calculateDaysSince(courierData.joinDate)} days`,
             icon: Users,
             color: "text-purple-600",
             bgColor: "bg-purple-100"
           }
         ];
+      }
       
       default:
         return [];
@@ -128,12 +136,6 @@ export function MetricsCards({ data, type }: MetricsCardsProps) {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold street-title">{metric.value}</div>
-              <div className="flex items-center gap-1 mt-2">
-                <TrendingUp className="w-3 h-3 text-green-500" />
-                <span className="text-xs text-green-500 font-medium">
-                  +{Math.floor(Math.random() * 15 + 5)}% from last month
-                </span>
-              </div>
             </CardContent>
           </Card>
         );

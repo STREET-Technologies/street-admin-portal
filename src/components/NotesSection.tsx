@@ -6,6 +6,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Plus, MessageSquare, Clock, AlertTriangle, AlertCircle, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { getPriorityColor, getInitials, formatDate } from "@/utils/statusUtils";
+import { NOTE_PRIORITIES } from "@/constants";
+import type { Note, NotePriority } from "@/types";
 
 interface NotesSectionProps {
   entityId: string;
@@ -13,58 +16,19 @@ interface NotesSectionProps {
   entityType?: string;
 }
 
-interface Note {
-  id: string;
-  content: string;
-  author: string;
-  authorAvatar?: string;
-  timestamp: string;
-  priority?: "low" | "medium" | "high";
-}
-
 export function NotesSection({ entityId, entityName, entityType }: NotesSectionProps) {
   // Entity-specific notes storage key
   const notesStorageKey = `notes_${entityType || 'entity'}_${entityId}`;
   
-  // Load entity-specific notes from localStorage or use defaults
-  const getEntityNotes = () => {
+  // Load entity-specific notes from localStorage (empty by default)
+  const getEntityNotes = (): Note[] => {
     const stored = localStorage.getItem(notesStorageKey);
-    if (stored) {
-      return JSON.parse(stored);
-    }
-    
-    // Default example notes for all entities
-    return [
-      {
-        id: "1",
-        content: "Customer contacted support regarding delayed delivery. Issue resolved with compensation offered.",
-        author: "Sarah Johnson",
-        authorAvatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face",
-        timestamp: "2024-01-20T14:30:00Z",
-        priority: "medium"
-      },
-      {
-        id: "2", 
-        content: "VIP customer - provide priority support and expedited shipping on all orders.",
-        author: "Mike Chen",
-        authorAvatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
-        timestamp: "2024-01-15T09:15:00Z",
-        priority: "high"
-      },
-      {
-        id: "3",
-        content: "Regular customer, no issues reported. Prefers contactless delivery.",
-        author: "Emma Davis",
-        timestamp: "2024-01-10T16:45:00Z",
-        priority: "low"
-      }
-    ];
+    return stored ? JSON.parse(stored) : [];
   };
 
   const [notes, setNotes] = useState<Note[]>(getEntityNotes());
-  
   const [newNote, setNewNote] = useState("");
-  const [selectedPriority, setSelectedPriority] = useState<"low" | "medium" | "high">("medium");
+  const [selectedPriority, setSelectedPriority] = useState<NotePriority>("medium");
   const [isAddingNote, setIsAddingNote] = useState(false);
   const { toast } = useToast();
 
@@ -95,28 +59,15 @@ export function NotesSection({ entityId, entityName, entityType }: NotesSectionP
     }
   };
 
-  const formatDate = (timestamp: string) => {
-    const date = new Date(timestamp);
-    return {
-      date: date.toLocaleDateString(),
-      time: date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    };
+  const formatNoteDate = (timestamp: string) => {
+    return formatDate(timestamp);
   };
 
-  const getPriorityColor = (priority?: string) => {
-    switch (priority) {
-      case "high":
-        return "border-l-red-500";
-      case "medium":
-        return "border-l-yellow-500";
-      case "low":
-        return "border-l-green-500";
-      default:
-        return "border-l-gray-300";
-    }
+  const getNotePriorityColor = (priority?: NotePriority) => {
+    return getPriorityColor(priority || "low");
   };
 
-  const getPriorityIcon = (priority: string) => {
+  const getPriorityIcon = (priority: NotePriority) => {
     switch (priority) {
       case "high":
         return <AlertTriangle className="w-3 h-3" />;
@@ -164,7 +115,7 @@ export function NotesSection({ entityId, entityName, entityType }: NotesSectionP
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-muted-foreground">Priority:</span>
                 <div className="flex gap-1">
-                  {(['high', 'medium', 'low'] as const).map((priority) => (
+                  {NOTE_PRIORITIES.map((priority) => (
                     <Button
                       key={priority}
                       onClick={() => setSelectedPriority(priority)}
@@ -216,17 +167,17 @@ export function NotesSection({ entityId, entityName, entityType }: NotesSectionP
         {/* Notes List */}
         <div className="space-y-4 max-h-96 overflow-y-auto">
           {notes.map((note) => {
-            const { date, time } = formatDate(note.timestamp);
+            const { date, time } = formatNoteDate(note.timestamp);
             return (
               <div
                 key={note.id}
-                className={`border-l-4 rounded-r-lg p-4 ${getPriorityColor(note.priority)}`}
+                className={`border-l-4 rounded-r-lg p-4 ${getNotePriorityColor(note.priority)}`}
               >
                 <div className="flex items-start gap-3">
                   <Avatar className="w-8 h-8">
                     <AvatarImage src={note.authorAvatar} alt={note.author} />
                     <AvatarFallback className="text-xs">
-                      {note.author.split(" ").map(n => n[0]).join("")}
+                      {getInitials(note.author)}
                     </AvatarFallback>
                   </Avatar>
                   

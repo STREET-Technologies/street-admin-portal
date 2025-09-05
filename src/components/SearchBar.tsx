@@ -2,96 +2,23 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, User, Store, Truck } from "lucide-react";
+import { SearchService } from "@/services/searchService";
+import type { EntityType } from "@/types";
 
 interface SearchBarProps {
-  onSearch: (query: string, type: string) => void;
+  onSearch: (query: string, type: EntityType) => void;
   onTypeChange?: () => void;
 }
 
 export function SearchBar({ onSearch, onTypeChange }: SearchBarProps) {
   const [query, setQuery] = useState("");
-  const [selectedType, setSelectedType] = useState("user");
+  const [selectedType, setSelectedType] = useState<EntityType>("user");
   const [suggestions, setSuggestions] = useState<string[]>([]);
 
   const handleInputChange = (value: string) => {
     setQuery(value);
-    
-    if (value.trim().length > 0) {
-      const searchTerm = value.toLowerCase();
-      let typeSuggestions: string[] = [];
-      
-      if (selectedType === "user") {
-        // Syuzana suggestions
-        if ("syuzana".includes(searchTerm)) {
-          typeSuggestions.push("Syuzana O");
-        }
-        if ("syuzana@street.london".includes(searchTerm)) {
-          typeSuggestions.push("syuzana@street.london");
-        }
-        if ("+447542016022".includes(searchTerm)) {
-          typeSuggestions.push("+447542016022");
-        }
-        if ("usr001".includes(searchTerm)) {
-          typeSuggestions.push("USR001");
-        }
-        if ("uid_syuzana_001_2024".includes(searchTerm)) {
-          typeSuggestions.push("uid_syuzana_001_2024");
-        }
-        
-        // Ali suggestions
-        if ("ali".includes(searchTerm)) {
-          typeSuggestions.push("Ali Al Nasiri");
-        }
-        if ("ali@street.london".includes(searchTerm)) {
-          typeSuggestions.push("ali@street.london");
-        }
-        if ("+447770237011".includes(searchTerm)) {
-          typeSuggestions.push("+447770237011");
-        }
-        if ("usr002".includes(searchTerm)) {
-          typeSuggestions.push("USR002");
-        }
-        if ("uid_ali_002_2024".includes(searchTerm)) {
-          typeSuggestions.push("uid_ali_002_2024");
-        }
-      } else if (selectedType === "retail") {
-        if ("trilogy".includes(searchTerm)) {
-          typeSuggestions.push("Trilogy London");
-        }
-        if ("info@trilogylondon.com".includes(searchTerm)) {
-          typeSuggestions.push("info@trilogylondon.com");
-        }
-        if ("020 7937 7972".includes(searchTerm)) {
-          typeSuggestions.push("020 7937 7972");
-        }
-        if ("ret001".includes(searchTerm)) {
-          typeSuggestions.push("RET001");
-        }
-        if ("uid_trilogy_ret_001_2023".includes(searchTerm)) {
-          typeSuggestions.push("uid_trilogy_ret_001_2023");
-        }
-      } else if (selectedType === "courier") {
-        if ("ali".includes(searchTerm)) {
-          typeSuggestions.push("Ali Al Nasiri");
-        }
-        if ("ali@street.london".includes(searchTerm)) {
-          typeSuggestions.push("ali@street.london");
-        }
-        if ("+447770237011".includes(searchTerm)) {
-          typeSuggestions.push("+447770237011");
-        }
-        if ("cou001".includes(searchTerm)) {
-          typeSuggestions.push("COU001");
-        }
-        if ("uid_ali_cou_001_2024".includes(searchTerm)) {
-          typeSuggestions.push("uid_ali_cou_001_2024");
-        }
-      }
-      
-      setSuggestions([...new Set(typeSuggestions)]);
-    } else {
-      setSuggestions([]);
-    }
+    const newSuggestions = SearchService.getSuggestions(value, selectedType);
+    setSuggestions(newSuggestions);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -110,6 +37,13 @@ export function SearchBar({ onSearch, onTypeChange }: SearchBarProps) {
     onSearch(suggestion, selectedType);
   };
 
+  const handleTypeChange = (newType: EntityType) => {
+    setSelectedType(newType);
+    setQuery("");
+    setSuggestions([]);
+    onTypeChange?.();
+  };
+
   return (
     <div className="relative max-w-2xl mx-auto">
       {/* Type Selection Buttons */}
@@ -117,12 +51,7 @@ export function SearchBar({ onSearch, onTypeChange }: SearchBarProps) {
         <Button
           type="button"
           variant={selectedType === "user" ? "default" : "outline"}
-          onClick={() => {
-            setSelectedType("user");
-            setQuery("");
-            setSuggestions([]);
-            onTypeChange?.();
-          }}
+          onClick={() => handleTypeChange("user")}
           className="flex items-center gap-2"
         >
           <User className="w-4 h-4" />
@@ -131,12 +60,7 @@ export function SearchBar({ onSearch, onTypeChange }: SearchBarProps) {
         <Button
           type="button"
           variant={selectedType === "retail" ? "default" : "outline"}
-          onClick={() => {
-            setSelectedType("retail");
-            setQuery("");
-            setSuggestions([]);
-            onTypeChange?.();
-          }}
+          onClick={() => handleTypeChange("retail")}
           className="flex items-center gap-2"
         >
           <Store className="w-4 h-4" />
@@ -145,12 +69,7 @@ export function SearchBar({ onSearch, onTypeChange }: SearchBarProps) {
         <Button
           type="button"
           variant={selectedType === "courier" ? "default" : "outline"}
-          onClick={() => {
-            setSelectedType("courier");
-            setQuery("");
-            setSuggestions([]);
-            onTypeChange?.();
-          }}
+          onClick={() => handleTypeChange("courier")}
           className="flex items-center gap-2"
         >
           <Truck className="w-4 h-4" />

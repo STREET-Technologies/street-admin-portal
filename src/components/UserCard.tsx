@@ -9,10 +9,14 @@ import { MapPin, Calendar, Star, TrendingUp, Camera, Package, ChevronRight, Doll
 import { useToast } from "@/hooks/use-toast";
 import { OrdersDialog } from "@/components/OrdersDialog";
 import { InvoicesDialog } from "@/components/InvoicesDialog";
+import { mockOrders, mockInvoices } from "@/data/mockData";
+import { getStatusColor, getInitials } from "@/utils/statusUtils";
+import { TEAM_MEMBERS, RETAIL_STATUS_OPTIONS, USER_STATUS_OPTIONS, COURIER_STATUS_OPTIONS } from "@/constants";
+import type { User, Retailer, Courier, EntityType } from "@/types";
 
 interface UserCardProps {
-  data: any;
-  type: string;
+  data: User | Retailer | Courier;
+  type: EntityType;
 }
 
 export function UserCard({ data, type }: UserCardProps) {
@@ -25,119 +29,9 @@ export function UserCard({ data, type }: UserCardProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  // Sample orders data - in a real app this would come from props or API
-  const sampleOrders = [
-    {
-      id: "ORD-001",
-      amount: 45.99,
-      location: "Covent Garden, London",
-      dateTime: "2024-09-05T10:30:00Z",
-      status: "delivered",
-      rating: 5,
-      items: ["Black T-Shirt", "Blue Jeans", "White Sneakers"]
-    },
-    {
-      id: "ORD-002", 
-      amount: 28.50,
-      location: "Oxford Street, London",
-      dateTime: "2024-09-04T15:45:00Z",
-      status: "delivered",
-      rating: 4,
-      items: ["Red Lipstick", "Foundation"]
-    },
-    {
-      id: "ORD-003",
-      amount: 62.75,
-      location: "Canary Wharf, London",
-      dateTime: "2024-09-03T12:20:00Z", 
-      status: "completed",
-      rating: 5,
-      items: ["Kids Dress", "Leather Boots", "Silver Necklace"]
-    },
-    {
-      id: "ORD-004",
-      amount: 35.25,
-      location: "King's Cross, London",
-      dateTime: "2024-09-02T18:15:00Z",
-      status: "delivered", 
-      rating: 3,
-      items: ["Denim Jacket", "Canvas Shoes", "Sunglasses"]
-    },
-    {
-      id: "ORD-005",
-      amount: 52.00,
-      location: "Westfield London",
-      dateTime: "2024-09-01T14:30:00Z",
-      status: "delivered",
-      rating: 4,
-      items: ["Evening Dress", "High Heels", "Perfume"]
-    },
-    {
-      id: "ORD-006",
-      amount: 23.99,
-      location: "Camden Market, London",
-      dateTime: "2024-08-31T11:45:00Z",
-      status: "cancelled",
-      items: ["Face Cream", "Mascara"]
-    },
-    {
-      id: "ORD-007",
-      amount: 78.50,
-      location: "Shoreditch, London", 
-      dateTime: "2024-08-30T19:20:00Z",
-      status: "delivered",
-      rating: 5,
-      items: ["Designer Handbag", "Silk Scarf", "Gold Earrings"]
-    }
-  ];
-
-  const recentOrders = sampleOrders.slice(0, 3);
-
-  // Sample invoices data for retailers
-  const sampleInvoices = [
-    {
-      id: "INV-001",
-      amount: 1250.00,
-      paidAmount: 1250.00,
-      dateTime: "2024-09-05T09:00:00Z",
-      status: "paid" as const,
-      description: "Monthly commission payout"
-    },
-    {
-      id: "INV-002", 
-      amount: 850.75,
-      paidAmount: 425.38,
-      dateTime: "2024-09-04T14:30:00Z",
-      status: "partial" as const,
-      description: "Weekly order commissions"
-    },
-    {
-      id: "INV-003",
-      amount: 2100.50,
-      paidAmount: 0,
-      dateTime: "2024-09-03T11:15:00Z",
-      status: "pending" as const,
-      description: "Bi-weekly settlement"
-    },
-    {
-      id: "INV-004",
-      amount: 675.25,
-      paidAmount: 675.25,
-      dateTime: "2024-09-02T16:45:00Z",
-      status: "paid" as const,
-      description: "Order processing fees"
-    },
-    {
-      id: "INV-005",
-      amount: 950.00,
-      paidAmount: 0,
-      dateTime: "2024-08-30T08:20:00Z",
-      status: "overdue" as const,
-      description: "Late payment - August commissions"
-    }
-  ];
-
-  const recentInvoices = sampleInvoices.slice(0, 3);
+  // Use clean mock data
+  const recentOrders = mockOrders.slice(0, 3);
+  const recentInvoices = mockInvoices.slice(0, 3);
 
   const handleSave = () => {
     // In a real app, this would save to API
@@ -178,33 +72,16 @@ export function UserCard({ data, type }: UserCardProps) {
     fileInputRef.current?.click();
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "active":
-        return "bg-green-100 text-green-800 border-green-200";
-      case "blocked":
-        return "bg-red-900/10 text-red-900 border-red-900/20";
-      case "withdrawn":
-        return "bg-red-100 text-red-800 border-red-200";
-      case "onboarding":
-        return "bg-blue-100 text-blue-800 border-blue-200";
-      case "online":
-        return "bg-green-100 text-green-800 border-green-200";
-      case "inactive":
-        return "bg-gray-100 text-gray-800 border-gray-200";
-      case "pending":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
-    }
+  const isRetailer = (entity: User | Retailer | Courier): entity is Retailer => {
+    return type === 'retail';
   };
 
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase();
+  const isUser = (entity: User | Retailer | Courier): entity is User => {
+    return type === 'user';
+  };
+
+  const isCourier = (entity: User | Retailer | Courier): entity is Courier => {
+    return type === 'courier';
   };
 
   return (
@@ -266,25 +143,23 @@ export function UserCard({ data, type }: UserCardProps) {
                     </SelectTrigger>
                     <SelectContent className="bg-background border shadow-lg z-50">
                       {type === "retail" ? (
-                        <>
-                          <SelectItem value="active">Active</SelectItem>
-                          <SelectItem value="blocked">Blocked</SelectItem>
-                          <SelectItem value="withdrawn">Withdrawn</SelectItem>
-                          <SelectItem value="onboarding">Onboarding</SelectItem>
-                        </>
+                        RETAIL_STATUS_OPTIONS.map(status => (
+                          <SelectItem key={status} value={status}>{status.charAt(0).toUpperCase() + status.slice(1)}</SelectItem>
+                        ))
+                      ) : type === "courier" ? (
+                        COURIER_STATUS_OPTIONS.map(status => (
+                          <SelectItem key={status} value={status}>{status.charAt(0).toUpperCase() + status.slice(1)}</SelectItem>
+                        ))
                       ) : (
-                        <>
-                          <SelectItem value="active">Active</SelectItem>
-                          <SelectItem value="inactive">Inactive</SelectItem>
-                          <SelectItem value="pending">Pending</SelectItem>
-                          <SelectItem value="online">Online</SelectItem>
-                        </>
+                        USER_STATUS_OPTIONS.map(status => (
+                          <SelectItem key={status} value={status}>{status.charAt(0).toUpperCase() + status.slice(1)}</SelectItem>
+                        ))
                       )}
                     </SelectContent>
                   </Select>
                 ) : (
                   <Badge 
-                    className={`${getStatusColor(editData.status)} font-medium`}
+                    className={`${getStatusColor(editData.status as any)} font-medium`}
                     variant="outline"
                   >
                     {editData.status}
@@ -330,7 +205,7 @@ export function UserCard({ data, type }: UserCardProps) {
       
       <CardContent className="space-y-6">
         {/* Contact Information */}
-        {type === "retail" ? (
+        {type === "retail" && isRetailer(editData) ? (
           <div className="space-y-3">
             <h4 className="font-semibold text-lg">Contact & Business Information</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -364,12 +239,12 @@ export function UserCard({ data, type }: UserCardProps) {
                   <span className="text-sm font-medium w-20">Category:</span>
                   {isEditing ? (
                     <Input
-                      value={editData.category || "Restaurant"}
+                      value={editData.category || "Fashion"}
                       onChange={(e) => updateEditData('category', e.target.value)}
                       className="text-sm h-8"
                     />
                   ) : (
-                    <span className="text-sm">{editData.category || "Restaurant"}</span>
+                    <span className="text-sm">{editData.category || "Fashion"}</span>
                   )}
                 </div>
                 <div className="flex items-start gap-2">
@@ -411,9 +286,9 @@ export function UserCard({ data, type }: UserCardProps) {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="bg-background border shadow-lg z-50">
-                        <SelectItem value="Ali Al Nasiri">Ali Al Nasiri</SelectItem>
-                        <SelectItem value="Syuzana Oganesyan">Syuzana Oganesyan</SelectItem>
-                        <SelectItem value="Umaan Ali">Umaan Ali</SelectItem>
+                        {TEAM_MEMBERS.map(member => (
+                          <SelectItem key={member} value={member}>{member}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   ) : (
@@ -448,12 +323,12 @@ export function UserCard({ data, type }: UserCardProps) {
                   <MapPin className="w-4 h-4 text-muted-foreground mt-0.5" />
                   {isEditing ? (
                     <Input
-                      value={editData.address || "63 Weymouth St, London W1G 8LS, United Kingdom"}
+                      value={editData.address || "22 Kensington Church St, London W8 4EP"}
                       onChange={(e) => updateEditData('address', e.target.value)}
                       className="text-sm h-8"
                     />
                   ) : (
-                    <span className="text-sm">{editData.address || "63 Weymouth St, London W1G 8LS, United Kingdom"}</span>
+                    <span className="text-sm">{editData.address || "22 Kensington Church St, London W8 4EP"}</span>
                   )}
                 </div>
               </div>
@@ -464,7 +339,7 @@ export function UserCard({ data, type }: UserCardProps) {
             <div className="space-y-3">
               <h4 className="font-semibold text-lg">Contact Information</h4>
               <div className="space-y-2">
-                <div className="flex items-center gap-2">
+                <div className="flex items-start gap-2">
                   <span className="text-sm font-medium w-16">Email:</span>
                   {isEditing ? (
                     <Input
@@ -477,7 +352,7 @@ export function UserCard({ data, type }: UserCardProps) {
                     <span className="text-sm">{editData.email}</span>
                   )}
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-start gap-2">
                   <span className="text-sm font-medium w-16">Phone:</span>
                   {isEditing ? (
                     <Input
@@ -489,145 +364,161 @@ export function UserCard({ data, type }: UserCardProps) {
                     <span className="text-sm">{editData.phone}</span>
                   )}
                 </div>
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-muted-foreground" />
+                <div className="flex items-start gap-2">
+                  <Calendar className="w-4 h-4 text-muted-foreground mt-0.5" />
                   <span className="text-sm">Joined {new Date(editData.joinDate).toLocaleDateString()}</span>
                 </div>
               </div>
             </div>
             
-            {/* Contact Methods */}
+            {/* Account Stats for Users and Couriers */}
             <div className="space-y-3">
-              <h4 className="font-semibold text-lg">Contact Methods</h4>
+              <h4 className="font-semibold text-lg">Account Statistics</h4>
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Email Verified:</span>
-                  <span className="text-sm text-green-600 font-medium">✓ Verified</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Phone Verified:</span>
-                  <span className="text-sm text-green-600 font-medium">✓ Verified</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">SMS Notifications:</span>
-                  <span className="text-sm text-green-600 font-medium">Enabled</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Email Notifications:</span>
-                  <span className="text-sm text-green-600 font-medium">Enabled</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Push Notifications:</span>
-                  <span className="text-sm text-green-600 font-medium">Enabled</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Marketing Communications:</span>
-                  <span className="text-sm text-amber-600 font-medium">Disabled</span>
-                </div>
+                {isUser(editData) && (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium">Total Orders:</span>
+                      <span className="text-sm font-bold text-blue-600">{editData.totalOrders}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium">Total Spent:</span>
+                      <span className="text-sm font-bold text-green-600">£{editData.totalSpent.toFixed(2)}</span>
+                    </div>
+                  </>
+                )}
+                {isCourier(editData) && (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium">Deliveries:</span>
+                      <span className="text-sm font-bold text-blue-600">{editData.totalDeliveries}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Star className="w-4 h-4 text-yellow-500" />
+                      <span className="text-sm font-bold text-yellow-600">{editData.averageRating}/5.0</span>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>
         )}
-        
-        {/* Recent Orders Section */}
-        {(type === "user" || type === "retail") && (
-          <div className="space-y-3">
-            <h4 className="font-semibold text-lg">Recent Orders</h4>
-            <div className="space-y-2">
-              {recentOrders.map((order) => (
-                <div key={order.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <Package className="w-4 h-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm font-medium">#{order.id}</p>
-                      <p className="text-xs text-muted-foreground">{order.location}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-bold text-green-600">£{order.amount.toFixed(2)}</p>
-                    <p className="text-xs text-muted-foreground">{new Date(order.dateTime).toLocaleDateString()}</p>
-                  </div>
-                </div>
-              ))}
-              <Button 
-                variant="outline" 
-                className="w-full mt-3"
-                onClick={() => setOrdersDialogOpen(true)}
-              >
-                More Orders
-                <ChevronRight className="w-4 h-4 ml-2" />
-              </Button>
-            </div>
-          </div>
-        )}
 
-        {/* Payments Section for Retailers */}
-        {type === "retail" && (
-          <div className="space-y-3">
-            <h4 className="font-semibold text-lg">Payments</h4>
-            <div className="space-y-2">
-              {recentInvoices.map((invoice) => (
-                <div key={invoice.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <DollarSign className="w-4 h-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm font-medium">#{invoice.id}</p>
-                      <p className="text-xs text-muted-foreground">{invoice.description}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-bold text-green-600">£{invoice.paidAmount.toFixed(2)}</p>
-                    <p className="text-xs text-muted-foreground">
-                      <Badge 
-                        className={`text-xs ${
-                          invoice.status === 'paid' ? 'bg-green-100 text-green-800' :
-                          invoice.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                          invoice.status === 'partial' ? 'bg-blue-100 text-blue-800' :
-                          'bg-red-100 text-red-800'
-                        }`}
-                        variant="outline"
-                      >
-                        {invoice.status}
-                      </Badge>
-                    </p>
-                  </div>
+        {/* Recent Activity Section */}
+        <div className="space-y-4">
+          <h4 className="font-semibold text-lg flex items-center gap-3">
+            <Package className="w-5 h-5" />
+            Recent Activity
+          </h4>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Recent Orders */}
+            <Card className="bg-muted/30">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <h5 className="font-medium">Recent Orders</h5>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setOrdersDialogOpen(true)}
+                    className="text-primary hover:text-primary/80"
+                  >
+                    View All <ChevronRight className="w-4 h-4 ml-1" />
+                  </Button>
                 </div>
-              ))}
-              <Button 
-                variant="outline" 
-                className="w-full mt-3"
-                onClick={() => setInvoicesDialogOpen(true)}
-              >
-                More Invoices
-                <ChevronRight className="w-4 h-4 ml-2" />
-              </Button>
-            </div>
-          </div>
-        )}
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {recentOrders.map((order, index) => (
+                    <div key={order.id} className="flex items-center justify-between p-2 bg-background rounded">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-sm font-medium">#{order.id}</span>
+                          <Badge
+                            variant="outline"
+                            className={getStatusColor(order.status as any)}
+                          >
+                            {order.status}
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground">{order.location}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-bold text-green-600">£{order.amount.toFixed(2)}</p>
+                        {order.rating && (
+                          <div className="flex items-center gap-1">
+                            <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                            <span className="text-xs">{order.rating}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
 
-        {/* Device Information */}
-        <div className="bg-muted/50 rounded-lg p-4">
-          <h4 className="font-semibold mb-2">Device Information</h4>
-          <p className="text-sm text-muted-foreground">
-            <span className="font-medium">Device ID:</span> {data.deviceId}
-          </p>
+            {/* Recent Invoices - Only for Retailers */}
+            {type === "retail" && (
+              <Card className="bg-muted/30">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <h5 className="font-medium">Recent Invoices</h5>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setInvoicesDialogOpen(true)}
+                      className="text-primary hover:text-primary/80"
+                    >
+                      View All <ChevronRight className="w-4 h-4 ml-1" />
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {recentInvoices.map((invoice, index) => (
+                      <div key={invoice.id} className="flex items-center justify-between p-2 bg-background rounded">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-sm font-medium">#{invoice.id}</span>
+                            <Badge
+                              variant="outline"
+                              className={getStatusColor(invoice.status as any)}
+                            >
+                              {invoice.status}
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-muted-foreground">{invoice.description}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-bold text-green-600">£{invoice.paidAmount.toFixed(2)}</p>
+                          <p className="text-xs text-muted-foreground">of £{invoice.amount.toFixed(2)}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         </div>
+
+        <OrdersDialog 
+          open={ordersDialogOpen} 
+          onOpenChange={setOrdersDialogOpen}
+          orders={mockOrders}
+          userType={type}
+          userName={editData.name}
+        />
+        
+        <InvoicesDialog
+          open={invoicesDialogOpen}
+          onOpenChange={setInvoicesDialogOpen}
+          invoices={mockInvoices}
+          userType={type}
+          userName={editData.name}
+        />
       </CardContent>
-      
-      <OrdersDialog 
-        open={ordersDialogOpen}
-        onOpenChange={setOrdersDialogOpen}
-        orders={sampleOrders}
-        userType={type}
-        userName={data.name}
-      />
-      
-      <InvoicesDialog 
-        open={invoicesDialogOpen}
-        onOpenChange={setInvoicesDialogOpen}
-        invoices={sampleInvoices}
-        retailerName={data.name}
-      />
     </Card>
   );
 }

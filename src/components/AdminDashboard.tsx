@@ -6,9 +6,8 @@ import { MetricsCards } from "./MetricsCards";
 import { AccountAssociations } from "./AccountAssociations";
 import { Button } from "@/components/ui/button";
 import { LogOut, User, Store, Truck } from "lucide-react";
-import syuzanaImage from "@/assets/syuzana-real.png";
-import aliImage from "@/assets/ali-real.png";
-import trilogyImage from "@/assets/trilogy.png";
+import { SearchService } from "@/services/searchService";
+import type { SearchResult, EntityType } from "@/types";
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -16,120 +15,15 @@ interface AdminDashboardProps {
 }
 
 export function AdminDashboard({ onLogout, currentUser }: AdminDashboardProps) {
-  const [searchResults, setSearchResults] = useState<any>(null);
-  const [searchType, setSearchType] = useState<string>("");
+  const [searchResults, setSearchResults] = useState<SearchResult | null>(null);
+  const [searchType, setSearchType] = useState<EntityType | "">("");
 
-  const handleSearch = (query: string, type: string) => {
+  const handleSearch = (query: string, type: EntityType) => {
     setSearchType(type);
-    
-    // Clear previous results first
     setSearchResults(null);
 
-    // Normalise for case-insensitive matching
-    const q = query.toLowerCase().trim();
-    
-    // Search logic based on query and type
-    if (type === "user") {
-      // Syuzana identifiers
-      const syuzanaMatches = q.includes("syuzana") || 
-                            q.includes("syuzana@street.london") || 
-                            q.includes("+447542016022") ||
-                            q.includes("usr001") ||
-                            q.includes("uid_syuzana_001_2024");
-      
-      // Ali identifiers
-      const aliMatches = q.includes("ali") || 
-                        q.includes("ali@street.london") || 
-                        q.includes("+447770237011") ||
-                        q.includes("usr002") ||
-                        q.includes("uid_ali_002_2024");
-
-      if (syuzanaMatches) {
-        setSearchResults({
-          id: "USR001",
-          name: "Syuzana O",
-          email: "syuzana@street.london",
-          phone: "+447542016022",
-          avatar: syuzanaImage,
-          status: "Active",
-          joinDate: "2024-01-15",
-          totalOrders: 47,
-          totalSpent: 2840.50,
-          deviceId: "DEV_iPhone_15_Pro_Max_001",
-          uid: "uid_syuzana_001_2024"
-        });
-      } else if (aliMatches) {
-        setSearchResults({
-          id: "USR002",
-          name: "Ali Al Nasiri",
-          email: "ali@street.london",
-          phone: "+447770237011",
-          avatar: aliImage,
-          status: "Active",
-          joinDate: "2024-02-20",
-          totalOrders: 23,
-          totalSpent: 1450.75,
-          deviceId: "DEV_Samsung_Galaxy_S24_001",
-          uid: "uid_ali_002_2024"
-        });
-      } else {
-        // No matching user found
-        setSearchResults(null);
-      }
-    } else if (type === "retail") {
-      const trilogyMatches = q.includes("trilogy") ||
-                            q.includes("info@trilogylondon.com") ||
-                            q.includes("020 7937 7972") ||
-                            q.includes("ret001") ||
-                            q.includes("uid_trilogy_ret_001_2023");
-      
-      if (trilogyMatches) {
-        setSearchResults({
-          id: "RET001",
-          name: "Trilogy London",
-          email: "info@trilogylondon.com",
-          phone: "020 7937 7972",
-          avatar: trilogyImage,
-          status: "Active",
-          joinDate: "2023-08-20",
-          totalOrders: 234,
-          totalRevenue: 15680.75,
-          deviceId: "DEV_iPad_Pro_Retail_001",
-          uid: "uid_trilogy_ret_001_2023",
-          address: "22 Kensington Church St, London W8 4EP",
-          contact: "Lee",
-          category: "Clothing"
-        });
-      } else {
-        // No matching retailer found
-        setSearchResults(null);
-      }
-    } else if (type === "courier") {
-      const aliCourierMatches = q.includes("ali") ||
-                               q.includes("ali@street.london") ||
-                               q.includes("+447770237011") ||
-                               q.includes("cou001") ||
-                               q.includes("uid_ali_cou_001_2024");
-      
-      if (aliCourierMatches) {
-        setSearchResults({
-          id: "COU001",
-          name: "Ali Al Nasiri",
-          email: "ali@street.london",
-          phone: "+447770237011",
-          avatar: aliImage,
-          status: "Online",
-          joinDate: "2024-03-10",
-          totalDeliveries: 156,
-          averageRating: 4.8,
-          deviceId: "DEV_Samsung_Galaxy_Courier_001",
-          uid: "uid_ali_cou_001_2024"
-        });
-      } else {
-        // No matching courier found
-        setSearchResults(null);
-      }
-    }
+    const result = SearchService.search(query, type);
+    setSearchResults(result);
   };
 
   const handleTypeChange = () => {
@@ -199,16 +93,16 @@ export function AdminDashboard({ onLogout, currentUser }: AdminDashboardProps) {
               <h2 className="street-title text-2xl capitalize">{searchType} Information</h2>
             </div>
             
-            <UserCard data={searchResults} type={searchType} />
+            <UserCard data={searchResults.data} type={searchResults.type} />
             
             {/* Metrics */}
-            <MetricsCards data={searchResults} type={searchType} />
+            <MetricsCards data={searchResults.data} type={searchResults.type} />
             
             {/* Account Associations */}
-            <AccountAssociations data={searchResults} type={searchType} />
+            <AccountAssociations data={searchResults.data} type={searchResults.type} />
             
             {/* Notes Section */}
-            <NotesSection entityId={searchResults.id} entityName={searchResults.name} entityType={searchType} />
+            <NotesSection entityId={searchResults.data.id} entityName={searchResults.data.name} entityType={searchResults.type} />
           </div>
         )}
 
