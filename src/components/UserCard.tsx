@@ -496,6 +496,14 @@ export function UserCard({ data, type }: UserCardProps) {
               <h4 className="font-semibold text-lg">Contact Methods</h4>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Email Verified:</span>
+                  <span className="text-sm text-green-600 font-medium">✓ Verified</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Phone Verified:</span>
+                  <span className="text-sm text-green-600 font-medium">✓ Verified</span>
+                </div>
+                <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">SMS Notifications:</span>
                   <span className="text-sm text-green-600 font-medium">Enabled</span>
                 </div>
