@@ -91,7 +91,7 @@ export function UserCard({ data, type }: UserCardProps) {
     }
   ];
 
-  const recentOrders = sampleOrders.slice(0, 5);
+  const recentOrders = sampleOrders.slice(0, 3);
 
   // Sample invoices data for retailers
   const sampleInvoices = [
@@ -491,44 +491,26 @@ export function UserCard({ data, type }: UserCardProps) {
               </div>
             </div>
             
-            {/* Performance Metrics for Users and Couriers */}
+            {/* Contact Methods */}
             <div className="space-y-3">
-              <h4 className="font-semibold text-lg">Performance</h4>
+              <h4 className="font-semibold text-lg">Contact Methods</h4>
               <div className="space-y-2">
-                {type === "user" && (
-                  <>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">Total Orders:</span>
-                      <Button 
-                        variant="ghost" 
-                        className="text-sm font-bold p-0 h-auto hover:text-primary"
-                        onClick={() => setOrdersDialogOpen(true)}
-                      >
-                        {editData.totalOrders}
-                      </Button>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">Total Spent:</span>
-                      <span className="text-sm font-bold text-green-600">${editData.totalSpent?.toFixed(2)}</span>
-                    </div>
-                  </>
-                )}
-                
-                {type === "courier" && (
-                  <>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">Deliveries:</span>
-                      <span className="text-sm font-bold">{editData.totalDeliveries}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">Rating:</span>
-                      <div className="flex items-center gap-1">
-                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                        <span className="text-sm font-bold">{editData.averageRating}</span>
-                      </div>
-                    </div>
-                  </>
-                )}
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">SMS Notifications:</span>
+                  <span className="text-sm text-green-600 font-medium">Enabled</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Email Notifications:</span>
+                  <span className="text-sm text-green-600 font-medium">Enabled</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Push Notifications:</span>
+                  <span className="text-sm text-green-600 font-medium">Enabled</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Marketing Communications:</span>
+                  <span className="text-sm text-amber-600 font-medium">Disabled</span>
+                </div>
               </div>
             </div>
           </div>
@@ -539,7 +521,7 @@ export function UserCard({ data, type }: UserCardProps) {
           <div className="space-y-3">
             <h4 className="font-semibold text-lg">Recent Orders</h4>
             <div className="space-y-2">
-              {recentOrders.slice(0, 5).map((order) => (
+              {recentOrders.map((order) => (
                 <div key={order.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
                   <div className="flex items-center gap-3">
                     <Package className="w-4 h-4 text-muted-foreground" />
