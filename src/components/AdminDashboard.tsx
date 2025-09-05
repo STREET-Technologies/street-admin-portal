@@ -188,6 +188,13 @@ export function AdminDashboard({ onLogout, currentUser }: AdminDashboardProps) {
             <div className="street-logo text-8xl text-muted-foreground/20 mb-4">STREET</div>
             <h2 className="street-title text-2xl text-muted-foreground mb-2">Welcome to STREET admin {currentUser}</h2>
             <p className="text-muted-foreground mb-8">Use the search bar above to find users, retailers, or couriers</p>
+            
+            <div className="max-w-4xl mx-auto bg-red-50 border border-red-200 rounded-lg p-6">
+              <h3 className="font-semibold text-red-800 mb-3 text-lg">⚠️ Authorised Use Only</h3>
+              <p className="text-red-700 leading-relaxed">
+                This portal is for internal business purposes only. Access to user information is strictly limited to legitimate work activities. You must not search, view, or use user details for personal reasons (e.g. searching for friends, family members, celebrities, or any other non-business purpose). Sharing or disclosing user information outside authorised channels is strictly prohibited and may result in disciplinary action.
+              </p>
+            </div>
           </div>
         )}
       </div>
