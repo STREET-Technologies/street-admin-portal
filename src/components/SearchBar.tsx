@@ -5,9 +5,10 @@ import { Search, User, Store, Truck } from "lucide-react";
 
 interface SearchBarProps {
   onSearch: (query: string, type: string) => void;
+  onTypeChange?: () => void;
 }
 
-export function SearchBar({ onSearch }: SearchBarProps) {
+export function SearchBar({ onSearch, onTypeChange }: SearchBarProps) {
   const [query, setQuery] = useState("");
   const [selectedType, setSelectedType] = useState("user");
   const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -116,7 +117,12 @@ export function SearchBar({ onSearch }: SearchBarProps) {
         <Button
           type="button"
           variant={selectedType === "user" ? "default" : "outline"}
-          onClick={() => setSelectedType("user")}
+          onClick={() => {
+            setSelectedType("user");
+            setQuery("");
+            setSuggestions([]);
+            onTypeChange?.();
+          }}
           className="flex items-center gap-2"
         >
           <User className="w-4 h-4" />
@@ -125,7 +131,12 @@ export function SearchBar({ onSearch }: SearchBarProps) {
         <Button
           type="button"
           variant={selectedType === "retail" ? "default" : "outline"}
-          onClick={() => setSelectedType("retail")}
+          onClick={() => {
+            setSelectedType("retail");
+            setQuery("");
+            setSuggestions([]);
+            onTypeChange?.();
+          }}
           className="flex items-center gap-2"
         >
           <Store className="w-4 h-4" />
@@ -134,7 +145,12 @@ export function SearchBar({ onSearch }: SearchBarProps) {
         <Button
           type="button"
           variant={selectedType === "courier" ? "default" : "outline"}
-          onClick={() => setSelectedType("courier")}
+          onClick={() => {
+            setSelectedType("courier");
+            setQuery("");
+            setSuggestions([]);
+            onTypeChange?.();
+          }}
           className="flex items-center gap-2"
         >
           <Truck className="w-4 h-4" />

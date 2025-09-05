@@ -129,6 +129,11 @@ export function AdminDashboard({ onLogout, currentUser }: AdminDashboardProps) {
     }
   };
 
+  const handleTypeChange = () => {
+    setSearchResults(null);
+    setSearchType("");
+  };
+
   const handleLogoClick = () => {
     setSearchResults(null);
     setSearchType("");
@@ -179,7 +184,7 @@ export function AdminDashboard({ onLogout, currentUser }: AdminDashboardProps) {
       <div className="container mx-auto px-6 py-8">
         {/* Search Section */}
         <div className="mb-8">
-          <SearchBar onSearch={handleSearch} />
+          <SearchBar onSearch={handleSearch} onTypeChange={handleTypeChange} />
         </div>
 
         {/* Results Section */}
