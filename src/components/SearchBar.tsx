@@ -182,6 +182,7 @@ export function SearchBar({ onSearch, onTypeChange }: SearchBarProps) {
         <div className="absolute top-full left-0 right-0 mt-2 bg-white border rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
           {suggestions.map((suggestion) => (
             <button
+              type="button"
               key={suggestion}
               onClick={() => selectSuggestion(suggestion)}
               className="w-full px-4 py-3 text-left hover:bg-muted flex items-center gap-3"

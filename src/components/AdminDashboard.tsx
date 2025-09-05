@@ -24,22 +24,25 @@ export function AdminDashboard({ onLogout, currentUser }: AdminDashboardProps) {
     
     // Clear previous results first
     setSearchResults(null);
+
+    // Normalise for case-insensitive matching
+    const q = query.toLowerCase().trim();
     
     // Search logic based on query and type
     if (type === "user") {
-      // Check if searching for Syuzana by any identifier
-      const syuzanaMatches = query.toLowerCase().includes("syuzana") || 
-                            query.includes("syuzana@street.london") || 
-                            query.includes("+447542016022") ||
-                            query.includes("USR001") ||
-                            query.includes("uid_syuzana_001_2024");
+      // Syuzana identifiers
+      const syuzanaMatches = q.includes("syuzana") || 
+                            q.includes("syuzana@street.london") || 
+                            q.includes("+447542016022") ||
+                            q.includes("usr001") ||
+                            q.includes("uid_syuzana_001_2024");
       
-      // Check if searching for Ali by any identifier  
-      const aliMatches = query.toLowerCase().includes("Ali") || 
-                        query.includes("Ali@street.london") || 
-                        query.includes("+447770237011") ||
-                        query.includes("USR002") ||
-                        query.includes("uid_Ali_002_2024");
+      // Ali identifiers
+      const aliMatches = q.includes("ali") || 
+                        q.includes("ali@street.london") || 
+                        q.includes("+447770237011") ||
+                        q.includes("usr002") ||
+                        q.includes("uid_ali_002_2024");
 
       if (syuzanaMatches) {
         setSearchResults({
@@ -74,11 +77,11 @@ export function AdminDashboard({ onLogout, currentUser }: AdminDashboardProps) {
         setSearchResults(null);
       }
     } else if (type === "retail") {
-      const trilogyMatches = query.toLowerCase().includes("trilogy") ||
-                            query.includes("info@trilogylondon.com") ||
-                            query.includes("020 7937 7972") ||
-                            query.includes("RET001") ||
-                            query.includes("uid_trilogy_ret_001_2023");
+      const trilogyMatches = q.includes("trilogy") ||
+                            q.includes("info@trilogylondon.com") ||
+                            q.includes("020 7937 7972") ||
+                            q.includes("ret001") ||
+                            q.includes("uid_trilogy_ret_001_2023");
       
       if (trilogyMatches) {
         setSearchResults({
@@ -102,11 +105,11 @@ export function AdminDashboard({ onLogout, currentUser }: AdminDashboardProps) {
         setSearchResults(null);
       }
     } else if (type === "courier") {
-      const aliCourierMatches = query.toLowerCase().includes("Ali") ||
-                               query.includes("Ali@street.london") ||
-                               query.includes("+447770237011") ||
-                               query.includes("COU001") ||
-                               query.includes("uid_Ali_cou_001_2024");
+      const aliCourierMatches = q.includes("ali") ||
+                               q.includes("ali@street.london") ||
+                               q.includes("+447770237011") ||
+                               q.includes("cou001") ||
+                               q.includes("uid_ali_cou_001_2024");
       
       if (aliCourierMatches) {
         setSearchResults({
