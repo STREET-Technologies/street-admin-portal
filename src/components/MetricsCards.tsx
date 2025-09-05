@@ -20,14 +20,14 @@ export function MetricsCards({ data, type }: MetricsCardsProps) {
           },
           {
             title: "Total Spent",
-            value: `$${data.totalSpent.toFixed(2)}`,
+            value: `£${data.totalSpent.toFixed(2)}`,
             icon: DollarSign,
             color: "text-green-600",
             bgColor: "bg-green-100"
           },
           {
             title: "Avg Order Value",
-            value: `$${(data.totalSpent / data.totalOrders).toFixed(2)}`,
+            value: `£${(data.totalSpent / data.totalOrders).toFixed(2)}`,
             icon: TrendingUp,
             color: "text-purple-600",
             bgColor: "bg-purple-100"
@@ -52,14 +52,14 @@ export function MetricsCards({ data, type }: MetricsCardsProps) {
           },
           {
             title: "Total Revenue",
-            value: `$${data.totalRevenue.toFixed(2)}`,
+            value: `£${data.totalRevenue.toFixed(2)}`,
             icon: DollarSign,
             color: "text-green-600",
             bgColor: "bg-green-100"
           },
           {
             title: "Avg Order Value",
-            value: `$${(data.totalRevenue / data.totalOrders).toFixed(2)}`,
+            value: `£${(data.totalRevenue / data.totalOrders).toFixed(2)}`,
             icon: TrendingUp,
             color: "text-purple-600",
             bgColor: "bg-purple-100"

@@ -30,7 +30,7 @@ export function UserCard({ data, type }: UserCardProps) {
     {
       id: "ORD-001",
       amount: 45.99,
-      location: "Downtown Plaza",
+      location: "Covent Garden, London",
       dateTime: "2024-09-05T10:30:00Z",
       status: "delivered",
       rating: 5,
@@ -39,7 +39,7 @@ export function UserCard({ data, type }: UserCardProps) {
     {
       id: "ORD-002", 
       amount: 28.50,
-      location: "Fashion District",
+      location: "Oxford Street, London",
       dateTime: "2024-09-04T15:45:00Z",
       status: "delivered",
       rating: 4,
@@ -48,7 +48,7 @@ export function UserCard({ data, type }: UserCardProps) {
     {
       id: "ORD-003",
       amount: 62.75,
-      location: "Business District",
+      location: "Canary Wharf, London",
       dateTime: "2024-09-03T12:20:00Z", 
       status: "completed",
       rating: 5,
@@ -57,7 +57,7 @@ export function UserCard({ data, type }: UserCardProps) {
     {
       id: "ORD-004",
       amount: 35.25,
-      location: "University Campus",
+      location: "King's Cross, London",
       dateTime: "2024-09-02T18:15:00Z",
       status: "delivered", 
       rating: 3,
@@ -66,7 +66,7 @@ export function UserCard({ data, type }: UserCardProps) {
     {
       id: "ORD-005",
       amount: 52.00,
-      location: "Shopping Center",
+      location: "Westfield London",
       dateTime: "2024-09-01T14:30:00Z",
       status: "delivered",
       rating: 4,
@@ -75,7 +75,7 @@ export function UserCard({ data, type }: UserCardProps) {
     {
       id: "ORD-006",
       amount: 23.99,
-      location: "City Center",
+      location: "Camden Market, London",
       dateTime: "2024-08-31T11:45:00Z",
       status: "cancelled",
       items: ["Face Cream", "Mascara"]
@@ -83,7 +83,7 @@ export function UserCard({ data, type }: UserCardProps) {
     {
       id: "ORD-007",
       amount: 78.50,
-      location: "Riverside District", 
+      location: "Shoreditch, London", 
       dateTime: "2024-08-30T19:20:00Z",
       status: "delivered",
       rating: 5,
@@ -406,13 +406,18 @@ export function UserCard({ data, type }: UserCardProps) {
                 <div className="flex items-start gap-2">
                   <span className="text-sm font-medium w-24">Signed Up By:</span>
                   {isEditing ? (
-                    <Input
-                      value={editData.signedUpBy || "Umaan"}
-                      onChange={(e) => updateEditData('signedUpBy', e.target.value)}
-                      className="text-sm h-8"
-                    />
+                    <Select value={editData.signedUpBy || "Umaan Ali"} onValueChange={(value) => updateEditData('signedUpBy', value)}>
+                      <SelectTrigger className="w-40 bg-background text-sm h-8">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border shadow-lg z-50">
+                        <SelectItem value="Ali Al Nasiri">Ali Al Nasiri</SelectItem>
+                        <SelectItem value="Syuzana Oganesyan">Syuzana Oganesyan</SelectItem>
+                        <SelectItem value="Umaan Ali">Umaan Ali</SelectItem>
+                      </SelectContent>
+                    </Select>
                   ) : (
-                    <span className="text-sm">{editData.signedUpBy || "Umaan"}</span>
+                    <span className="text-sm">{editData.signedUpBy || "Umaan Ali"}</span>
                   )}
                 </div>
                 <div className="flex items-start gap-2">
@@ -539,7 +544,7 @@ export function UserCard({ data, type }: UserCardProps) {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-bold text-green-600">${order.amount.toFixed(2)}</p>
+                    <p className="text-sm font-bold text-green-600">£{order.amount.toFixed(2)}</p>
                     <p className="text-xs text-muted-foreground">{new Date(order.dateTime).toLocaleDateString()}</p>
                   </div>
                 </div>
@@ -571,7 +576,7 @@ export function UserCard({ data, type }: UserCardProps) {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-bold text-green-600">${invoice.paidAmount.toFixed(2)}</p>
+                    <p className="text-sm font-bold text-green-600">£{invoice.paidAmount.toFixed(2)}</p>
                     <p className="text-xs text-muted-foreground">
                       <Badge 
                         className={`text-xs ${

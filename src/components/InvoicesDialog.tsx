@@ -90,7 +90,7 @@ export function InvoicesDialog({ open, onOpenChange, invoices, retailerName }: I
                       <DollarSign className="w-4 h-4 text-muted-foreground" />
                       <div>
                         <p className="text-sm text-muted-foreground">Total Amount</p>
-                        <p className="font-semibold">${invoice.amount.toFixed(2)}</p>
+                        <p className="font-semibold">£{invoice.amount.toFixed(2)}</p>
                       </div>
                     </div>
                     
@@ -98,7 +98,7 @@ export function InvoicesDialog({ open, onOpenChange, invoices, retailerName }: I
                       <DollarSign className="w-4 h-4 text-green-600" />
                       <div>
                         <p className="text-sm text-muted-foreground">Paid Amount</p>
-                        <p className="font-semibold text-green-600">${invoice.paidAmount.toFixed(2)}</p>
+                        <p className="font-semibold text-green-600">£{invoice.paidAmount.toFixed(2)}</p>
                       </div>
                     </div>
                     
@@ -114,7 +114,7 @@ export function InvoicesDialog({ open, onOpenChange, invoices, retailerName }: I
                   {invoice.paidAmount < invoice.amount && (
                     <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded">
                       <p className="text-sm text-yellow-800">
-                        Outstanding: <span className="font-semibold">${(invoice.amount - invoice.paidAmount).toFixed(2)}</span>
+                        Outstanding: <span className="font-semibold">£{(invoice.amount - invoice.paidAmount).toFixed(2)}</span>
                       </p>
                     </div>
                   )}

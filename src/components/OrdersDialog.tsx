@@ -75,7 +75,7 @@ export function OrdersDialog({ open, onOpenChange, orders, userType, userName }:
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium">Amount:</span>
-                      <span className="text-sm font-bold text-green-600">${order.amount.toFixed(2)}</span>
+                      <span className="text-sm font-bold text-green-600">£{order.amount.toFixed(2)}</span>
                     </div>
                     
                     <div className="flex items-center gap-2">
