@@ -22,6 +22,9 @@ export function AdminDashboard({ onLogout, currentUser }: AdminDashboardProps) {
   const handleSearch = (query: string, type: string) => {
     setSearchType(type);
     
+    // Clear previous results first
+    setSearchResults(null);
+    
     // Search logic based on query and type
     if (type === "user") {
       // Check if searching for Syuzana by any identifier
@@ -66,6 +69,9 @@ export function AdminDashboard({ onLogout, currentUser }: AdminDashboardProps) {
           deviceId: "DEV_Samsung_Galaxy_S24_001",
           uid: "uid_ali_002_2024"
         });
+      } else {
+        // No matching user found
+        setSearchResults(null);
       }
     } else if (type === "retail") {
       const trilogyMatches = query.toLowerCase().includes("trilogy") ||
@@ -91,6 +97,9 @@ export function AdminDashboard({ onLogout, currentUser }: AdminDashboardProps) {
           contact: "Lee",
           category: "Clothing"
         });
+      } else {
+        // No matching retailer found
+        setSearchResults(null);
       }
     } else if (type === "courier") {
       const aliCourierMatches = query.toLowerCase().includes("Ali") ||
@@ -113,8 +122,16 @@ export function AdminDashboard({ onLogout, currentUser }: AdminDashboardProps) {
           deviceId: "DEV_Samsung_Galaxy_Courier_001",
           uid: "uid_ali_cou_001_2024"
         });
+      } else {
+        // No matching courier found
+        setSearchResults(null);
       }
     }
+  };
+
+  const handleLogoClick = () => {
+    setSearchResults(null);
+    setSearchType("");
   };
 
   const getSearchIcon = () => {
@@ -133,7 +150,12 @@ export function AdminDashboard({ onLogout, currentUser }: AdminDashboardProps) {
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <h1 className="street-logo text-3xl text-secondary">STREET</h1>
+              <h1 
+                className="street-logo text-3xl text-secondary cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={handleLogoClick}
+              >
+                STREET
+              </h1>
               <div className="w-8 h-0.5 street-gradient"></div>
               <span className="text-muted-foreground">Admin Portal</span>
             </div>

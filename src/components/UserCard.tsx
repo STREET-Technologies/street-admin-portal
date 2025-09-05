@@ -137,7 +137,7 @@ export function UserCard({ data, type }: UserCardProps) {
     }
   ];
 
-  const recentInvoices = sampleInvoices.slice(0, 5);
+  const recentInvoices = sampleInvoices.slice(0, 3);
 
   const handleSave = () => {
     // In a real app, this would save to API
@@ -553,7 +553,7 @@ export function UserCard({ data, type }: UserCardProps) {
           <div className="space-y-3">
             <h4 className="font-semibold text-lg">Payments</h4>
             <div className="space-y-2">
-              {recentInvoices.slice(0, 5).map((invoice) => (
+              {recentInvoices.map((invoice) => (
                 <div key={invoice.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
                   <div className="flex items-center gap-3">
                     <DollarSign className="w-4 h-4 text-muted-foreground" />
