@@ -127,7 +127,9 @@ export function UserCard({ data, type }: UserCardProps) {
         {/* Contact Information */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-3">
-            <h4 className="font-semibold text-lg">Contact Information</h4>
+            <h4 className="font-semibold text-lg">
+              {type === "retail" ? "Contact & Business Information" : "Contact Information"}
+            </h4>
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium w-16">Email:</span>
@@ -137,6 +139,18 @@ export function UserCard({ data, type }: UserCardProps) {
                 <span className="text-sm font-medium w-16">Phone:</span>
                 <span className="text-sm">{data.phone}</span>
               </div>
+              {type === "retail" && (
+                <>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium w-16">Category:</span>
+                    <span className="text-sm">{data.category}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm">Business Location</span>
+                  </div>
+                </>
+              )}
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-muted-foreground" />
                 <span className="text-sm">Joined {new Date(data.joinDate).toLocaleDateString()}</span>
@@ -163,10 +177,6 @@ export function UserCard({ data, type }: UserCardProps) {
               
               {type === "retail" && (
                 <>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Category:</span>
-                    <span className="text-sm font-bold">{data.category}</span>
-                  </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">Total Orders:</span>
                     <span className="text-sm font-bold">{data.totalOrders}</span>
