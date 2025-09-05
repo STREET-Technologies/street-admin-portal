@@ -186,28 +186,8 @@ export function AdminDashboard({ onLogout, currentUser }: AdminDashboardProps) {
         {!searchResults && (
           <div className="text-center py-20">
             <div className="street-logo text-8xl text-muted-foreground/20 mb-4">STREET</div>
-            <h2 className="street-title text-2xl text-muted-foreground mb-2">Welcome to STREET Admin</h2>
+            <h2 className="street-title text-2xl text-muted-foreground mb-2">Welcome to STREET admin {currentUser}</h2>
             <p className="text-muted-foreground mb-8">Use the search bar above to find users, retailers, or couriers</p>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
-              <div className="p-6 rounded-lg border bg-white/50 backdrop-blur-sm">
-                <User className="w-8 h-8 text-primary mx-auto mb-3" />
-                <h3 className="font-semibold mb-2">Search Users</h3>
-                <p className="text-sm text-muted-foreground">Type <code className="bg-muted px-1 rounded">/user</code> to search customers</p>
-              </div>
-              
-              <div className="p-6 rounded-lg border bg-white/50 backdrop-blur-sm">
-                <Store className="w-8 h-8 text-primary mx-auto mb-3" />
-                <h3 className="font-semibold mb-2">Search Retailers</h3>
-                <p className="text-sm text-muted-foreground">Type <code className="bg-muted px-1 rounded">/retail</code> to search stores</p>
-              </div>
-              
-              <div className="p-6 rounded-lg border bg-white/50 backdrop-blur-sm">
-                <Truck className="w-8 h-8 text-primary mx-auto mb-3" />
-                <h3 className="font-semibold mb-2">Search Couriers</h3>
-                <p className="text-sm text-muted-foreground">Type <code className="bg-muted px-1 rounded">/courier</code> to search drivers</p>
-              </div>
-            </div>
           </div>
         )}
       </div>
