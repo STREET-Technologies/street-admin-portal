@@ -212,28 +212,48 @@ export function UserCard({ data, type }: UserCardProps) {
               <div className="space-y-2">
                 <div className="flex items-start gap-2">
                   <span className="text-sm font-medium w-20">Email:</span>
-                  {isEditing ? (
-                    <Input
-                      type="email"
-                      value={editData.email}
-                      onChange={(e) => updateEditData('email', e.target.value)}
-                      className="text-sm h-8"
-                    />
-                  ) : (
-                    <span className="text-sm">{editData.email}</span>
-                  )}
+                  <div className="flex flex-col gap-1">
+                    {isEditing ? (
+                      <Input
+                        type="email"
+                        value={editData.email}
+                        onChange={(e) => updateEditData('email', e.target.value)}
+                        className="text-sm h-8"
+                      />
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm">{editData.email}</span>
+                        <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+                          Primary
+                        </Badge>
+                        <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                          Verified
+                        </Badge>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="text-sm font-medium w-20">Phone:</span>
-                  {isEditing ? (
-                    <Input
-                      value={editData.phone}
-                      onChange={(e) => updateEditData('phone', e.target.value)}
-                      className="text-sm h-8"
-                    />
-                  ) : (
-                    <span className="text-sm">{editData.phone}</span>
-                  )}
+                  <div className="flex flex-col gap-1">
+                    {isEditing ? (
+                      <Input
+                        value={editData.phone}
+                        onChange={(e) => updateEditData('phone', e.target.value)}
+                        className="text-sm h-8"
+                      />
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm">{editData.phone}</span>
+                        <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+                          Primary
+                        </Badge>
+                        <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200">
+                          Unverified
+                        </Badge>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="text-sm font-medium w-20">Category:</span>
@@ -335,69 +355,66 @@ export function UserCard({ data, type }: UserCardProps) {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-3">
-              <h4 className="font-semibold text-lg">Contact Information</h4>
+          <div className="space-y-3">
+            <h4 className="font-semibold text-lg">Contact Information</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <div className="flex items-start gap-2">
                   <span className="text-sm font-medium w-16">Email:</span>
-                  {isEditing ? (
-                    <Input
-                      type="email"
-                      value={editData.email}
-                      onChange={(e) => updateEditData('email', e.target.value)}
-                      className="text-sm h-8"
-                    />
-                  ) : (
-                    <span className="text-sm">{editData.email}</span>
-                  )}
+                  <div className="flex flex-col gap-1">
+                    {isEditing ? (
+                      <Input
+                        type="email"
+                        value={editData.email}
+                        onChange={(e) => updateEditData('email', e.target.value)}
+                        className="text-sm h-8"
+                      />
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm">{editData.email}</span>
+                        <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+                          Primary
+                        </Badge>
+                        <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                          Verified
+                        </Badge>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="text-sm font-medium w-16">Phone:</span>
-                  {isEditing ? (
-                    <Input
-                      value={editData.phone}
-                      onChange={(e) => updateEditData('phone', e.target.value)}
-                      className="text-sm h-8"
-                    />
-                  ) : (
-                    <span className="text-sm">{editData.phone}</span>
-                  )}
+                  <div className="flex flex-col gap-1">
+                    {isEditing ? (
+                      <Input
+                        value={editData.phone}
+                        onChange={(e) => updateEditData('phone', e.target.value)}
+                        className="text-sm h-8"
+                      />
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm">{editData.phone}</span>
+                        <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+                          Primary
+                        </Badge>
+                        <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200">
+                          Unverified
+                        </Badge>
+                      </div>
+                    )}
+                  </div>
                 </div>
+              </div>
+              <div className="space-y-2">
                 <div className="flex items-start gap-2">
                   <Calendar className="w-4 h-4 text-muted-foreground mt-0.5" />
                   <span className="text-sm">Joined {new Date(editData.joinDate).toLocaleDateString()}</span>
                 </div>
-              </div>
-            </div>
-            
-            {/* Account Stats for Users and Couriers */}
-            <div className="space-y-3">
-              <h4 className="font-semibold text-lg">Account Statistics</h4>
-              <div className="space-y-2">
-                {isUser(editData) && (
-                  <>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium">Total Orders:</span>
-                      <span className="text-sm font-bold text-blue-600">{editData.totalOrders}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium">Total Spent:</span>
-                      <span className="text-sm font-bold text-green-600">£{editData.totalSpent.toFixed(2)}</span>
-                    </div>
-                  </>
-                )}
                 {isCourier(editData) && (
-                  <>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium">Deliveries:</span>
-                      <span className="text-sm font-bold text-blue-600">{editData.totalDeliveries}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Star className="w-4 h-4 text-yellow-500" />
-                      <span className="text-sm font-bold text-yellow-600">{editData.averageRating}/5.0</span>
-                    </div>
-                  </>
+                  <div className="flex items-center gap-2">
+                    <Star className="w-4 h-4 text-yellow-500" />
+                    <span className="text-sm font-bold text-yellow-600">{editData.averageRating}/5.0 rating</span>
+                  </div>
                 )}
               </div>
             </div>
