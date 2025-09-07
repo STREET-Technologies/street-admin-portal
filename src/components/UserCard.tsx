@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MapPin, Calendar, Star, TrendingUp, Camera, Package, ChevronRight, DollarSign, Edit, Save, X } from "lucide-react";
+import { MapPin, Calendar, Star, TrendingUp, Camera, Package, ChevronRight, DollarSign, Edit, Save, X, Mail, Phone } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { OrdersDialog } from "@/components/OrdersDialog";
 import { InvoicesDialog } from "@/components/InvoicesDialog";
@@ -358,20 +358,16 @@ export function UserCard({ data, type }: UserCardProps) {
           <div className="space-y-3">
             <h4 className="font-semibold text-lg">Contact Information</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <div className="flex items-start gap-2">
-                  <span className="text-sm font-medium w-16">Email:</span>
-                  <div className="flex flex-col gap-1">
-                    {isEditing ? (
-                      <Input
-                        type="email"
-                        value={editData.email}
-                        onChange={(e) => updateEditData('email', e.target.value)}
-                        className="text-sm h-8"
-                      />
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm">{editData.email}</span>
+              <div className="space-y-3">
+                <div>
+                  <h5 className="text-sm font-medium mb-2 flex items-center gap-2">
+                    <Mail className="w-4 h-4" />
+                    Email Addresses
+                  </h5>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between p-2 bg-muted/30 rounded">
+                      <span className="text-sm">{editData.email}</span>
+                      <div className="flex gap-1">
                         <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
                           Primary
                         </Badge>
@@ -379,32 +375,51 @@ export function UserCard({ data, type }: UserCardProps) {
                           Verified
                         </Badge>
                       </div>
+                    </div>
+                    {type === "user" && (
+                      <div className="flex items-center justify-between p-2 bg-muted/30 rounded">
+                        <span className="text-sm">alex.work@company.com</span>
+                        <div className="flex gap-1">
+                          <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                            Verified
+                          </Badge>
+                        </div>
+                      </div>
                     )}
                   </div>
                 </div>
-                <div className="flex items-start gap-2">
-                  <span className="text-sm font-medium w-16">Phone:</span>
-                  <div className="flex flex-col gap-1">
-                    {isEditing ? (
-                      <Input
-                        value={editData.phone}
-                        onChange={(e) => updateEditData('phone', e.target.value)}
-                        className="text-sm h-8"
-                      />
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm">{editData.phone}</span>
+                
+                <div>
+                  <h5 className="text-sm font-medium mb-2 flex items-center gap-2">
+                    <Phone className="w-4 h-4" />
+                    Phone Numbers
+                  </h5>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between p-2 bg-muted/30 rounded">
+                      <span className="text-sm">{editData.phone}</span>
+                      <div className="flex gap-1">
                         <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
                           Primary
                         </Badge>
-                        <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200">
-                          Unverified
+                        <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                          Verified
                         </Badge>
+                      </div>
+                    </div>
+                    {type === "user" && (
+                      <div className="flex items-center justify-between p-2 bg-muted/30 rounded">
+                        <span className="text-sm">+1 555-0124</span>
+                        <div className="flex gap-1">
+                          <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200">
+                            Unverified
+                          </Badge>
+                        </div>
                       </div>
                     )}
                   </div>
                 </div>
               </div>
+              
               <div className="space-y-2">
                 <div className="flex items-start gap-2">
                   <Calendar className="w-4 h-4 text-muted-foreground mt-0.5" />
