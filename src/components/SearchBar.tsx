@@ -41,7 +41,13 @@ export function SearchBar({ onSearch, onTypeChange }: SearchBarProps) {
     setSelectedType(newType);
     setQuery("");
     setSuggestions([]);
-    onTypeChange?.();
+    
+    // For referral codes, immediately show all codes when type is selected
+    if (newType === "referralcode") {
+      onSearch("", newType);
+    } else {
+      onTypeChange?.();
+    }
   };
 
   return (

@@ -45,8 +45,7 @@ export class SearchService {
   }
 
   private static searchReferralCodes(query: string): SearchResult | null {
-    // For referral codes, return all codes as we want to show them in a list
-    // But filter based on search query if provided
+    // For referral codes, return all codes by default, filter if query provided
     const filteredCodes = query ? mockReferralCodes.filter(code =>
       code.code.toLowerCase().includes(query) ||
       code.createdBy.toLowerCase().includes(query) ||

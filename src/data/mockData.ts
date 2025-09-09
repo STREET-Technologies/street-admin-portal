@@ -150,7 +150,7 @@ export const mockReferralCodes: ReferralCode[] = [
   {
     id: "REF-002",
     code: "WELCOME10",
-    status: "active",
+    status: "used",
     expiryDate: "2024-11-30",
     creditAmount: 10,
     createdBy: "Syuzana O",
@@ -192,5 +192,57 @@ export const mockReferralCodes: ReferralCode[] = [
     usedBy: "Mike Wilson",
     usedDate: "2024-09-02T13:20:00Z",
     createdDate: "2024-08-20T15:00:00Z"
+  },
+  {
+    id: "REF-006",
+    code: "SUMMER30",
+    status: "active",
+    expiryDate: "2024-10-15",
+    creditAmount: 30,
+    createdBy: "Umaan Ali",
+    belongsTo: "Summer Promo",
+    createdDate: "2024-08-01T09:00:00Z"
+  },
+  {
+    id: "REF-007",
+    code: "BIRTHDAY50",
+    status: "disabled",
+    expiryDate: "2024-12-25",
+    creditAmount: 50,
+    createdBy: "Ali Al Nasiri",
+    belongsTo: "Birthday Special",
+    createdDate: "2024-07-15T12:00:00Z"
+  },
+  {
+    id: "REF-008",
+    code: "FASTTRACK",
+    status: "active",
+    expiryDate: "2025-01-31",
+    freeDeliveries: 10,
+    createdBy: "Syuzana O",
+    belongsTo: "Premium Users",
+    createdDate: "2024-09-07T16:30:00Z"
+  },
+  {
+    id: "REF-009",
+    code: "LOYALTY100",
+    status: "used",
+    expiryDate: "2024-11-15",
+    creditAmount: 100,
+    createdBy: "Umaan Ali",
+    belongsTo: "Emma Thompson",
+    usedBy: "Emma Thompson",
+    usedDate: "2024-09-06T11:45:00Z",
+    createdDate: "2024-08-10T14:20:00Z"
+  },
+  {
+    id: "REF-010",
+    code: "NEWBIE5",
+    status: "expired",
+    expiryDate: "2024-08-31",
+    freeDeliveries: 3,
+    createdBy: "Ali Al Nasiri",
+    belongsTo: "First Time Users",
+    createdDate: "2024-07-01T10:00:00Z"
   }
 ];
