@@ -75,7 +75,7 @@ export function InvoicesDialog({ open, onOpenChange, invoices, userType, userNam
                 <div key={invoice.id} className="border rounded-lg p-4 bg-card">
                   <div className="flex items-start justify-between mb-3">
                     <div className="space-y-1">
-                      <h3 className="font-semibold text-lg">Invoice #{invoice.id}</h3>
+                      <h3 className="font-semibold text-lg text-black hover:text-primary transition-colors cursor-pointer">Invoice #{invoice.id}</h3>
                       <p className="text-sm text-muted-foreground">{invoice.description}</p>
                     </div>
                     <Badge 
@@ -91,7 +91,7 @@ export function InvoicesDialog({ open, onOpenChange, invoices, userType, userNam
                       <DollarSign className="w-4 h-4 text-muted-foreground" />
                       <div>
                         <p className="text-sm text-muted-foreground">Total Amount</p>
-                        <p className="font-semibold">£{invoice.amount.toFixed(2)}</p>
+                        <p className="font-semibold text-black hover:text-primary transition-colors">£{invoice.amount.toFixed(2)}</p>
                       </div>
                     </div>
                     
@@ -107,7 +107,7 @@ export function InvoicesDialog({ open, onOpenChange, invoices, userType, userNam
                       <Calendar className="w-4 h-4 text-muted-foreground" />
                       <div>
                         <p className="text-sm text-muted-foreground">Date</p>
-                        <p className="font-semibold">{formatDate(invoice.dateTime)}</p>
+                        <p className="font-semibold text-black hover:text-primary transition-colors">{formatDate(invoice.dateTime)}</p>
                       </div>
                     </div>
                   </div>

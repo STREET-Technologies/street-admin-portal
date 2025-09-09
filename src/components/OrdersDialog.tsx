@@ -61,7 +61,7 @@ export function OrdersDialog({ open, onOpenChange, orders, userType, userName }:
                     <div className="flex items-center gap-3">
                       <Package className="w-5 h-5 text-muted-foreground" />
                       <div>
-                        <h3 className="font-semibold">Order #{order.id}</h3>
+                        <h3 className="font-semibold text-black hover:text-primary transition-colors cursor-pointer">Order #{order.id}</h3>
                         <p className="text-sm text-muted-foreground">
                           {userType === "retail" ? "Customer Order" : "Your Order"}
                         </p>
@@ -74,18 +74,18 @@ export function OrdersDialog({ open, onOpenChange, orders, userType, userName }:
                   
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium">Amount:</span>
+                      <span className="text-sm font-medium text-black hover:text-primary transition-colors">Amount:</span>
                       <span className="text-sm font-bold text-green-600">£{order.amount.toFixed(2)}</span>
                     </div>
                     
                     <div className="flex items-center gap-2">
                       <MapPin className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm">{order.location}</span>
+                      <span className="text-sm text-black hover:text-primary transition-colors">{order.location}</span>
                     </div>
                     
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm">{formatDate(order.dateTime)}</span>
+                      <span className="text-sm text-black hover:text-primary transition-colors">{formatDate(order.dateTime)}</span>
                     </div>
                   </div>
                   
