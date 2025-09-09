@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Ticket, Plus, Calendar, CreditCard, User, Users, Clock } from "lucide-react";
 import type { ReferralCode, ReferralCodeStatus } from "@/types";
 import { TEAM_MEMBERS } from "@/constants";
@@ -166,99 +168,58 @@ export function ReferralCodesCard({ referralCodes }: ReferralCodesCardProps) {
       </CardHeader>
       
       <CardContent>
-        <div className="space-y-4">
-          {referralCodes.map((code) => (
-            <div key={code.id} className="border rounded-lg p-4 bg-card">
-              <div className="flex items-start justify-between mb-3">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-lg text-black hover:text-primary transition-colors cursor-pointer">
-                      {code.code}
-                    </h3>
+        <ScrollArea className="h-[600px] w-full">
+          <Table>
+            <TableHeader className="sticky top-0 bg-background">
+              <TableRow>
+                <TableHead className="font-semibold">Code</TableHead>
+                <TableHead className="font-semibold">Status</TableHead>
+                <TableHead className="font-semibold">Credit/Deliveries</TableHead>
+                <TableHead className="font-semibold">Expires</TableHead>
+                <TableHead className="font-semibold">Created By</TableHead>
+                <TableHead className="font-semibold">Belongs To</TableHead>
+                <TableHead className="font-semibold">Used By</TableHead>
+                <TableHead className="font-semibold">Used Date</TableHead>
+                <TableHead className="font-semibold">Created</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {referralCodes.map((code) => (
+                <TableRow key={code.id} className="hover:bg-muted/50">
+                  <TableCell className="font-medium text-black hover:text-primary transition-colors cursor-pointer">
+                    {code.code}
+                  </TableCell>
+                  <TableCell>
                     <Badge className={getStatusColor(code.status)}>
                       {code.status.toUpperCase()}
                     </Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground">ID: {code.id}</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-3">
-                <div className="flex items-center gap-2">
-                  <CreditCard className="w-4 h-4 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Credit</p>
-                    <p className="font-semibold text-black hover:text-primary transition-colors">
-                      {formatCreditInfo(code)}
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Expires</p>
-                    <p className="font-semibold text-black hover:text-primary transition-colors">
-                      {new Date(code.expiryDate).toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <User className="w-4 h-4 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Created By</p>
-                    <p className="font-semibold text-black hover:text-primary transition-colors">
-                      {code.createdBy}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Belongs To</p>
-                    <p className="font-semibold text-black hover:text-primary transition-colors">
-                      {code.belongsTo}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {(code.usedBy || code.usedDate) && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t">
-                  {code.usedBy && (
-                    <div className="flex items-center gap-2">
-                      <User className="w-4 h-4 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Used By</p>
-                        <p className="font-semibold text-black hover:text-primary transition-colors">
-                          {code.usedBy}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {code.usedDate && (
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Used Date</p>
-                        <p className="font-semibold text-black hover:text-primary transition-colors">
-                          {formatDistanceToNow(new Date(code.usedDate), { addSuffix: true })}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              <div className="mt-3 text-xs text-muted-foreground">
-                Created {formatDistanceToNow(new Date(code.createdDate), { addSuffix: true })}
-              </div>
-            </div>
-          ))}
-        </div>
+                  </TableCell>
+                  <TableCell className="text-black hover:text-primary transition-colors">
+                    {formatCreditInfo(code)}
+                  </TableCell>
+                  <TableCell className="text-black hover:text-primary transition-colors">
+                    {new Date(code.expiryDate).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell className="text-black hover:text-primary transition-colors">
+                    {code.createdBy}
+                  </TableCell>
+                  <TableCell className="text-black hover:text-primary transition-colors">
+                    {code.belongsTo}
+                  </TableCell>
+                  <TableCell className="text-black hover:text-primary transition-colors">
+                    {code.usedBy || "-"}
+                  </TableCell>
+                  <TableCell className="text-black hover:text-primary transition-colors">
+                    {code.usedDate ? formatDistanceToNow(new Date(code.usedDate), { addSuffix: true }) : "-"}
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {formatDistanceToNow(new Date(code.createdDate), { addSuffix: true })}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </ScrollArea>
       </CardContent>
     </Card>
   );
