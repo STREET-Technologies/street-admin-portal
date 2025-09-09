@@ -63,3 +63,10 @@ export const NOTE_PRIORITIES = [
   "medium",
   "high"
 ] as const;
+
+export const REFERRAL_CODE_STATUS_OPTIONS = [
+  "active",
+  "expired",
+  "used",
+  "disabled"
+] as const;

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, User, Store, Truck } from "lucide-react";
+import { Search, User, Store, Truck, Ticket } from "lucide-react";
 import { SearchService } from "@/services/searchService";
 import type { EntityType } from "@/types";
 
@@ -75,6 +75,15 @@ export function SearchBar({ onSearch, onTypeChange }: SearchBarProps) {
           <Truck className="w-4 h-4" />
           Courier
         </Button>
+        <Button
+          type="button"
+          variant={selectedType === "referralcode" ? "default" : "outline"}
+          onClick={() => handleTypeChange("referralcode")}
+          className="flex items-center gap-2"
+        >
+          <Ticket className="w-4 h-4" />
+          ReferralCodes
+        </Button>
       </div>
 
       <form onSubmit={handleSubmit} className="relative">
@@ -82,7 +91,7 @@ export function SearchBar({ onSearch, onTypeChange }: SearchBarProps) {
           <Input
             value={query}
             onChange={(e) => handleInputChange(e.target.value)}
-            placeholder={`Search ${selectedType} by name, email, phone or ID`}
+            placeholder={selectedType === "referralcode" ? "Search referral codes by code, creator, or belongs to" : `Search ${selectedType} by name, email, phone or ID`}
             className="pr-24 h-14 text-lg border-2 focus:border-primary bg-white/95 backdrop-blur-sm"
           />
           <Button

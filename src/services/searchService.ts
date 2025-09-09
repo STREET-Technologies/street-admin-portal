@@ -1,6 +1,6 @@
 // Clean search service for the STREET admin portal
-import type { User, Retailer, Courier, EntityType, SearchResult } from "@/types";
-import { mockUsers, mockRetailers, mockCouriers } from "@/data/mockData";
+import type { User, Retailer, Courier, ReferralCode, EntityType, SearchResult } from "@/types";
+import { mockUsers, mockRetailers, mockCouriers, mockReferralCodes } from "@/data/mockData";
 
 export class SearchService {
   static search(query: string, type: EntityType): SearchResult | null {
@@ -13,6 +13,8 @@ export class SearchService {
         return this.searchRetailers(normalizedQuery);
       case "courier":
         return this.searchCouriers(normalizedQuery);
+      case "referralcode":
+        return this.searchReferralCodes(normalizedQuery);
       default:
         return null;
     }
@@ -42,6 +44,19 @@ export class SearchService {
     return courier ? { data: courier, type: "courier" } : null;
   }
 
+  private static searchReferralCodes(query: string): SearchResult | null {
+    // For referral codes, return all codes as we want to show them in a list
+    // But filter based on search query if provided
+    const filteredCodes = query ? mockReferralCodes.filter(code =>
+      code.code.toLowerCase().includes(query) ||
+      code.createdBy.toLowerCase().includes(query) ||
+      code.belongsTo.toLowerCase().includes(query) ||
+      (code.usedBy && code.usedBy.toLowerCase().includes(query))
+    ) : mockReferralCodes;
+    
+    return { data: filteredCodes, type: "referralcode" };
+  }
+
   private static matchesEntity(entity: User | Retailer | Courier, query: string): boolean {
     return (
       entity.name.toLowerCase().includes(query) ||
@@ -69,6 +84,9 @@ export class SearchService {
       case "courier":
         entities = mockCouriers;
         break;
+      case "referralcode":
+        // For referral codes, return code suggestions differently
+        return this.getReferralCodeSuggestions(normalizedQuery);
     }
 
     const suggestions: string[] = [];
@@ -88,6 +106,24 @@ export class SearchService {
       }
       if (entity.uid.toLowerCase().includes(normalizedQuery)) {
         suggestions.push(entity.uid);
+      }
+    });
+
+    return [...new Set(suggestions)].slice(0, 5);
+  }
+
+  private static getReferralCodeSuggestions(query: string): string[] {
+    const suggestions: string[] = [];
+
+    mockReferralCodes.forEach(code => {
+      if (code.code.toLowerCase().includes(query)) {
+        suggestions.push(code.code);
+      }
+      if (code.createdBy.toLowerCase().includes(query)) {
+        suggestions.push(code.createdBy);
+      }
+      if (code.belongsTo.toLowerCase().includes(query)) {
+        suggestions.push(code.belongsTo);
       }
     });
 

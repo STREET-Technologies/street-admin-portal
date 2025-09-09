@@ -1,5 +1,5 @@
 // Clean mock data for development and demo purposes
-import type { User, Retailer, Courier, Order, Invoice } from "@/types";
+import type { User, Retailer, Courier, Order, Invoice, ReferralCode } from "@/types";
 import syuzanaImage from "@/assets/syuzana-real.png";
 import aliImage from "@/assets/ali-real.png";
 import trilogyImage from "@/assets/trilogy.png";
@@ -132,5 +132,65 @@ export const mockInvoices: Invoice[] = [
     dateTime: "2024-09-03T11:15:00Z",
     status: "pending",
     description: "Bi-weekly settlement"
+  }
+];
+
+// Mock Referral Codes
+export const mockReferralCodes: ReferralCode[] = [
+  {
+    id: "REF-001",
+    code: "ANNIE20",
+    status: "active",
+    expiryDate: "2024-12-31",
+    creditAmount: 20,
+    createdBy: "Ali Al Nasiri",
+    belongsTo: "Annie Smith",
+    createdDate: "2024-09-01T10:00:00Z"
+  },
+  {
+    id: "REF-002",
+    code: "WELCOME10",
+    status: "active",
+    expiryDate: "2024-11-30",
+    creditAmount: 10,
+    createdBy: "Syuzana O",
+    belongsTo: "New Users",
+    usedBy: "John Doe",
+    usedDate: "2024-09-05T14:30:00Z",
+    createdDate: "2024-08-15T09:00:00Z"
+  },
+  {
+    id: "REF-003",
+    code: "FREEDELIVERY5",
+    status: "expired",
+    expiryDate: "2024-09-01",
+    freeDeliveries: 5,
+    createdBy: "Umaan Ali",
+    belongsTo: "VIP Customers",
+    usedBy: "Sarah Johnson",
+    usedDate: "2024-08-28T16:45:00Z",
+    createdDate: "2024-07-01T12:00:00Z"
+  },
+  {
+    id: "REF-004",
+    code: "STUDENT15",
+    status: "active",
+    expiryDate: "2024-12-31",
+    creditAmount: 15,
+    createdBy: "Ali Al Nasiri",
+    belongsTo: "Students",
+    createdDate: "2024-09-03T11:30:00Z"
+  },
+  {
+    id: "REF-005",
+    code: "TRILOGY25",
+    status: "used",
+    expiryDate: "2024-10-31",
+    creditAmount: 25,
+    createdBy: "Syuzana O",
+    belongsTo: "Trilogy Customers",
+    usedBy: "Mike Wilson",
+    usedDate: "2024-09-02T13:20:00Z",
+    createdDate: "2024-08-20T15:00:00Z"
   }
 ];

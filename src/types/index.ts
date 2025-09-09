@@ -63,15 +63,30 @@ export interface Note {
   priority: NotePriority;
 }
 
+export interface ReferralCode {
+  id: string;
+  code: string;
+  status: ReferralCodeStatus;
+  expiryDate: string;
+  creditAmount?: number;
+  freeDeliveries?: number;
+  createdBy: string;
+  belongsTo: string;
+  usedBy?: string;
+  usedDate?: string;
+  createdDate: string;
+}
+
 // Status types
 export type EntityStatus = "active" | "inactive" | "pending" | "blocked" | "withdrawn" | "onboarding" | "online";
 export type OrderStatus = "delivered" | "completed" | "pending" | "cancelled" | "in-progress";
 export type InvoiceStatus = "paid" | "partial" | "pending" | "overdue";
 export type NotePriority = "low" | "medium" | "high";
-export type EntityType = "user" | "retail" | "courier";
+export type ReferralCodeStatus = "active" | "expired" | "used" | "disabled";
+export type EntityType = "user" | "retail" | "courier" | "referralcode";
 
 // Search types
 export interface SearchResult {
-  data: User | Retailer | Courier;
+  data: User | Retailer | Courier | ReferralCode[];
   type: EntityType;
 }
