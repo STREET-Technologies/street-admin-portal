@@ -204,7 +204,7 @@ export function UserCard({ data, type }: UserCardProps) {
       </CardHeader>
       
       <CardContent className="space-y-6">
-        {/* Contact Information */}
+        {/* Contact Information & Saved Addresses */}
         {type === "retail" && isRetailer(editData) ? (
           <div className="space-y-3">
             <h4 className="font-semibold text-lg">Contact & Business Information</h4>
@@ -356,8 +356,8 @@ export function UserCard({ data, type }: UserCardProps) {
           </div>
         ) : (
           <div className="space-y-3">
-            <h4 className="font-semibold text-lg">Contact Information</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <h4 className="font-semibold text-lg">Contact Information & Saved Addresses</h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="space-y-3">
                 <div>
                   <h5 className="text-sm font-medium mb-2 flex items-center gap-2">
@@ -431,6 +431,29 @@ export function UserCard({ data, type }: UserCardProps) {
                     <span className="text-sm font-bold text-yellow-600">{editData.averageRating}/5.0 rating</span>
                   </div>
                 )}
+              </div>
+              
+              {/* Saved Addresses */}
+              <div className="space-y-3">
+                <h5 className="text-sm font-medium mb-2 flex items-center gap-2">
+                  <MapPin className="w-4 h-4" />
+                  Saved Addresses
+                </h5>
+                <div className="space-y-2">
+                  <div className="p-2 bg-muted/30 rounded">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-medium text-xs">Home</span>
+                      <Badge variant="outline" className="text-xs">Default</Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground">123 Regent Street, London W1B 4EA</p>
+                  </div>
+                  <div className="p-2 bg-muted/30 rounded">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-medium text-xs">Work</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">45 Oxford Street, London W1D 2DZ</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

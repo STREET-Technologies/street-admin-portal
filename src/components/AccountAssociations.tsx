@@ -225,30 +225,6 @@ export function AccountAssociations({ data, type }: AccountAssociationsProps) {
         </Card>
       )}
 
-      {/* Addresses - Hide for retailers */}
-      {type !== "retail" && (
-        <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <MapPin className="w-5 h-5 text-primary" />
-              Saved Addresses
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {associations.addresses.map((address, index) => (
-              <div key={index} className="p-3 border rounded-lg">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-medium text-sm">{address.type}</span>
-                  {address.isDefault && (
-                    <Badge variant="outline" className="text-xs">Default</Badge>
-                  )}
-                </div>
-                <p className="text-sm text-muted-foreground">{address.address}</p>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      )}
 
       {/* Account Security */}
       <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-lg lg:col-span-2">
