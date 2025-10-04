@@ -48,7 +48,7 @@ export function UserCard({ data, type }: UserCardProps) {
     return sum + (isNaN(amount) ? 0 : amount);
   }, 0);
 
-  const averageOrderValue = totalOrders > 0 ? totalSpent / totalOrders : 0;
+  const averageOrderValue = orders.length > 0 ? totalSpent / orders.length : 0;
 
   // Calculate days since joined
   const daysSinceJoined = Math.floor(
