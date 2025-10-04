@@ -21,6 +21,8 @@ interface UserCardProps {
 }
 
 export function UserCard({ data, type }: UserCardProps) {
+  console.log('[UserCard] Received data:', { type, data, ssoProvider: (data as User).ssoProvider });
+
   const [avatarUrl, setAvatarUrl] = useState(data.avatar);
   const [isHovering, setIsHovering] = useState(false);
   const [ordersDialogOpen, setOrdersDialogOpen] = useState(false);
