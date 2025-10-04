@@ -1,73 +1,187 @@
-# Welcome to your Lovable project
+# STREET Admin Portal
 
-## Project info
+A modern, feature-rich admin portal for managing the STREET platform - users, retailers, couriers, orders, and referral codes.
 
-**URL**: https://lovable.dev/projects/ba14dddc-166e-4460-95af-ed152e3d2b97
+![STREET Admin Portal](https://img.shields.io/badge/STREET-Admin%20Portal-purple)
+![React](https://img.shields.io/badge/React-18.3-blue)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.5-blue)
+![Vite](https://img.shields.io/badge/Vite-5.4-purple)
 
-## How can I edit this code?
+## 🚀 Features
 
-There are several ways of editing your application.
+### User Management
+- **Smart Search**: Search users, retailers, and couriers by ID, email, or phone
+- **User Profiles**: View detailed user information with metrics and order history
+- **Address Management**: View and edit user addresses with inline editing
+- **Order History**: View complete order history with product images and variant details
 
-**Use Lovable**
+### Retailer Management
+- View retailer profiles with revenue metrics
+- Track total orders and average order value
+- Manage retailer information and status
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/ba14dddc-166e-4460-95af-ed152e3d2b97) and start prompting.
+### Courier Management
+- View courier profiles with delivery statistics
+- Track average ratings and completion rates
+- Monitor courier performance
 
-Changes made via Lovable will be committed automatically to this repo.
+### Referral Code Management
+- Create and manage referral codes
+- Track code usage and status
+- View code details (credit amount, free deliveries, expiry dates)
 
-**Use your preferred IDE**
+### Order Management
+- View detailed order information with product images
+- Display order items with variant details (size, color, etc.)
+- Filter orders by status (delivered, cancelled, etc.)
+- View order metadata from Shopify integration
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## 🛠️ Tech Stack
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- **Frontend Framework**: React 18.3 with TypeScript
+- **Build Tool**: Vite 5.4
+- **Styling**: Tailwind CSS
+- **UI Components**: shadcn/ui (Radix UI primitives)
+- **Icons**: Lucide React
+- **Backend Integration**: NestJS REST API
+- **Database**: PostgreSQL (via backend)
 
-Follow these steps:
+## 📦 Installation
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+1. Clone the repository:
+```bash
+git clone https://github.com/STREET-Technologies/street-admin-portal.git
+cd street-admin-portal
+```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+2. Install dependencies:
+```bash
+npm install
+```
 
-# Step 3: Install the necessary dependencies.
-npm i
+3. Create a `.env` file based on `.env.example`:
+```bash
+cp .env.example .env
+```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+4. Configure your environment variables:
+```env
+VITE_API_BASE_URL=http://localhost:8080/v1
+```
+
+5. Start the development server:
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+The application will be available at `http://localhost:5173`
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 🔧 Available Scripts
 
-**Use GitHub Codespaces**
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm run lint` - Run ESLint
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## 📁 Project Structure
 
-## What technologies are used for this project?
+```
+street-admin-portal/
+├── src/
+│   ├── components/          # React components
+│   │   ├── ui/             # shadcn/ui components
+│   │   ├── AdminDashboard.tsx
+│   │   ├── SearchBar.tsx
+│   │   ├── UserCard.tsx
+│   │   ├── OrdersDialog.tsx
+│   │   └── MetricsCards.tsx
+│   ├── services/           # API services
+│   │   ├── api.ts         # Backend API integration
+│   │   └── searchService.ts
+│   ├── types/             # TypeScript type definitions
+│   ├── utils/             # Utility functions
+│   └── App.tsx            # Main application component
+├── docs/                  # Documentation
+├── public/               # Static assets
+└── package.json
+```
 
-This project is built with:
+## 🔌 Backend Integration
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+The admin portal integrates with a NestJS backend API. See [BACKEND_INTEGRATION.md](docs/BACKEND_INTEGRATION.md) for detailed API documentation.
 
-## How can I deploy this project?
+### Key Endpoints
 
-Simply open [Lovable](https://lovable.dev/projects/ba14dddc-166e-4460-95af-ed152e3d2b97) and click on Share -> Publish.
+- `GET /admin/users/:userId` - Get user details
+- `GET /admin/users/:userId/addresses` - Get user addresses
+- `PATCH /admin/users/:userId/addresses/:addressId` - Update address
+- `GET /admin/users/:userId/orders` - Get user orders
+- `GET /admin/vendors/:vendorId` - Get vendor details
+- `POST /admin/referral-codes` - Create referral code
 
-## Can I connect a custom domain to my Lovable project?
+## 🎨 UI Components
 
-Yes, you can!
+The portal uses [shadcn/ui](https://ui.shadcn.com/) for consistent, accessible UI components:
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+- **Dialog**: Modal dialogs for orders and details
+- **Card**: Information cards for metrics and profiles
+- **Badge**: Status indicators
+- **Button**: Action buttons
+- **Input**: Form inputs
+- **ScrollArea**: Scrollable content areas
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+## 📝 Key Features
+
+### Address Management
+- View all saved addresses for a user
+- Edit addresses inline with save/cancel functionality
+- Set default addresses
+- Full address validation with lat/lng support
+
+### Order Display
+- Rich order details with product images
+- Variant information (size, color, etc.) from Shopify metadata
+- Order status tracking
+- Delivery information
+- Order item breakdown with prices
+
+### Metrics Dashboard
+- Total orders/deliveries
+- Revenue/spending analytics
+- Average order value calculations
+- Time-based metrics (days since joined)
+
+## 🔒 Security
+
+- Admin endpoints are currently unauthenticated (for internal use)
+- CORS configured for allowed origins
+- Input validation via class-validator
+- UUID-based entity identification
+
+## 🧪 Testing
+
+See [TESTING.md](TESTING.md) for testing guidelines and procedures.
+
+## 📚 Documentation
+
+- [Backend Integration Guide](docs/BACKEND_INTEGRATION.md)
+- [Testing Guide](TESTING.md)
+
+## 🤝 Contributing
+
+1. Create a feature branch (`git checkout -b feat/amazing-feature`)
+2. Commit your changes (`git commit -m 'Add amazing feature'`)
+3. Push to the branch (`git push origin feat/amazing-feature`)
+4. Open a Pull Request
+
+## 📄 License
+
+This project is proprietary and confidential.
+
+## 🏢 About STREET
+
+STREET is a platform connecting users with local retailers and efficient delivery services.
+
+---
+
+Built with ❤️ by the STREET team
