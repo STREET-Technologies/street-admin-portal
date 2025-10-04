@@ -15,9 +15,9 @@ export function SearchBar({ onSearch, onTypeChange }: SearchBarProps) {
   const [selectedType, setSelectedType] = useState<EntityType>("user");
   const [suggestions, setSuggestions] = useState<string[]>([]);
 
-  const handleInputChange = (value: string) => {
+  const handleInputChange = async (value: string) => {
     setQuery(value);
-    const newSuggestions = SearchService.getSuggestions(value, selectedType);
+    const newSuggestions = await SearchService.getSuggestions(value, selectedType);
     setSuggestions(newSuggestions);
   };
 

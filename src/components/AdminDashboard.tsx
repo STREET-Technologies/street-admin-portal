@@ -19,11 +19,11 @@ export function AdminDashboard({ onLogout, currentUser }: AdminDashboardProps) {
   const [searchResults, setSearchResults] = useState<SearchResult | null>(null);
   const [searchType, setSearchType] = useState<EntityType | "">("");
 
-  const handleSearch = (query: string, type: EntityType) => {
+  const handleSearch = async (query: string, type: EntityType) => {
     setSearchType(type);
     setSearchResults(null);
 
-    const result = SearchService.search(query, type);
+    const result = await SearchService.search(query, type);
     setSearchResults(result);
   };
 

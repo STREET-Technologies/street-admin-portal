@@ -1,18 +1,22 @@
 // Clean search service for the STREET admin portal
 import type { User, Retailer, Courier, ReferralCode, EntityType, SearchResult } from "@/types";
 import { mockUsers, mockRetailers, mockCouriers, mockReferralCodes } from "@/data/mockData";
+import { ApiService } from "./api";
+
+// Toggle between mock and real API
+const USE_MOCK_DATA = import.meta.env.VITE_USE_MOCK_DATA !== "false";
 
 export class SearchService {
-  static search(query: string, type: EntityType): SearchResult | null {
+  static async search(query: string, type: EntityType): Promise<SearchResult | null> {
     const normalizedQuery = query.toLowerCase().trim();
-    
+
     switch (type) {
       case "user":
-        return this.searchUsers(normalizedQuery);
-      case "retail":  
-        return this.searchRetailers(normalizedQuery);
+        return await this.searchUsers(normalizedQuery);
+      case "retail":
+        return await this.searchRetailers(normalizedQuery);
       case "courier":
-        return this.searchCouriers(normalizedQuery);
+        return await this.searchCouriers(normalizedQuery);
       case "referralcode":
         return this.searchReferralCodes(normalizedQuery);
       default:
@@ -20,28 +24,73 @@ export class SearchService {
     }
   }
 
-  private static searchUsers(query: string): SearchResult | null {
-    const user = mockUsers.find(user => 
-      this.matchesEntity(user, query)
-    );
-    
-    return user ? { data: user, type: "user" } : null;
+  private static async searchUsers(query: string): Promise<SearchResult | null> {
+    if (USE_MOCK_DATA) {
+      const user = mockUsers.find(user =>
+        this.matchesEntity(user, query)
+      );
+      return user ? { data: user, type: "user" } : null;
+    }
+
+    // Try to search users from API
+    const users = await ApiService.searchUsers(query);
+    if (users && users.length > 0) {
+      return { data: users[0], type: "user" };
+    }
+
+    // If search returns nothing, try to get by ID if query looks like a UUID
+    if (query.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+      const user = await ApiService.getUser(query);
+      return user ? { data: user, type: "user" } : null;
+    }
+
+    return null;
   }
 
-  private static searchRetailers(query: string): SearchResult | null {
-    const retailer = mockRetailers.find(retailer =>
-      this.matchesEntity(retailer, query)
-    );
-    
-    return retailer ? { data: retailer, type: "retail" } : null;
+  private static async searchRetailers(query: string): Promise<SearchResult | null> {
+    if (USE_MOCK_DATA) {
+      const retailer = mockRetailers.find(retailer =>
+        this.matchesEntity(retailer, query)
+      );
+      return retailer ? { data: retailer, type: "retail" } : null;
+    }
+
+    // Try to search vendors from API
+    const vendors = await ApiService.searchVendors(query);
+    if (vendors && vendors.length > 0) {
+      return { data: vendors[0], type: "retail" };
+    }
+
+    // If search returns nothing, try to get by ID if query looks like a UUID
+    if (query.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+      const vendor = await ApiService.getVendor(query);
+      return vendor ? { data: vendor, type: "retail" } : null;
+    }
+
+    return null;
   }
 
-  private static searchCouriers(query: string): SearchResult | null {
-    const courier = mockCouriers.find(courier =>
-      this.matchesEntity(courier, query)
-    );
-    
-    return courier ? { data: courier, type: "courier" } : null;
+  private static async searchCouriers(query: string): Promise<SearchResult | null> {
+    if (USE_MOCK_DATA) {
+      const courier = mockCouriers.find(courier =>
+        this.matchesEntity(courier, query)
+      );
+      return courier ? { data: courier, type: "courier" } : null;
+    }
+
+    // Try to search couriers from API
+    const couriers = await ApiService.searchCouriers(query);
+    if (couriers && couriers.length > 0) {
+      return { data: couriers[0], type: "courier" };
+    }
+
+    // If search returns nothing, try to get by ID if query looks like a UUID
+    if (query.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+      const courier = await ApiService.getCourier(query);
+      return courier ? { data: courier, type: "courier" } : null;
+    }
+
+    return null;
   }
 
   private static searchReferralCodes(query: string): SearchResult | null {
@@ -66,26 +115,39 @@ export class SearchService {
     );
   }
 
-  static getSuggestions(query: string, type: EntityType): string[] {
+  static async getSuggestions(query: string, type: EntityType): Promise<string[]> {
     const normalizedQuery = query.toLowerCase().trim();
-    
+
     if (!normalizedQuery) return [];
 
+    // For referral codes, use local suggestions
+    if (type === "referralcode") {
+      return this.getReferralCodeSuggestions(normalizedQuery);
+    }
+
+    // Use API for suggestions if not using mock data
+    if (!USE_MOCK_DATA) {
+      try {
+        return await ApiService.getSuggestions(normalizedQuery, type);
+      } catch (error) {
+        console.error("Failed to fetch suggestions from API:", error);
+        return [];
+      }
+    }
+
+    // Fall back to mock data suggestions
     let entities: (User | Retailer | Courier)[] = [];
-    
+
     switch (type) {
       case "user":
         entities = mockUsers;
         break;
       case "retail":
         entities = mockRetailers;
-        break;  
+        break;
       case "courier":
         entities = mockCouriers;
         break;
-      case "referralcode":
-        // For referral codes, return code suggestions differently
-        return this.getReferralCodeSuggestions(normalizedQuery);
     }
 
     const suggestions: string[] = [];
