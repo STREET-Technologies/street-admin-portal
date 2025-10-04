@@ -1,5 +1,5 @@
 // API service for STREET backend integration
-import type { User, Retailer, Courier } from "@/types";
+import type { User, Retailer, Courier, UserAddress } from "@/types";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/v1";
 
@@ -306,6 +306,17 @@ export class ApiService {
       return response.suggestions || [];
     } catch (error) {
       console.error("Failed to fetch suggestions:", error);
+      return [];
+    }
+  }
+
+  // User Address endpoints
+  static async getUserAddresses(userId: string): Promise<UserAddress[]> {
+    try {
+      const response = await this.request<UserAddress[]>(`/admin/users/${userId}/addresses`);
+      return response;
+    } catch (error) {
+      console.error("Failed to fetch user addresses:", error);
       return [];
     }
   }

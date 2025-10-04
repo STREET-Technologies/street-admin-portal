@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -12,7 +12,7 @@ import { InvoicesDialog } from "@/components/InvoicesDialog";
 import { mockOrders, mockInvoices } from "@/data/mockData";
 import { getStatusColor, getInitials } from "@/utils/statusUtils";
 import { TEAM_MEMBERS, RETAIL_STATUS_OPTIONS, USER_STATUS_OPTIONS, COURIER_STATUS_OPTIONS } from "@/constants";
-import type { User, Retailer, Courier, EntityType } from "@/types";
+import type { User, Retailer, Courier, EntityType, UserAddress } from "@/types";
 import { ApiService } from "@/services/api";
 
 interface UserCardProps {
@@ -28,12 +28,25 @@ export function UserCard({ data, type }: UserCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState(data);
   const [isSaving, setIsSaving] = useState(false);
+  const [addresses, setAddresses] = useState<UserAddress[]>([]);
+  const [isLoadingAddresses, setIsLoadingAddresses] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   // Use clean mock data
   const recentOrders = mockOrders.slice(0, 3);
   const recentInvoices = mockInvoices.slice(0, 3);
+
+  // Fetch user addresses for users
+  useEffect(() => {
+    if (type === 'user') {
+      setIsLoadingAddresses(true);
+      ApiService.getUserAddresses(data.id)
+        .then(setAddresses)
+        .catch(err => console.error('Failed to load addresses:', err))
+        .finally(() => setIsLoadingAddresses(false));
+    }
+  }, [data.id, type]);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -519,6 +532,44 @@ export function UserCard({ data, type }: UserCardProps) {
                 </div>
               )}
             </div>
+          </div>
+        )}
+
+        {/* Saved Addresses - for users only */}
+        {type === 'user' && (
+          <div className="space-y-3">
+            <h4 className="font-semibold text-lg flex items-center gap-2">
+              <MapPin className="w-5 h-5" />
+              Saved Addresses
+            </h4>
+            {isLoadingAddresses ? (
+              <p className="text-sm text-muted-foreground">Loading addresses...</p>
+            ) : addresses.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No saved addresses</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {addresses.map((address) => (
+                  <Card key={address.id} className="bg-muted/30">
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">{address.label}</span>
+                          {address.isDefault && (
+                            <Badge variant="default" className="text-xs">Default</Badge>
+                          )}
+                        </div>
+                      </div>
+                      <div className="text-sm text-muted-foreground space-y-1">
+                        <p>{address.line1}</p>
+                        {address.line2 && <p>{address.line2}</p>}
+                        <p>{address.city}, {address.state}</p>
+                        <p>{address.postcode}, {address.country}</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
         )}
 

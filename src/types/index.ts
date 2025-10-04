@@ -79,6 +79,24 @@ export interface ReferralCode {
   createdDate: string;
 }
 
+export interface UserAddress {
+  id: string;
+  userId: string;
+  label: string;
+  line1: string;
+  line2?: string;
+  city: string;
+  state: string;
+  postcode: string;
+  country: string;
+  countryCode: string;
+  latitude?: number;
+  longitude?: number;
+  isDefault: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // Status types
 export type EntityStatus = "active" | "inactive" | "pending" | "blocked" | "withdrawn" | "onboarding" | "online";
 export type OrderStatus = "delivered" | "completed" | "pending" | "cancelled" | "in-progress";
