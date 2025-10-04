@@ -218,6 +218,10 @@ export function UserCard({ data, type }: UserCardProps) {
                   <span className="font-medium">{type === 'retail' ? 'Store URL:' : 'UID:'}</span>
                   <code className="bg-muted px-2 py-1 rounded text-sm">{editData.uid}</code>
                 </p>
+                <p className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  <span className="text-sm">Joined {new Date(editData.joinDate).toLocaleDateString()}</span>
+                </p>
                 {type === 'retail' && isRetailer(editData) && (
                   <p className="flex items-start gap-2 pt-1">
                     <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
@@ -489,19 +493,15 @@ export function UserCard({ data, type }: UserCardProps) {
                   )}
                 </div>
               </div>
-              
-              <div className="space-y-2">
-                <div className="flex items-start gap-2">
-                  <Calendar className="w-4 h-4 text-muted-foreground mt-0.5" />
-                  <span className="text-sm">Joined {new Date(editData.joinDate).toLocaleDateString()}</span>
-                </div>
-                {isCourier(editData) && (
+
+              {isCourier(editData) && (
+                <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <Star className="w-4 h-4 text-yellow-500" />
                     <span className="text-sm font-bold text-yellow-600">{editData.averageRating}/5.0 rating</span>
                   </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           </div>
         )}
