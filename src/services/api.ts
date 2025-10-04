@@ -46,20 +46,20 @@ const transformVendorToRetailer = (vendor: BackendVendor): Retailer => {
   return {
     id: vendor.id,
     name: vendor.storeName,
-    email: vendor.email,
-    phone: vendor.phone,
+    email: vendor.email || 'No email',
+    phone: vendor.phone || 'No phone',
     avatar: vendor.logo || vendor.storeImage || undefined,
     status: vendor.isOnline ? 'active' : 'inactive',
-    joinDate: vendor.createdAt,
+    joinDate: vendor.createdAt || new Date().toISOString(),
     deviceId: vendor.externalId || '',
     uid: `vendor_${vendor.id.split('-')[0]}`,
     totalOrders: 0, // TODO: This should come from backend
     totalRevenue: 0, // TODO: This should come from backend
     address: vendor.address || '',
-    contact: vendor.phone,
+    contact: vendor.phone || 'No contact',
     category: vendor.vendorCategory || vendor.vendorType || '',
-    pocManager: vendor.referredBy,
-    signedUpBy: vendor.referredBy,
+    pocManager: vendor.referredBy || '',
+    signedUpBy: vendor.referredBy || '',
     posSystem: vendor.vendorType,
     commissionRate: '10%', // TODO: Should come from backend
     owner: '', // TODO: Should come from backend
@@ -207,15 +207,19 @@ export class ApiService {
     try {
       // Backend endpoint: GET /v1/admin/vendors?name=query (no auth required)
       interface VendorListResponse {
-        vendors: BackendVendor[];
-        total: number;
-        page: number;
-        limit: number;
+        data: BackendVendor[];  // Backend returns 'data' not 'vendors'
+        meta: {
+          total: number;
+          page: number;
+          limit: number;
+          totalPages: number;
+        };
       }
       const response = await this.request<VendorListResponse>(
         `/admin/vendors?name=${encodeURIComponent(query)}&limit=10`
       );
-      return (response.vendors || []).map(transformVendorToRetailer);
+
+      return (response.data || []).map(transformVendorToRetailer);
     } catch (error) {
       console.error("Failed to search vendors:", error);
       return [];

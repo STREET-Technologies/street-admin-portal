@@ -57,6 +57,7 @@ export class SearchService {
 
     // Try to search vendors from API
     const vendors = await ApiService.searchVendors(query);
+
     if (vendors && vendors.length > 0) {
       return { data: vendors[0], type: "retail" };
     }
@@ -125,14 +126,10 @@ export class SearchService {
       return this.getReferralCodeSuggestions(normalizedQuery);
     }
 
-    // Use API for suggestions if not using mock data
+    // TODO: Backend doesn't have suggestions endpoint yet, so disable for now
+    // Just return empty array - users can still use search button
     if (!USE_MOCK_DATA) {
-      try {
-        return await ApiService.getSuggestions(normalizedQuery, type);
-      } catch (error) {
-        console.error("Failed to fetch suggestions from API:", error);
-        return [];
-      }
+      return []; // Disable suggestions when using real API
     }
 
     // Fall back to mock data suggestions
