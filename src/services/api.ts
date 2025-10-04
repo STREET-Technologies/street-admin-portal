@@ -71,12 +71,6 @@ const transformVendorToRetailer = (vendor: BackendVendor): Retailer => {
 // Transform backend User to frontend User
 const transformBackendUser = (user: BackendUser): User => {
   const fullName = [user.firstName, user.lastName].filter(Boolean).join(' ') || 'Unknown User';
-  console.log('[API] Transforming backend user:', {
-    id: user.id,
-    name: fullName,
-    ssoProvider: user.ssoProvider,
-    rawUser: user,
-  });
   return {
     id: user.id,
     name: fullName,
