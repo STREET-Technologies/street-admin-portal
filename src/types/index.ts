@@ -21,6 +21,7 @@ export interface Retailer extends BaseEntity {
   totalOrders: number;
   totalRevenue: number;
   address: string;
+  postcode?: string;
   contact: string;
   category: string;
   pocManager?: string;

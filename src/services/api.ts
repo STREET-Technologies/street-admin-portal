@@ -8,9 +8,6 @@ interface BackendVendor {
   id: string;
   storeName: string;
   storeUrl: string;
-  logo: string | null;
-  storeImage: string | null;
-  description: string | null;
   vendorType: string;
   email: string;
   phone: string;
@@ -23,6 +20,9 @@ interface BackendVendor {
   referredBy: string | null;
   externalId: string | null;
   metadata: any;
+  logo: string | null;
+  storeImage: string | null;
+  description: string | null;
   isOnline: boolean;
   createdAt: string;
   updatedAt: string;
@@ -46,21 +46,22 @@ const transformVendorToRetailer = (vendor: BackendVendor): Retailer => {
   return {
     id: vendor.id,
     name: vendor.storeName,
-    email: vendor.email || 'No email',
-    phone: vendor.phone || 'No phone',
+    email: vendor.email || '',
+    phone: vendor.phone || '',
     avatar: vendor.logo || vendor.storeImage || undefined,
     status: vendor.isOnline ? 'active' : 'inactive',
     joinDate: vendor.createdAt || new Date().toISOString(),
     deviceId: vendor.externalId || '',
-    uid: `vendor_${vendor.id.split('-')[0]}`,
+    uid: vendor.storeUrl || '', // Show Shopify store URL instead of generated UID
     totalOrders: 0, // TODO: This should come from backend
     totalRevenue: 0, // TODO: This should come from backend
     address: vendor.address || '',
-    contact: vendor.phone || 'No contact',
-    category: vendor.vendorCategory || vendor.vendorType || '',
+    postcode: vendor.postcode || '',
+    contact: vendor.phone || '',
+    category: vendor.vendorCategory || '',
     pocManager: vendor.referredBy || '',
     signedUpBy: vendor.referredBy || '',
-    posSystem: vendor.vendorType,
+    posSystem: vendor.vendorType || '',
     commissionRate: '10%', // TODO: Should come from backend
     owner: '', // TODO: Should come from backend
   };
@@ -227,7 +228,7 @@ export class ApiService {
   }
 
   static async updateVendor(vendorId: string, data: Partial<Retailer>): Promise<Retailer> {
-    // Backend endpoint: PATCH /v1/vendors/:vendorId
+    // Backend endpoint: PATCH /v1/admin/vendors/:vendorId (no auth required)
     // Transform frontend Retailer fields to backend Vendor fields
     const backendData: any = {};
 
@@ -239,12 +240,16 @@ export class ApiService {
     if (data.category) backendData.vendorCategory = data.category;
     if (data.status) backendData.isOnline = data.status === 'active';
 
-    const updated = await this.request<BackendVendor>(`/vendors/${vendorId}`, {
-      method: "PATCH",
-      body: JSON.stringify(backendData),
-    });
+    const response = await this.request<BackendVendor>(
+      `/admin/vendors/${vendorId}`,
+      {
+        method: "PATCH",
+        body: JSON.stringify(backendData),
+      }
+    );
 
-    return transformVendorToRetailer(updated);
+    // The request method already unwraps the { data: ... } wrapper
+    return transformVendorToRetailer(response);
   }
 
   // Courier endpoints - These don't exist in the backend yet

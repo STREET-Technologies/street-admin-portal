@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MapPin, Calendar, Star, TrendingUp, Camera, Package, ChevronRight, DollarSign, Edit, Save, X, Mail, Phone } from "lucide-react";
+import { MapPin, Calendar, Star, TrendingUp, Camera, Package, ChevronRight, DollarSign, Edit, Save, X, Mail, Phone, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { OrdersDialog } from "@/components/OrdersDialog";
 import { InvoicesDialog } from "@/components/InvoicesDialog";
@@ -13,6 +13,7 @@ import { mockOrders, mockInvoices } from "@/data/mockData";
 import { getStatusColor, getInitials } from "@/utils/statusUtils";
 import { TEAM_MEMBERS, RETAIL_STATUS_OPTIONS, USER_STATUS_OPTIONS, COURIER_STATUS_OPTIONS } from "@/constants";
 import type { User, Retailer, Courier, EntityType } from "@/types";
+import { ApiService } from "@/services/api";
 
 interface UserCardProps {
   data: User | Retailer | Courier;
@@ -26,6 +27,7 @@ export function UserCard({ data, type }: UserCardProps) {
   const [invoicesDialogOpen, setInvoicesDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState(data);
+  const [isSaving, setIsSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -33,14 +35,40 @@ export function UserCard({ data, type }: UserCardProps) {
   const recentOrders = mockOrders.slice(0, 3);
   const recentInvoices = mockInvoices.slice(0, 3);
 
-  const handleSave = () => {
-    // In a real app, this would save to API
-    Object.assign(data, editData);
-    setIsEditing(false);
-    toast({
-      title: "Profile Updated",
-      description: "Changes have been saved successfully.",
-    });
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      let updatedData;
+
+      if (type === "retail") {
+        updatedData = await ApiService.updateVendor(data.id, editData as Retailer);
+      } else if (type === "user") {
+        updatedData = await ApiService.updateUser(data.id, editData as User);
+      } else if (type === "courier") {
+        updatedData = await ApiService.updateCourier(data.id, editData as Courier);
+      }
+
+      if (updatedData) {
+        // Update local data with the response from backend
+        Object.assign(data, updatedData);
+        setEditData(updatedData);
+      }
+
+      setIsEditing(false);
+      toast({
+        title: "Profile Updated",
+        description: "Changes have been saved successfully to the database.",
+      });
+    } catch (error) {
+      console.error("Failed to save profile:", error);
+      toast({
+        title: "Update Failed",
+        description: "Failed to save changes. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleCancel = () => {
@@ -89,21 +117,35 @@ export function UserCard({ data, type }: UserCardProps) {
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-start gap-4">
-            <div 
+            <div
               className="relative"
               onMouseEnter={() => setIsHovering(true)}
               onMouseLeave={() => setIsHovering(false)}
             >
-              <Avatar className="w-20 h-20 ring-4 ring-primary/20">
-                <AvatarImage src={avatarUrl} alt={editData.name} />
-                <AvatarFallback className="text-lg font-bold bg-primary/10">
-                  {getInitials(editData.name)}
-                </AvatarFallback>
-              </Avatar>
-              
+              {type === 'retail' ? (
+                // Rounded rectangle for retailer logos
+                <div className="w-24 h-24 ring-4 ring-primary/20 rounded-lg overflow-hidden bg-white flex items-center justify-center p-2">
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt={editData.name} className="w-full h-full object-contain" />
+                  ) : (
+                    <div className="text-lg font-bold bg-primary/10 w-full h-full flex items-center justify-center rounded">
+                      {getInitials(editData.name)}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                // Keep circular avatar for users and couriers
+                <Avatar className="w-20 h-20 ring-4 ring-primary/20">
+                  <AvatarImage src={avatarUrl} alt={editData.name} />
+                  <AvatarFallback className="text-lg font-bold bg-primary/10">
+                    {getInitials(editData.name)}
+                  </AvatarFallback>
+                </Avatar>
+              )}
+
               {/* Hover Overlay with Edit Button */}
               {isHovering && (
-                <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center transition-all duration-200">
+                <div className={`absolute inset-0 bg-black/50 flex items-center justify-center transition-all duration-200 ${type === 'retail' ? 'rounded-lg' : 'rounded-full'}`}>
                   <Button
                     onClick={triggerFileUpload}
                     size="sm"
@@ -113,7 +155,7 @@ export function UserCard({ data, type }: UserCardProps) {
                   </Button>
                 </div>
               )}
-              
+
               {/* Hidden File Input */}
               <input
                 ref={fileInputRef}
@@ -173,9 +215,48 @@ export function UserCard({ data, type }: UserCardProps) {
                   <code className="bg-muted px-2 py-1 rounded text-sm">{editData.id}</code>
                 </p>
                 <p className="flex items-center gap-2">
-                  <span className="font-medium">UID:</span>
+                  <span className="font-medium">{type === 'retail' ? 'Store URL:' : 'UID:'}</span>
                   <code className="bg-muted px-2 py-1 rounded text-sm">{editData.uid}</code>
                 </p>
+                {type === 'retail' && isRetailer(editData) && (
+                  <p className="flex items-start gap-2 pt-1">
+                    <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                    {isEditing ? (
+                      <div className="flex-1 space-y-1">
+                        <Input
+                          value={editData.address || ""}
+                          onChange={(e) => updateEditData('address', e.target.value)}
+                          className="text-sm h-7"
+                          placeholder="Street address"
+                        />
+                        <Input
+                          value={editData.postcode || ""}
+                          onChange={(e) => updateEditData('postcode', e.target.value)}
+                          className="text-sm h-7 w-32"
+                          placeholder="Postcode"
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex-1">
+                        {editData.address || editData.postcode ? (
+                          <a
+                            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                              `${editData.address}${editData.address && editData.postcode ? ', ' : ''}${editData.postcode || ''}`
+                            )}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-blue-600 hover:text-blue-800 hover:underline inline-flex items-center gap-1.5"
+                          >
+                            <span>{editData.address}{editData.address && editData.postcode ? ', ' : ''}{editData.postcode}</span>
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        ) : (
+                          <span className="text-sm text-muted-foreground">Not available</span>
+                        )}
+                      </div>
+                    )}
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -184,11 +265,11 @@ export function UserCard({ data, type }: UserCardProps) {
           <div className="flex gap-2">
             {isEditing ? (
               <>
-                <Button onClick={handleSave} size="sm" className="h-8">
+                <Button onClick={handleSave} size="sm" className="h-8" disabled={isSaving}>
                   <Save className="w-4 h-4 mr-1" />
-                  Save
+                  {isSaving ? "Saving..." : "Save"}
                 </Button>
-                <Button onClick={handleCancel} size="sm" variant="outline" className="h-8">
+                <Button onClick={handleCancel} size="sm" variant="outline" className="h-8" disabled={isSaving}>
                   <X className="w-4 h-4 mr-1" />
                   Cancel
                 </Button>
@@ -259,24 +340,26 @@ export function UserCard({ data, type }: UserCardProps) {
                   <span className="text-sm font-medium w-20">Category:</span>
                   {isEditing ? (
                     <Input
-                      value={editData.category || "Fashion"}
+                      value={editData.category || ""}
                       onChange={(e) => updateEditData('category', e.target.value)}
                       className="text-sm h-8"
+                      placeholder="Not available"
                     />
                   ) : (
-                    <span className="text-sm">{editData.category || "Fashion"}</span>
+                    <span className="text-sm text-muted-foreground">{editData.category || "Not available"}</span>
                   )}
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="text-sm font-medium w-20">Owner:</span>
                   {isEditing ? (
                     <Input
-                      value={editData.owner || "John Doe"}
+                      value={editData.owner || ""}
                       onChange={(e) => updateEditData('owner', e.target.value)}
                       className="text-sm h-8"
+                      placeholder="Not available"
                     />
                   ) : (
-                    <span className="text-sm">{editData.owner || "John Doe"}</span>
+                    <span className="text-sm text-muted-foreground">{editData.owner || "Not available"}</span>
                   )}
                 </div>
                 <div className="flex items-start gap-2">
@@ -290,20 +373,21 @@ export function UserCard({ data, type }: UserCardProps) {
                   <span className="text-sm font-medium w-24">POC Manager:</span>
                   {isEditing ? (
                     <Input
-                      value={editData.pocManager || "Sarah Johnson"}
+                      value={editData.pocManager || ""}
                       onChange={(e) => updateEditData('pocManager', e.target.value)}
                       className="text-sm h-8"
+                      placeholder="Not available"
                     />
                   ) : (
-                    <span className="text-sm">{editData.pocManager || "Sarah Johnson"}</span>
+                    <span className="text-sm text-muted-foreground">{editData.pocManager || "Not available"}</span>
                   )}
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="text-sm font-medium w-24">Signed Up By:</span>
                   {isEditing ? (
-                    <Select value={editData.signedUpBy || "Umaan Ali"} onValueChange={(value) => updateEditData('signedUpBy', value)}>
+                    <Select value={editData.signedUpBy || ""} onValueChange={(value) => updateEditData('signedUpBy', value)}>
                       <SelectTrigger className="w-40 bg-background text-sm h-8">
-                        <SelectValue />
+                        <SelectValue placeholder="Not available" />
                       </SelectTrigger>
                       <SelectContent className="bg-background border shadow-lg z-50">
                         {TEAM_MEMBERS.map(member => (
@@ -312,43 +396,33 @@ export function UserCard({ data, type }: UserCardProps) {
                       </SelectContent>
                     </Select>
                   ) : (
-                    <span className="text-sm">{editData.signedUpBy || "Umaan Ali"}</span>
+                    <span className="text-sm text-muted-foreground">{editData.signedUpBy || "Not available"}</span>
                   )}
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="text-sm font-medium w-24">POS System:</span>
                   {isEditing ? (
                     <Input
-                      value={editData.posSystem || "Shopify"}
+                      value={editData.posSystem || ""}
                       onChange={(e) => updateEditData('posSystem', e.target.value)}
                       className="text-sm h-8"
+                      placeholder="Not available"
                     />
                   ) : (
-                    <span className="text-sm">{editData.posSystem || "Shopify"}</span>
+                    <span className="text-sm text-muted-foreground">{editData.posSystem || "Not available"}</span>
                   )}
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="text-sm font-medium w-24">Commission:</span>
                   {isEditing ? (
                     <Input
-                      value={editData.commissionRate || "10%"}
+                      value={editData.commissionRate || ""}
                       onChange={(e) => updateEditData('commissionRate', e.target.value)}
                       className="text-sm h-8"
+                      placeholder="Not available"
                     />
                   ) : (
-                    <span className="text-sm font-bold text-green-600">{editData.commissionRate || "10%"}</span>
-                  )}
-                </div>
-                <div className="flex items-start gap-2">
-                  <MapPin className="w-4 h-4 text-muted-foreground mt-0.5" />
-                  {isEditing ? (
-                    <Input
-                      value={editData.address || "22 Kensington Church St, London W8 4EP"}
-                      onChange={(e) => updateEditData('address', e.target.value)}
-                      className="text-sm h-8"
-                    />
-                  ) : (
-                    <span className="text-sm">{editData.address || "22 Kensington Church St, London W8 4EP"}</span>
+                    <span className="text-sm text-muted-foreground">{editData.commissionRate || "Not available"}</span>
                   )}
                 </div>
               </div>
