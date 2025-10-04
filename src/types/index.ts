@@ -39,12 +39,22 @@ export interface Courier extends BaseEntity {
 
 export interface Order {
   id: string;
-  amount: number;
-  location: string;
-  dateTime: string;
-  status: OrderStatus;
-  rating?: number;
-  items: string[];
+  orderId: string;
+  totalAmount: string | number;
+  subtotal: string | number;
+  status: string;
+  shippingAddress?: any;
+  paymentStatus: string;
+  paymentMethod: string;
+  stuartJobId?: string | null;
+  deliveryDetails?: any;
+  createdAt: string;
+  updatedAt: string;
+  vendor?: {
+    id: string;
+    storeName: string;
+    logo?: string;
+  };
 }
 
 export interface Invoice {

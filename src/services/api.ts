@@ -1,5 +1,5 @@
 // API service for STREET backend integration
-import type { User, Retailer, Courier, UserAddress } from "@/types";
+import type { User, Retailer, Courier, UserAddress, Order } from "@/types";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/v1";
 
@@ -343,5 +343,26 @@ export class ApiService {
       }
     );
     return response;
+  }
+
+  // User Orders endpoints
+  static async getUserOrders(userId: string, limit: number = 10, page: number = 1): Promise<{ orders: Order[], meta: { total: number, limit: number, page: number } }> {
+    try {
+      interface OrdersResponse {
+        orders: Order[];
+        meta: {
+          total: number;
+          limit: number;
+          page: number;
+        };
+      }
+      const response = await this.request<OrdersResponse>(
+        `/admin/users/${userId}/orders?limit=${limit}&page=${page}`
+      );
+      return response;
+    } catch (error) {
+      console.error("Failed to fetch user orders:", error);
+      return { orders: [], meta: { total: 0, limit, page } };
+    }
   }
 }

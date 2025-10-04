@@ -12,7 +12,7 @@ import { InvoicesDialog } from "@/components/InvoicesDialog";
 import { mockOrders, mockInvoices } from "@/data/mockData";
 import { getStatusColor, getInitials } from "@/utils/statusUtils";
 import { TEAM_MEMBERS, RETAIL_STATUS_OPTIONS, USER_STATUS_OPTIONS, COURIER_STATUS_OPTIONS } from "@/constants";
-import type { User, Retailer, Courier, EntityType, UserAddress } from "@/types";
+import type { User, Retailer, Courier, EntityType, UserAddress, Order } from "@/types";
 import { ApiService } from "@/services/api";
 
 interface UserCardProps {
@@ -33,12 +33,30 @@ export function UserCard({ data, type }: UserCardProps) {
   const [editingAddressId, setEditingAddressId] = useState<string | null>(null);
   const [editingAddress, setEditingAddress] = useState<UserAddress | null>(null);
   const [isSavingAddress, setIsSavingAddress] = useState(false);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [isLoadingOrders, setIsLoadingOrders] = useState(false);
+  const [totalOrders, setTotalOrders] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { toast } = useToast();
+  const { toast} = useToast();
 
-  // Use clean mock data
-  const recentOrders = mockOrders.slice(0, 3);
+  // Use clean mock data for invoices
   const recentInvoices = mockInvoices.slice(0, 3);
+
+  // Calculate order statistics
+  const totalSpent = orders.reduce((sum, order) => {
+    const amount = typeof order.totalAmount === 'string' ? parseFloat(order.totalAmount) : order.totalAmount;
+    return sum + (isNaN(amount) ? 0 : amount);
+  }, 0);
+
+  const averageOrderValue = totalOrders > 0 ? totalSpent / totalOrders : 0;
+
+  // Calculate days since joined
+  const daysSinceJoined = Math.floor(
+    (new Date().getTime() - new Date(editData.joinDate).getTime()) / (1000 * 60 * 60 * 24)
+  );
+
+  // Get recent orders (first 3)
+  const recentOrders = orders.slice(0, 3);
 
   // Fetch user addresses for users
   useEffect(() => {
@@ -48,6 +66,20 @@ export function UserCard({ data, type }: UserCardProps) {
         .then(setAddresses)
         .catch(err => console.error('Failed to load addresses:', err))
         .finally(() => setIsLoadingAddresses(false));
+    }
+  }, [data.id, type]);
+
+  // Fetch user orders for users
+  useEffect(() => {
+    if (type === 'user') {
+      setIsLoadingOrders(true);
+      ApiService.getUserOrders(data.id, 100, 1)  // Fetch all orders for stats
+        .then(response => {
+          setOrders(response.orders);
+          setTotalOrders(response.meta.total);
+        })
+        .catch(err => console.error('Failed to load orders:', err))
+        .finally(() => setIsLoadingOrders(false));
     }
   }, [data.id, type]);
 
@@ -743,33 +775,38 @@ export function UserCard({ data, type }: UserCardProps) {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {recentOrders.map((order, index) => (
-                    <div key={order.id} className="flex items-center justify-between p-2 bg-background rounded">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-sm font-medium">#{order.id}</span>
-                          <Badge
-                            variant="outline"
-                            className={getStatusColor(order.status as any)}
-                          >
-                            {order.status}
-                          </Badge>
-                        </div>
-                        <p className="text-xs text-muted-foreground">{order.location}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm font-bold text-green-600">£{order.amount.toFixed(2)}</p>
-                        {order.rating && (
-                          <div className="flex items-center gap-1">
-                            <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                            <span className="text-xs">{order.rating}</span>
+                {isLoadingOrders ? (
+                  <p className="text-sm text-muted-foreground">Loading orders...</p>
+                ) : recentOrders.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No orders yet</p>
+                ) : (
+                  <div className="space-y-3">
+                    {recentOrders.map((order) => {
+                      const amount = typeof order.totalAmount === 'string' ? parseFloat(order.totalAmount) : order.totalAmount;
+                      return (
+                        <div key={order.id} className="flex items-center justify-between p-2 bg-background rounded">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-sm font-medium">{order.orderId}</span>
+                              <Badge
+                                variant="outline"
+                                className={getStatusColor(order.status as any)}
+                              >
+                                {order.status}
+                              </Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              {order.vendor?.storeName || 'Unknown vendor'} • {new Date(order.createdAt).toLocaleDateString()}
+                            </p>
                           </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                          <div className="text-right">
+                            <p className="text-sm font-bold text-green-600">£{amount.toFixed(2)}</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </CardContent>
             </Card>
 
