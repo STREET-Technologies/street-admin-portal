@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+/* STREET Brand Font */
+@font-face {
+  font-family: 'Hanson';
+  src: url('/fonts/Hanson-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+}
+
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
 */
@@ -18,8 +26,8 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 0%;
 
-    /* STREET Lime Green Primary */
-    --primary: 75 100% 50%;
+    /* STREET Lime Green Primary - #c6ff00 */
+    --primary: 73 100% 50%;
     --primary-foreground: 0 0% 0%;
 
     /* STREET Black Secondary */
@@ -30,8 +38,8 @@ All colors MUST be HSL.
     --muted: 0 0% 96%;
     --muted-foreground: 0 0% 64%;
 
-    /* STREET Accent */
-    --accent: 75 100% 50%;
+    /* STREET Accent - #c6ff00 */
+    --accent: 73 100% 50%;
     --accent-foreground: 0 0% 0%;
 
     --destructive: 0 84% 60%;
@@ -39,7 +47,7 @@ All colors MUST be HSL.
 
     --border: 0 0% 90%;
     --input: 0 0% 95%;
-    --ring: 75 100% 50%;
+    --ring: 73 100% 50%;
 
     --radius: 0.5rem;
 
@@ -105,7 +113,8 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground font-sans;
+    @apply bg-background text-foreground;
+    font-family: 'Barlow', sans-serif;
   }
 
   /* STREET Brand Typography */

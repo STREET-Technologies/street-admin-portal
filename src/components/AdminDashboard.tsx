@@ -54,12 +54,12 @@ export function AdminDashboard({ onLogout, currentUser }: AdminDashboardProps) {
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <h1 
-                className="street-logo text-3xl text-secondary cursor-pointer hover:opacity-80 transition-opacity"
+              <img
+                src="/img/logo-green-transparent.png"
+                alt="STREET Logo"
+                className="h-8 cursor-pointer hover:opacity-80 transition-opacity"
                 onClick={handleLogoClick}
-              >
-                STREET
-              </h1>
+              />
               <div className="w-8 h-0.5 street-gradient"></div>
               <span className="text-muted-foreground">Admin Portal</span>
             </div>
@@ -116,7 +116,11 @@ export function AdminDashboard({ onLogout, currentUser }: AdminDashboardProps) {
         {/* Default State */}
         {!searchResults && (
           <div className="text-center py-20">
-            <div className="street-logo text-8xl text-muted-foreground/20 mb-4">STREET</div>
+            <img
+              src="/img/logo-green-transparent.png"
+              alt="STREET Logo"
+              className="h-32 mx-auto mb-4 opacity-20"
+            />
             <h2 className="street-title text-2xl text-muted-foreground mb-2">Welcome to STREET admin {currentUser}</h2>
             <p className="text-muted-foreground mb-8">Use the search bar above to find users, retailers, couriers, or referral codes</p>
             
