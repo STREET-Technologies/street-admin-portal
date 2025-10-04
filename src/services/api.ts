@@ -320,4 +320,15 @@ export class ApiService {
       return [];
     }
   }
+
+  static async updateUserAddress(userId: string, addressId: string, data: Partial<UserAddress>): Promise<UserAddress> {
+    const response = await this.request<UserAddress>(
+      `/admin/users/${userId}/addresses/${addressId}`,
+      {
+        method: "PATCH",
+        body: JSON.stringify(data),
+      }
+    );
+    return response;
+  }
 }

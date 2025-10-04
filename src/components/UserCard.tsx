@@ -30,6 +30,9 @@ export function UserCard({ data, type }: UserCardProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [addresses, setAddresses] = useState<UserAddress[]>([]);
   const [isLoadingAddresses, setIsLoadingAddresses] = useState(false);
+  const [editingAddressId, setEditingAddressId] = useState<string | null>(null);
+  const [editingAddress, setEditingAddress] = useState<UserAddress | null>(null);
+  const [isSavingAddress, setIsSavingAddress] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -111,6 +114,56 @@ export function UserCard({ data, type }: UserCardProps) {
 
   const triggerFileUpload = () => {
     fileInputRef.current?.click();
+  };
+
+  const handleEditAddress = (address: UserAddress) => {
+    setEditingAddressId(address.id);
+    setEditingAddress({ ...address });
+  };
+
+  const handleCancelAddressEdit = () => {
+    setEditingAddressId(null);
+    setEditingAddress(null);
+  };
+
+  const handleSaveAddress = async () => {
+    if (!editingAddress || !editingAddressId) return;
+
+    setIsSavingAddress(true);
+    try {
+      const updated = await ApiService.updateUserAddress(
+        data.id,
+        editingAddressId,
+        editingAddress
+      );
+
+      // Update the addresses list with the updated address
+      setAddresses(prev =>
+        prev.map(addr => (addr.id === editingAddressId ? updated : addr))
+      );
+
+      setEditingAddressId(null);
+      setEditingAddress(null);
+
+      toast({
+        title: "Address Updated",
+        description: "Address has been updated successfully.",
+      });
+    } catch (error) {
+      console.error("Failed to save address:", error);
+      toast({
+        title: "Update Failed",
+        description: "Failed to save address. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingAddress(false);
+    }
+  };
+
+  const updateAddressField = (field: keyof UserAddress, value: any) => {
+    if (!editingAddress) return;
+    setEditingAddress(prev => prev ? { ...prev, [field]: value } : null);
   };
 
   const isRetailer = (entity: User | Retailer | Courier): entity is Retailer => {
@@ -548,26 +601,119 @@ export function UserCard({ data, type }: UserCardProps) {
               <p className="text-sm text-muted-foreground">No saved addresses</p>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {addresses.map((address) => (
-                  <Card key={address.id} className="bg-muted/30">
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{address.label}</span>
-                          {address.isDefault && (
-                            <Badge variant="default" className="text-xs">Default</Badge>
+                {addresses.map((address) => {
+                  const isEditingThis = editingAddressId === address.id;
+                  const displayAddress = isEditingThis ? editingAddress : address;
+
+                  if (!displayAddress) return null;
+
+                  return (
+                    <Card key={address.id} className="bg-muted/30">
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            {isEditingThis ? (
+                              <Input
+                                value={displayAddress.label}
+                                onChange={(e) => updateAddressField('label', e.target.value)}
+                                className="h-7 text-sm font-medium"
+                              />
+                            ) : (
+                              <span className="font-medium">{displayAddress.label}</span>
+                            )}
+                            {displayAddress.isDefault && (
+                              <Badge variant="default" className="text-xs">Default</Badge>
+                            )}
+                          </div>
+                          {!isEditingThis ? (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEditAddress(address)}
+                              className="h-7 px-2"
+                            >
+                              <Edit className="w-3 h-3" />
+                            </Button>
+                          ) : (
+                            <div className="flex gap-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={handleSaveAddress}
+                                disabled={isSavingAddress}
+                                className="h-7 px-2"
+                              >
+                                <Save className="w-3 h-3" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={handleCancelAddressEdit}
+                                disabled={isSavingAddress}
+                                className="h-7 px-2"
+                              >
+                                <X className="w-3 h-3" />
+                              </Button>
+                            </div>
                           )}
                         </div>
-                      </div>
-                      <div className="text-sm text-muted-foreground space-y-1">
-                        <p>{address.line1}</p>
-                        {address.line2 && <p>{address.line2}</p>}
-                        <p>{address.city}, {address.state}</p>
-                        <p>{address.postcode}, {address.country}</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                        <div className="text-sm text-muted-foreground space-y-2">
+                          {isEditingThis ? (
+                            <>
+                              <Input
+                                value={displayAddress.line1}
+                                onChange={(e) => updateAddressField('line1', e.target.value)}
+                                placeholder="Address Line 1"
+                                className="h-8 text-sm"
+                              />
+                              <Input
+                                value={displayAddress.line2 || ''}
+                                onChange={(e) => updateAddressField('line2', e.target.value)}
+                                placeholder="Address Line 2 (optional)"
+                                className="h-8 text-sm"
+                              />
+                              <div className="grid grid-cols-2 gap-2">
+                                <Input
+                                  value={displayAddress.city}
+                                  onChange={(e) => updateAddressField('city', e.target.value)}
+                                  placeholder="City"
+                                  className="h-8 text-sm"
+                                />
+                                <Input
+                                  value={displayAddress.state}
+                                  onChange={(e) => updateAddressField('state', e.target.value)}
+                                  placeholder="State"
+                                  className="h-8 text-sm"
+                                />
+                              </div>
+                              <div className="grid grid-cols-2 gap-2">
+                                <Input
+                                  value={displayAddress.postcode}
+                                  onChange={(e) => updateAddressField('postcode', e.target.value)}
+                                  placeholder="Postcode"
+                                  className="h-8 text-sm"
+                                />
+                                <Input
+                                  value={displayAddress.country}
+                                  onChange={(e) => updateAddressField('country', e.target.value)}
+                                  placeholder="Country"
+                                  className="h-8 text-sm"
+                                />
+                              </div>
+                            </>
+                          ) : (
+                            <>
+                              <p>{displayAddress.line1}</p>
+                              {displayAddress.line2 && <p>{displayAddress.line2}</p>}
+                              <p>{displayAddress.city}, {displayAddress.state}</p>
+                              <p>{displayAddress.postcode}, {displayAddress.country}</p>
+                            </>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
             )}
           </div>
