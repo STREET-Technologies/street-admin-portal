@@ -30,7 +30,7 @@ export function MetricsCards({ data, type }: MetricsCardsProps) {
           },
           {
             title: "Avg Order Value",
-            value: `£${(userData.totalSpent / userData.totalOrders).toFixed(2)}`,
+            value: `£${userData.totalOrders > 0 ? (userData.totalSpent / userData.totalOrders).toFixed(2) : '0.00'}`,
             icon: TrendingUp,
             color: "text-purple-600",
             bgColor: "bg-purple-100"
@@ -64,7 +64,7 @@ export function MetricsCards({ data, type }: MetricsCardsProps) {
           },
           {
             title: "Avg Order Value",
-            value: `£${(retailerData.totalRevenue / retailerData.totalOrders).toFixed(2)}`,
+            value: `£${retailerData.totalOrders > 0 ? (retailerData.totalRevenue / retailerData.totalOrders).toFixed(2) : '0.00'}`,
             icon: TrendingUp,
             color: "text-purple-600",
             bgColor: "bg-purple-100"
