@@ -91,15 +91,31 @@ export function OrdersDialog({ open, onOpenChange, orders, userType, userName }:
                         {order.orderItems.map((item) => {
                           const price = typeof item.price === 'string' ? parseFloat(item.price) : item.price;
                           const totalPrice = typeof item.totalPrice === 'string' ? parseFloat(item.totalPrice) : item.totalPrice;
+
+                          // Extract product name and variant details from metadata
+                          const productName = item.metadata?.productName || item.metadata?.title || item.productId;
+                          const variantDetails = item.metadata?.optionValues?.map((opt: any) =>
+                            `${opt.option?.name || 'Option'}: ${opt.value}`
+                          ).join(' | ') || item.metadata?.variant_title || '';
+
+                          const productImage = item.metadata?.images?.[0]?.src;
+
                           return (
-                            <div key={item.id} className="flex justify-between items-center p-2 bg-muted/50 rounded">
+                            <div key={item.id} className="flex justify-between items-center p-2 bg-muted/50 rounded gap-3">
+                              {productImage && (
+                                <img
+                                  src={productImage}
+                                  alt={productName}
+                                  className="w-12 h-12 object-cover rounded"
+                                />
+                              )}
                               <div className="flex-1">
                                 <p className="text-sm font-medium">
-                                  Product: {item.metadata?.title || item.productId}
-                                  {item.metadata?.variant_title && ` - ${item.metadata.variant_title}`}
+                                  {productName}
                                 </p>
                                 <p className="text-xs text-muted-foreground">
-                                  Quantity: {item.quantity} × £{price.toFixed(2)}
+                                  {variantDetails && <span className="font-medium">{variantDetails} • </span>}
+                                  Quantity: {item.quantity}
                                 </p>
                               </div>
                               <span className="text-sm font-bold">£{totalPrice.toFixed(2)}</span>
