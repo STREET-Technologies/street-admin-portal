@@ -4,56 +4,102 @@ This document explains how the STREET admin portal integrates with the backend A
 
 ## Current Backend Status
 
-The `street_backend` repo is a NestJS application that:
+The `street-backend` repo is a NestJS application that:
 - Runs on port **8080** (default: `process.env.PORT || 8080`)
 - Has global prefix `/v1`
 - Uses JWT Bearer authentication (`@UseGuards(JwtAuthGuard)`)
 - Swagger documentation at `http://localhost:8080/api`
 
-### Available Endpoints (as of current implementation)
+## Admin Portal Endpoints
 
-**✅ Currently Implemented:**
-- `PATCH /v1/users/:id` - Update user information
-  - Accepts: `{ firstName?, lastName?, email?, phone?, language?, profileImage? }`
-  - Returns: `{ message: string, data: User }`
-  - Auth: Required (JWT)
+The admin portal uses dedicated admin endpoints that **do not require authentication** (for internal admin use only).
 
-- `GET /v1/vendors` - List vendors with pagination and search
-  - Query params: `?page=1&limit=20&name=searchterm`
-  - Returns: `{ vendors: Vendor[], total: number, page: number, limit: number }`
-  - Auth: Required (JWT)
+### ✅ Implemented Admin Endpoints
 
-- `GET /v1/vendors/:vendorId` - Get vendor details
-  - Returns: Vendor object
-  - Auth: Required (JWT)
+#### User Endpoints
 
-- `PATCH /v1/vendors/:vendorId` - Update vendor information
-  - Returns: `{ statusCode, timestamp, path, message, data: Vendor }`
-  - Auth: Required (JWT)
+**GET** `/v1/admin/users/:userId`
+- Get user details by ID
+- Returns: User object with basic info
+- No authentication required
 
-**❌ Missing Endpoints (needed for full admin portal):**
-- `GET /v1/users/:id` - Get single user by ID
-- `GET /v1/users?search=query` - Search users by name/email/phone
-- `GET /v1/users/suggestions?q=query` - User autocomplete
-- `GET /v1/vendors/suggestions?q=query` - Vendor autocomplete
-- All Courier endpoints (CRUD + search)
+**PATCH** `/v1/admin/users/:userId`
+- Update user information
+- Body: `{ firstName?, lastName?, email?, phone?, language?, profileImage? }`
+- Returns: `{ message: string, data: User }`
+- No authentication required
+
+**GET** `/v1/admin/users/:userId/addresses`
+- Get all saved addresses for a user
+- Returns: `UserAddress[]`
+- No authentication required
+
+**PATCH** `/v1/admin/users/:userId/addresses/:addressId`
+- Update a user's address
+- Body: `UpdateUserAddressDto` (all fields optional):
+  ```typescript
+  {
+    label?: string;
+    line1?: string;
+    line2?: string;
+    city?: string;
+    state?: string;
+    postcode?: string;
+    country?: string;
+    countryCode?: string;
+    latitude?: number;
+    longitude?: number;
+    isDefault?: boolean;
+  }
+  ```
+- Returns: Updated `UserAddress` object
+- Note: Latitude/longitude are stored as PostgreSQL decimals (returned as strings), but must be sent as numbers
+- No authentication required
+
+**GET** `/v1/admin/users/:userId/orders`
+- Get all orders for a user
+- Query params: `?limit=10&page=1`
+- Returns: `{ message: string, data: { orders: Order[], total: number, page: number, limit: number } }`
+- Includes: `vendor` relation and `orderItems` with full Shopify metadata
+- No authentication required
+
+#### Vendor/Retailer Endpoints
+
+**GET** `/v1/admin/vendors/:vendorId`
+- Get vendor details by ID
+- Returns: Vendor object
+- No authentication required
+
+**PATCH** `/v1/admin/vendors/:vendorId`
+- Update vendor information
+- Returns: `{ statusCode, timestamp, path, message, data: Vendor }`
+- No authentication required
+
+#### Referral Code Endpoints
+
+**POST** `/v1/admin/referral-codes`
+- Create a new referral code
+- Body: `CreateReferralCodeDto`
+- Returns: Created referral code object
+- No authentication required
+
+#### Search Endpoints
+
+The admin portal currently uses direct entity search by ID, email, or phone. Search is handled client-side in the frontend by querying users, vendors, and couriers separately.
 
 ## Setup
 
 ### 1. Environment Configuration
 
-Copy `.env.example` to `.env.local`:
+Copy `.env.example` to `.env`:
 
 ```bash
-cp .env.example .env.local
+cp .env.example .env
 ```
 
-Update `.env.local` with your configuration:
+Update `.env` with your configuration:
 
 ```env
-# Set to false to use real backend API
-VITE_USE_MOCK_DATA=false
-
 # Backend API URL (port 8080, prefix /v1)
 VITE_API_BASE_URL=http://localhost:8080/v1
 ```
@@ -63,55 +109,23 @@ VITE_API_BASE_URL=http://localhost:8080/v1
 For production deployment:
 
 ```env
-VITE_USE_MOCK_DATA=false
-VITE_API_BASE_URL=https://streetadmin.tech/v1
+VITE_API_BASE_URL=https://api.street.london/v1
 ```
 
-### 3. Backend Endpoint Details
-
-#### User Endpoints
-
-- **GET** `/api/users/search?q={query}` - Search for a user by name, email, phone, ID, or UID
-  - Returns: `User` object or `404`
-
-- **PATCH** `/api/users/{userId}` - Update user information
-  - Body: Partial `User` object
-  - Returns: Updated `User` object
-
-- **GET** `/api/users/suggestions?q={query}` - Get autocomplete suggestions
-  - Returns: `{ suggestions: string[] }` (max 5 suggestions)
-
-#### Retailer Endpoints
-
-- **GET** `/api/retailers/search?q={query}` - Search for a retailer
-  - Returns: `Retailer` object or `404`
-
-- **PATCH** `/api/retailers/{retailerId}` - Update retailer information
-  - Body: Partial `Retailer` object
-  - Returns: Updated `Retailer` object
-
-- **GET** `/api/retailers/suggestions?q={query}` - Get autocomplete suggestions
-  - Returns: `{ suggestions: string[] }` (max 5 suggestions)
-
-#### Courier Endpoints
-
-- **GET** `/api/couriers/search?q={query}` - Search for a courier
-  - Returns: `Courier` object or `404`
-
-- **PATCH** `/api/couriers/{courierId}` - Update courier information
-  - Body: Partial `Courier` object
-  - Returns: Updated `Courier` object
-
-- **GET** `/api/couriers/suggestions?q={query}` - Get autocomplete suggestions
-  - Returns: `{ suggestions: string[] }` (max 5 suggestions)
-
-### 3. Data Types
+## Data Types
 
 See `src/types/index.ts` for complete TypeScript definitions.
 
-#### User
+### User
+
 ```typescript
-{
+interface User extends BaseEntity {
+  totalOrders: number;
+  totalSpent: number;
+  ssoProvider?: string;
+}
+
+interface BaseEntity {
   id: string;
   name: string;
   email: string;
@@ -121,26 +135,17 @@ See `src/types/index.ts` for complete TypeScript definitions.
   joinDate: string;
   deviceId: string;
   uid: string;
-  totalOrders: number;
-  totalSpent: number;
 }
 ```
 
-#### Retailer
+### Retailer
+
 ```typescript
-{
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  avatar?: string;
-  status: string;
-  joinDate: string;
-  deviceId: string;
-  uid: string;
+interface Retailer extends BaseEntity {
   totalOrders: number;
   totalRevenue: number;
   address: string;
+  postcode?: string;
   contact: string;
   category: string;
   pocManager?: string;
@@ -151,59 +156,149 @@ See `src/types/index.ts` for complete TypeScript definitions.
 }
 ```
 
-#### Courier
+### Courier
+
 ```typescript
-{
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  avatar?: string;
-  status: string;
-  joinDate: string;
-  deviceId: string;
-  uid: string;
+interface Courier extends BaseEntity {
   totalDeliveries: number;
   averageRating: number;
 }
 ```
 
-## Testing with dev-backend-docker
+### UserAddress
 
-1. Make sure your `dev-backend-docker` is running:
+```typescript
+interface UserAddress {
+  id: string;
+  userId: string;
+  label: string;
+  line1: string;
+  line2?: string;
+  city: string;
+  state: string;
+  postcode: string;
+  country: string;
+  countryCode: string;
+  latitude?: number;
+  longitude?: number;
+  isDefault: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+```
+
+### Order
+
+```typescript
+interface Order {
+  id: string;
+  orderId: string;
+  totalAmount: string | number;
+  subtotal: string | number;
+  status: string;
+  shippingAddress?: any;
+  paymentStatus: string;
+  paymentMethod: string;
+  stuartJobId?: string | null;
+  deliveryDetails?: any;
+  createdAt: string;
+  updatedAt: string;
+  vendor?: {
+    id: string;
+    storeName: string;
+    logo?: string;
+  };
+  orderItems?: OrderItem[];
+}
+```
+
+### OrderItem
+
+```typescript
+interface OrderItem {
+  id: string;
+  productId: string;
+  variantId: string;
+  quantity: number;
+  price: string | number;
+  totalPrice: string | number;
+  metadata?: {
+    id: string;
+    sku: string;
+    price: string;
+    title: string;
+    images: Array<{
+      id: number;
+      src: string;
+      width: number;
+      height: number;
+      altText: string;
+      position: number;
+    }>;
+    productId: string;
+    productName: string;
+    optionValues: Array<{
+      id: string;
+      value: string;
+      option: {
+        id: string;
+        name: string;
+      };
+    }>;
+    packingState: {
+      status: string;
+      packedAt: string;
+      bagNumber: number;
+    };
+    inventoryQuantity: number;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+```
+
+### ReferralCode
+
+```typescript
+interface ReferralCode {
+  id: string;
+  code: string;
+  status: ReferralCodeStatus;
+  expiryDate: string;
+  creditAmount?: number;
+  freeDeliveries?: number;
+  createdBy: string;
+  belongsTo: string;
+  usedBy?: string;
+  usedDate?: string;
+  createdDate: string;
+}
+```
+
+## Testing with Backend
+
+1. Make sure your backend is running:
    ```bash
-   # In the street_backend repo
+   # In the street-backend repo
    docker-compose up
    ```
 
-2. Update `.env.local`:
+2. Update `.env`:
    ```env
-   VITE_USE_MOCK_DATA=false
    VITE_API_BASE_URL=http://localhost:8080/v1
    ```
 
-3. **Important:** You need a valid JWT token for authentication
-   - Store it in localStorage: `localStorage.setItem('auth_token', 'your-jwt-token')`
-   - Or implement a login flow in the admin portal
-
-4. Start the admin portal:
+3. Start the admin portal:
    ```bash
    npm run dev
    ```
 
-5. Test the search functionality:
-   - Vendor search should work (searches by name)
-   - User search will need the missing endpoints to be implemented first
-
-## Mock Data Mode
-
-To test the UI without a backend:
-
-```env
-VITE_USE_MOCK_DATA=true
-```
-
-This will use the mock data from `src/data/mockData.ts` instead of making API calls.
+4. Test the functionality:
+   - Search for users, retailers, or couriers by ID, email, or phone
+   - View user details with addresses and orders
+   - Edit user addresses
+   - View order details with product images and variants
+   - Create referral codes
 
 ## API Service
 
@@ -212,73 +307,150 @@ The API service is located at `src/services/api.ts` and provides:
 - Centralized API calls with error handling
 - Type-safe request/response handling
 - Easy to extend for new endpoints
+- Automatic data transformation (e.g., lat/lng strings to numbers)
 
-Example usage:
+### Available Methods
+
+```typescript
+// User operations
+static async getUser(userId: string): Promise<BackendUser>
+static async updateUser(userId: string, data: Partial<User>): Promise<User>
+
+// User addresses
+static async getUserAddresses(userId: string): Promise<UserAddress[]>
+static async updateUserAddress(userId: string, addressId: string, data: Partial<UserAddress>): Promise<UserAddress>
+
+// User orders
+static async getUserOrders(userId: string, limit = 10, page = 1): Promise<OrdersResponse>
+
+// Vendor operations
+static async getVendor(vendorId: string): Promise<BackendVendor>
+static async updateVendor(vendorId: string, data: Partial<Retailer>): Promise<Retailer>
+
+// Referral codes
+static async createReferralCode(data: any): Promise<ReferralCode>
+```
+
+### Example Usage
+
 ```typescript
 import { ApiService } from '@/services/api';
 
-// Get a user
-const user = await ApiService.getUser('john@example.com');
+// Get user with addresses
+const user = await ApiService.getUser('221b3c4c-f9fa-483f-aead-1174dd752521');
+const addresses = await ApiService.getUserAddresses(user.id);
 
-// Update a user
-const updatedUser = await ApiService.updateUser('user123', {
-  status: 'active',
-  name: 'John Updated'
-});
+// Update an address
+const updatedAddress = await ApiService.updateUserAddress(
+  user.id,
+  addressId,
+  { label: 'Work', isDefault: true }
+);
+
+// Get user orders
+const { data } = await ApiService.getUserOrders(user.id, 10, 1);
+console.log(data.orders); // Array of orders with items and vendor info
 ```
 
 ## Search Implementation
 
-The search implementation supports:
+The search service (`src/services/searchService.ts`) provides unified search across users, retailers, and couriers:
 
-1. **Multi-field search**: Searches by name, email, phone, ID, or UID
-2. **Autocomplete**: Real-time suggestions as you type
-3. **Type-specific search**: Separate search for users, retailers, and couriers
-4. **Fallback handling**: Falls back to mock data if API fails
+1. **Multi-entity search**: Searches users, retailers, and couriers in parallel
+2. **Multi-field search**: Searches by ID, email, or phone
+3. **Type-specific results**: Returns results with entity type identification
+4. **Error handling**: Graceful handling of failed searches
 
-## Recommendations for UI/UX Improvements
+## Important Notes
 
-Current implementation is solid for an admin tool, but consider these enhancements:
+### Data Type Conversions
 
-### 1. Debounced Search
-Add debouncing to autocomplete to reduce API calls:
-```typescript
-import { useDebouncedCallback } from 'use-debounce';
+- **PostgreSQL Decimals**: Backend returns `latitude` and `longitude` as strings (PostgreSQL decimal type)
+- **Frontend Handling**: API service automatically converts these to numbers before PATCH requests
+- **Order Amounts**: `totalAmount`, `price`, and `totalPrice` can be strings or numbers - handle both
 
-const debouncedSearch = useDebouncedCallback(
-  (value) => handleInputChange(value),
-  300
-);
-```
+### Order Items Metadata
 
-### 2. Recent Searches
-Store recent searches in localStorage for quick access:
-```typescript
-const recentSearches = JSON.parse(localStorage.getItem('recentSearches') || '[]');
-```
+Order items contain rich Shopify product metadata including:
+- Product name and images
+- Variant options (size, color, etc.)
+- Inventory information
+- Packing state
+- SKU and pricing
 
-### 3. Advanced Filters
-Add filters for:
-- Status (active, inactive, etc.)
-- Date range (joined date)
-- Sort options (name, recent activity, etc.)
+The frontend uses this metadata to display:
+- Product thumbnails (48x48px)
+- Product names from `metadata.productName`
+- Variant details from `metadata.optionValues` (e.g., "Size: 10")
 
-### 4. Bulk Operations
-For managing multiple entities at once
+### Status Values
 
-### 5. Export Functionality
-Export search results to CSV/Excel
+Common status values used across entities:
 
-## Error Handling
+**EntityStatus**: `"active" | "inactive" | "pending" | "blocked" | "withdrawn" | "onboarding" | "online"`
 
-The API service includes:
-- Network error handling
-- HTTP error status handling
-- Fallback to mock data on error
-- Console logging for debugging
+**OrderStatus**: `"delivered" | "completed" | "pending" | "cancelled" | "in-progress"`
+
+**ReferralCodeStatus**: `"active" | "expired" | "used" | "disabled"`
+
+## Backend Implementation Details
+
+### Admin Module Structure
+
+The backend admin module is located at:
+- Controller: `src/modules/v1/admin/admin.controller.ts`
+- Module: `src/modules/v1/admin/admin.module.ts`
+
+The module imports:
+- `VendorsModule`
+- `UsersModule`
+- `UserAddressesModule`
+- `OrdersModule`
+
+And provides admin-specific endpoints without authentication guards.
+
+### DTOs
+
+**UpdateUserAddressDto** (`src/modules/v1/user-addresses/dtos/update-user-address.dto.ts`):
+- All fields are optional (@IsOptional)
+- Latitude/longitude must be numbers (@IsNumber)
+- Used for PATCH `/admin/users/:userId/addresses/:addressId`
+
+### Repository Methods
+
+**OrdersRepository** (`src/modules/v1/orders/repositories/orders.repository.ts`):
+- `getOrdersByUser()` includes `orderItems` and `vendor` relations
+- Ordered by `createdAt DESC`
+- Supports pagination with `limit` and `offset`
+
+**UserAddressesRepository** (`src/modules/v1/user-addresses/repositories/user-addresses.repository.ts`):
+- `getUserAddresses()` returns all addresses for a user
+- `updateAddress()` updates and returns the updated address
 
 ## Security Notes
 
-- API calls should include authentication headers
-- Sensitive operations should require additional confirmation
-- All access should be logged for audit purposes
+- Admin endpoints do not require authentication (internal use only)
+- Should be protected by network-level security (VPN, IP whitelist, etc.)
+- All operations should be logged for audit purposes
+- Consider adding role-based access control for production use
+- Validate all user inputs on the backend with DTOs and class-validator
+
+## Future Enhancements
+
+### Recommended Features
+
+1. **Authentication**: Add admin user authentication with JWT
+2. **Role-based Access**: Different permission levels (super admin, support, readonly)
+3. **Audit Logging**: Track all admin actions with timestamps and user info
+4. **Bulk Operations**: Update multiple entities at once
+5. **Advanced Filtering**: Filter orders by date range, status, amount, etc.
+6. **Export Functionality**: Export data to CSV/Excel
+7. **Real-time Updates**: WebSocket support for live order updates
+8. **Analytics Dashboard**: Aggregate statistics and charts
+
+### Performance Optimizations
+
+1. **Caching**: Add Redis caching for frequently accessed data
+2. **Pagination**: Implement cursor-based pagination for large datasets
+3. **Search Indexing**: Use Elasticsearch for full-text search
+4. **Database Indexing**: Add indexes on commonly searched fields (email, phone, orderId)
