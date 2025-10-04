@@ -175,21 +175,29 @@ export class ApiService {
   }
 
   static async updateUser(userId: string, data: Partial<User>): Promise<User> {
-    // Backend endpoint: PATCH /v1/users/:id
-    // Accepts: { firstName, lastName, email, phone, language, profileImage }
-    const updateData = {
-      firstName: data.name?.split(' ')[0],
-      lastName: data.name?.split(' ').slice(1).join(' '),
-      email: data.email,
-      phone: data.phone,
-      language: (data as any).language,
-      profileImage: data.avatar,
-    };
+    // Backend endpoint: PATCH /v1/admin/users/:id (no auth required)
+    // Transform frontend User fields to backend User fields
+    const backendData: any = {};
 
-    return await this.request<User>(`/users/${userId}`, {
-      method: "PATCH",
-      body: JSON.stringify(updateData),
-    });
+    if (data.name) {
+      const nameParts = data.name.split(' ');
+      backendData.firstName = nameParts[0];
+      backendData.lastName = nameParts.slice(1).join(' ');
+    }
+    if (data.email) backendData.email = data.email;
+    if (data.phone) backendData.phone = data.phone;
+    if (data.avatar) backendData.profileImage = data.avatar;
+
+    const response = await this.request<BackendUser>(
+      `/admin/users/${userId}`,
+      {
+        method: "PATCH",
+        body: JSON.stringify(backendData),
+      }
+    );
+
+    // The request method already unwraps the { data: ... } wrapper
+    return transformBackendUser(response);
   }
 
   // Vendor/Retailer endpoints
