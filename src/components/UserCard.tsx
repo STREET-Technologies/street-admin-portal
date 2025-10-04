@@ -430,67 +430,63 @@ export function UserCard({ data, type }: UserCardProps) {
           </div>
         ) : (
           <div className="space-y-3">
-            <h4 className="font-semibold text-lg">Contact Information & Saved Addresses</h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <h4 className="font-semibold text-lg">Contact Information</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-3">
-                <div>
-                  <h5 className="text-sm font-medium mb-2 flex items-center gap-2">
-                    <Mail className="w-4 h-4" />
-                    Email Addresses
-                  </h5>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between p-2 bg-muted/30 rounded">
-                      <span className="text-sm">{editData.email}</span>
-                      <div className="flex gap-1">
-                        <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
-                          Primary
-                        </Badge>
-                        <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
-                          Verified
-                        </Badge>
+                <div className="flex items-start gap-2">
+                  <span className="text-sm font-medium w-20">Email:</span>
+                  {isEditing ? (
+                    <Input
+                      type="email"
+                      value={editData.email || ""}
+                      onChange={(e) => updateEditData('email', e.target.value)}
+                      className="text-sm h-8"
+                      placeholder="Not available"
+                    />
+                  ) : (
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm">{editData.email || "Not available"}</span>
+                        {editData.email && (
+                          <>
+                            <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+                              Primary
+                            </Badge>
+                            <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                              Verified
+                            </Badge>
+                          </>
+                        )}
                       </div>
                     </div>
-                    {type === "user" && (
-                      <div className="flex items-center justify-between p-2 bg-muted/30 rounded">
-                        <span className="text-sm">alex.work@company.com</span>
-                        <div className="flex gap-1">
-                          <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
-                            Verified
-                          </Badge>
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                  )}
                 </div>
-                
-                <div>
-                  <h5 className="text-sm font-medium mb-2 flex items-center gap-2">
-                    <Phone className="w-4 h-4" />
-                    Phone Numbers
-                  </h5>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between p-2 bg-muted/30 rounded">
-                      <span className="text-sm">{editData.phone}</span>
-                      <div className="flex gap-1">
-                        <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
-                          Primary
-                        </Badge>
-                        <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
-                          Verified
-                        </Badge>
+                <div className="flex items-start gap-2">
+                  <span className="text-sm font-medium w-20">Phone:</span>
+                  {isEditing ? (
+                    <Input
+                      value={editData.phone || ""}
+                      onChange={(e) => updateEditData('phone', e.target.value)}
+                      className="text-sm h-8"
+                      placeholder="Not available"
+                    />
+                  ) : (
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm">{editData.phone || "Not available"}</span>
+                        {editData.phone && (
+                          <>
+                            <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+                              Primary
+                            </Badge>
+                            <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                              Verified
+                            </Badge>
+                          </>
+                        )}
                       </div>
                     </div>
-                    {type === "user" && (
-                      <div className="flex items-center justify-between p-2 bg-muted/30 rounded">
-                        <span className="text-sm">+1 555-0124</span>
-                        <div className="flex gap-1">
-                          <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200">
-                            Unverified
-                          </Badge>
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                  )}
                 </div>
               </div>
               
@@ -505,29 +501,6 @@ export function UserCard({ data, type }: UserCardProps) {
                     <span className="text-sm font-bold text-yellow-600">{editData.averageRating}/5.0 rating</span>
                   </div>
                 )}
-              </div>
-              
-              {/* Saved Addresses */}
-              <div className="space-y-3">
-                <h5 className="text-sm font-medium mb-2 flex items-center gap-2">
-                  <MapPin className="w-4 h-4" />
-                  Saved Addresses
-                </h5>
-                <div className="space-y-2">
-                  <div className="p-2 bg-muted/30 rounded">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-medium text-xs">Home</span>
-                      <Badge variant="outline" className="text-xs">Default</Badge>
-                    </div>
-                    <p className="text-xs text-muted-foreground">123 Regent Street, London W1B 4EA</p>
-                  </div>
-                  <div className="p-2 bg-muted/30 rounded">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-medium text-xs">Work</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground">45 Oxford Street, London W1D 2DZ</p>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
