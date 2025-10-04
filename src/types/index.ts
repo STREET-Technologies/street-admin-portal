@@ -37,6 +37,18 @@ export interface Courier extends BaseEntity {
   averageRating: number;
 }
 
+export interface OrderItem {
+  id: string;
+  productId: string;
+  variantId: string;
+  quantity: number;
+  price: string | number;
+  totalPrice: string | number;
+  metadata?: any;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Order {
   id: string;
   orderId: string;
@@ -55,6 +67,7 @@ export interface Order {
     storeName: string;
     logo?: string;
   };
+  orderItems?: OrderItem[];
 }
 
 export interface Invoice {

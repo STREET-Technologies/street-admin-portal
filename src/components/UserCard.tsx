@@ -58,6 +58,11 @@ export function UserCard({ data, type }: UserCardProps) {
   // Get recent orders (first 3)
   const recentOrders = orders.slice(0, 3);
 
+  // Filter orders for dialog - only DELIVERED and CANCELLED
+  const filteredOrdersForDialog = orders.filter(order =>
+    order.status === 'DELIVERED' || order.status === 'CANCELLED'
+  );
+
   // Fetch user addresses for users
   useEffect(() => {
     if (type === 'user') {
@@ -768,7 +773,7 @@ export function UserCard({ data, type }: UserCardProps) {
                     variant="ghost"
                     size="sm"
                     onClick={() => setOrdersDialogOpen(true)}
-                    className="text-primary hover:text-primary/80"
+                    className="text-foreground hover:text-foreground/80"
                   >
                     View All <ChevronRight className="w-4 h-4 ml-1" />
                   </Button>
@@ -855,10 +860,10 @@ export function UserCard({ data, type }: UserCardProps) {
           </div>
         </div>
 
-        <OrdersDialog 
-          open={ordersDialogOpen} 
+        <OrdersDialog
+          open={ordersDialogOpen}
           onOpenChange={setOrdersDialogOpen}
-          orders={mockOrders}
+          orders={filteredOrdersForDialog}
           userType={type}
           userName={editData.name}
         />

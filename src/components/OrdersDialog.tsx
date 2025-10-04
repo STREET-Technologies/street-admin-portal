@@ -3,16 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Star, MapPin, Calendar, Package } from "lucide-react";
-
-interface Order {
-  id: string;
-  amount: number;
-  location: string;
-  dateTime: string;
-  status: string;
-  rating?: number;
-  items?: string[];
-}
+import type { Order } from "@/types";
 
 interface OrdersDialogProps {
   open: boolean;
@@ -61,9 +52,9 @@ export function OrdersDialog({ open, onOpenChange, orders, userType, userName }:
                     <div className="flex items-center gap-3">
                       <Package className="w-5 h-5 text-muted-foreground" />
                       <div>
-                        <h3 className="font-semibold text-black hover:text-primary transition-colors cursor-pointer">Order #{order.id}</h3>
+                        <h3 className="font-semibold text-black hover:text-primary transition-colors cursor-pointer">{order.orderId}</h3>
                         <p className="text-sm text-muted-foreground">
-                          {userType === "retail" ? "Customer Order" : "Your Order"}
+                          {order.vendor?.storeName || 'Unknown vendor'}
                         </p>
                       </div>
                     </div>
@@ -71,43 +62,50 @@ export function OrdersDialog({ open, onOpenChange, orders, userType, userName }:
                       {order.status}
                     </Badge>
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium text-black hover:text-primary transition-colors">Amount:</span>
-                      <span className="text-sm font-bold text-green-600">£{order.amount.toFixed(2)}</span>
+                      <span className="text-sm font-bold text-green-600">
+                        £{(typeof order.totalAmount === 'string' ? parseFloat(order.totalAmount) : order.totalAmount).toFixed(2)}
+                      </span>
                     </div>
-                    
+
                     <div className="flex items-center gap-2">
                       <MapPin className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm text-black hover:text-primary transition-colors">{order.location}</span>
+                      <span className="text-sm text-black hover:text-primary transition-colors">
+                        {order.shippingAddress?.city || 'N/A'}
+                      </span>
                     </div>
-                    
+
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm text-black hover:text-primary transition-colors">{formatDate(order.dateTime)}</span>
+                      <span className="text-sm text-black hover:text-primary transition-colors">{formatDate(order.createdAt)}</span>
                     </div>
                   </div>
-                  
-                  {order.rating && (
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-sm font-medium">Rating:</span>
-                      <div className="flex items-center gap-1">
-                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                        <span className="text-sm font-bold">{order.rating}/5</span>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {order.items && order.items.length > 0 && (
+
+                  {order.orderItems && order.orderItems.length > 0 && (
                     <div className="mt-3">
-                      <span className="text-sm font-medium">Items:</span>
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {order.items.map((item, idx) => (
-                          <Badge key={idx} variant="secondary" className="text-xs">
-                            {item}
-                          </Badge>
-                        ))}
+                      <span className="text-sm font-medium">Order Items:</span>
+                      <div className="mt-2 space-y-2">
+                        {order.orderItems.map((item) => {
+                          const price = typeof item.price === 'string' ? parseFloat(item.price) : item.price;
+                          const totalPrice = typeof item.totalPrice === 'string' ? parseFloat(item.totalPrice) : item.totalPrice;
+                          return (
+                            <div key={item.id} className="flex justify-between items-center p-2 bg-muted/50 rounded">
+                              <div className="flex-1">
+                                <p className="text-sm font-medium">
+                                  Product: {item.metadata?.title || item.productId}
+                                  {item.metadata?.variant_title && ` - ${item.metadata.variant_title}`}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  Quantity: {item.quantity} × £{price.toFixed(2)}
+                                </p>
+                              </div>
+                              <span className="text-sm font-bold">£{totalPrice.toFixed(2)}</span>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   )}
