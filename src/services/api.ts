@@ -322,11 +322,24 @@ export class ApiService {
   }
 
   static async updateUserAddress(userId: string, addressId: string, data: Partial<UserAddress>): Promise<UserAddress> {
+    // Transform latitude and longitude to numbers if they exist
+    const transformedData: any = { ...data };
+    if (transformedData.latitude !== undefined && transformedData.latitude !== null) {
+      transformedData.latitude = typeof transformedData.latitude === 'string'
+        ? parseFloat(transformedData.latitude)
+        : transformedData.latitude;
+    }
+    if (transformedData.longitude !== undefined && transformedData.longitude !== null) {
+      transformedData.longitude = typeof transformedData.longitude === 'string'
+        ? parseFloat(transformedData.longitude)
+        : transformedData.longitude;
+    }
+
     const response = await this.request<UserAddress>(
       `/admin/users/${userId}/addresses/${addressId}`,
       {
         method: "PATCH",
-        body: JSON.stringify(data),
+        body: JSON.stringify(transformedData),
       }
     );
     return response;
