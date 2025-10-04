@@ -214,10 +214,12 @@ export function UserCard({ data, type }: UserCardProps) {
                   <span className="font-medium">ID:</span>
                   <code className="bg-muted px-2 py-1 rounded text-sm">{editData.id}</code>
                 </p>
-                <p className="flex items-center gap-2">
-                  <span className="font-medium">{type === 'retail' ? 'Store URL:' : 'UID:'}</span>
-                  <code className="bg-muted px-2 py-1 rounded text-sm">{editData.uid}</code>
-                </p>
+                {type === 'retail' && (
+                  <p className="flex items-center gap-2">
+                    <span className="font-medium">Store URL:</span>
+                    <code className="bg-muted px-2 py-1 rounded text-sm">{editData.uid}</code>
+                  </p>
+                )}
                 <p className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
                   <span className="text-sm">Joined {new Date(editData.joinDate).toLocaleDateString()}</span>
