@@ -492,6 +492,20 @@ export function UserCard({ data, type }: UserCardProps) {
                     </div>
                   )}
                 </div>
+
+                {isUser(editData) && (
+                  <div className="flex items-start gap-2">
+                    <span className="text-sm font-medium w-20">Sign Up:</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">
+                        {editData.ssoProvider ? editData.ssoProvider.charAt(0).toUpperCase() + editData.ssoProvider.slice(1) : 'OTP'}
+                      </span>
+                      <Badge variant="outline" className="text-xs">
+                        {editData.ssoProvider ? 'SSO' : 'Phone'}
+                      </Badge>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {isCourier(editData) && (

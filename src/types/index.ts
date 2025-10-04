@@ -15,6 +15,7 @@ export interface BaseEntity {
 export interface User extends BaseEntity {
   totalOrders: number;
   totalSpent: number;
+  ssoProvider?: string;
 }
 
 export interface Retailer extends BaseEntity {

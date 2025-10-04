@@ -37,6 +37,7 @@ interface BackendUser {
   firstName: string | null;
   lastName: string | null;
   role: string;
+  ssoProvider: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -82,6 +83,7 @@ const transformBackendUser = (user: BackendUser): User => {
     uid: `user_${user.id.split('-')[0]}`,
     totalOrders: 0, // TODO: Should come from backend
     totalSpent: 0, // TODO: Should come from backend
+    ssoProvider: user.ssoProvider || undefined,
   };
 };
 
@@ -188,6 +190,8 @@ export class ApiService {
     if (data.phone) backendData.phone = data.phone;
     if (data.avatar) backendData.profileImage = data.avatar;
 
+    console.log('[API] Sending user PATCH request with data:', backendData);
+
     const response = await this.request<BackendUser>(
       `/admin/users/${userId}`,
       {
@@ -195,6 +199,8 @@ export class ApiService {
         body: JSON.stringify(backendData),
       }
     );
+
+    console.log('[API] User PATCH response:', response);
 
     // The request method already unwraps the { data: ... } wrapper
     return transformBackendUser(response);
