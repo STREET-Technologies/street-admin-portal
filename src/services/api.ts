@@ -118,6 +118,7 @@ export class ApiService {
 
     const config: RequestInit = {
       ...options,
+      credentials: 'include', // Send cookies with all requests
       headers: {
         ...defaultHeaders,
         ...options.headers,
