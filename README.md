@@ -184,8 +184,7 @@ See [TESTING.md](TESTING.md) for testing guidelines and procedures.
 
 ### Getting Started
 - [🚀 Quick Start Guide](QUICK_START.md) - Get up and running in 5 minutes
-- [📦 Production Deployment](PRODUCTION_DEPLOYMENT.md) - Deploy to Vercel (streetadmin.tech)
-- [✅ Deploy Checklist](DEPLOY_CHECKLIST.md) - Quick deployment checklist
+- [📦 Deploy to Vercel](DEPLOY_TO_VERCEL.md) - Production deployment guide (streetadmin.tech)
 
 ### Authentication
 - [🔐 Google SSO Setup](docs/GOOGLE_SSO_SETUP.md) - Detailed OAuth configuration
