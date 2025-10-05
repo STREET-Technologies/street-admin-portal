@@ -31,7 +31,7 @@ cd /d/git_repo/street-admin-portal
 npm run dev
 ```
 
-Open browser to: `http://localhost:5174`
+Open browser to: `http://localhost:8081`
 
 ## Step 4: Test Login
 

@@ -12,7 +12,7 @@
          ▼
 ┌─────────────────────────────────┐
 │   Admin Portal (Frontend)        │
-│   http://localhost:5174          │
+│   http://localhost:8081          │
 │                                  │
 │   - Shows "Sign in with Google"  │
 │   - On click → redirects to:     │
@@ -66,7 +66,7 @@
          ▼
 ┌─────────────────────────────────────────────┐
 │   Admin Portal (Frontend)                    │
-│   http://localhost:5174?auth=success         │
+│   http://localhost:8081?auth=success         │
 │                                              │
 │   - Detects auth=success param              │
 │   - Calls GET /v1/auth/me                   │
@@ -270,7 +270,7 @@ https://accounts.google.com/o/oauth2/v2/auth?client_id=...
 http://localhost:8080/v1/auth/admin/google/callback?code=...
 
 # Step 4: Backend redirects to admin portal
-http://localhost:5174?auth=success
+http://localhost:8081?auth=success
 
 # Cookies set:
 # - access_token=eyJhbGc...
