@@ -59,15 +59,14 @@ cd street-admin-portal
 npm install
 ```
 
-3. Create a `.env` file based on `.env.example`:
+3. Configure environment variables:
 ```bash
-cp .env.example .env
+echo "VITE_API_URL=http://localhost:8080/v1" > .env
 ```
 
-4. Configure your environment variables:
-```env
-VITE_API_BASE_URL=http://localhost:8080/v1
-```
+4. **[IMPORTANT]** Set up Google OAuth callback:
+   - See [QUICK_START.md](QUICK_START.md) for Google Cloud Console setup
+   - Add callback URL: `http://localhost:8080/v1/auth/admin/google/callback`
 
 5. Start the development server:
 ```bash
@@ -153,10 +152,29 @@ The portal uses [shadcn/ui](https://ui.shadcn.com/) for consistent, accessible U
 
 ## 🔒 Security
 
-- Admin endpoints are currently unauthenticated (for internal use)
+- **Google SSO Authentication**: Secure admin login via Google OAuth
+- **Email Whitelist**: Only authorized emails can access admin portal
+- **Role-Based Access Control**: Admin role required for all protected routes
+- **JWT Tokens**: Access and refresh tokens with httpOnly cookies
+- **Protected API Routes**: All admin endpoints require authentication
 - CORS configured for allowed origins
 - Input validation via class-validator
 - UUID-based entity identification
+
+### Authentication
+The admin portal uses Google Single Sign-On (SSO) for authentication. Only whitelisted Google accounts can access the portal.
+
+**Quick Start:**
+```bash
+# See QUICK_START.md for setup instructions
+npm run dev
+```
+
+**Documentation:**
+- [Quick Start Guide](QUICK_START.md) - Get up and running in 5 minutes
+- [Authentication Flow](AUTH_FLOW.md) - Visual flow diagrams
+- [Google SSO Setup](GOOGLE_SSO_SETUP.md) - Detailed setup instructions
+- [Implementation Summary](AUTH_IMPLEMENTATION_SUMMARY.md) - Technical details
 
 ## 🧪 Testing
 
@@ -164,6 +182,13 @@ See [TESTING.md](TESTING.md) for testing guidelines and procedures.
 
 ## 📚 Documentation
 
+### Authentication
+- [🚀 Quick Start Guide](QUICK_START.md) - Get up and running in 5 minutes
+- [🔐 Google SSO Setup](GOOGLE_SSO_SETUP.md) - Detailed OAuth configuration
+- [📊 Authentication Flow](AUTH_FLOW.md) - Visual flow diagrams and sequence
+- [📝 Implementation Summary](AUTH_IMPLEMENTATION_SUMMARY.md) - Technical implementation details
+
+### Backend Integration
 - [Backend Integration Guide](docs/BACKEND_INTEGRATION.md)
 - [Testing Guide](TESTING.md)
 
