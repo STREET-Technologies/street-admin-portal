@@ -182,15 +182,18 @@ See [TESTING.md](TESTING.md) for testing guidelines and procedures.
 
 ## 📚 Documentation
 
-### Authentication
+### Getting Started
 - [🚀 Quick Start Guide](QUICK_START.md) - Get up and running in 5 minutes
-- [🔐 Google SSO Setup](GOOGLE_SSO_SETUP.md) - Detailed OAuth configuration
-- [📊 Authentication Flow](AUTH_FLOW.md) - Visual flow diagrams and sequence
-- [📝 Implementation Summary](AUTH_IMPLEMENTATION_SUMMARY.md) - Technical implementation details
+- [📦 Production Deployment](PRODUCTION_DEPLOYMENT.md) - Deploy to Vercel (streetadmin.tech)
+- [✅ Deploy Checklist](DEPLOY_CHECKLIST.md) - Quick deployment checklist
+
+### Authentication
+- [🔐 Google SSO Setup](docs/GOOGLE_SSO_SETUP.md) - Detailed OAuth configuration
+- [📊 Authentication Flow](docs/AUTH_FLOW.md) - Visual flow diagrams and sequence
+- [📝 Implementation Summary](docs/AUTH_IMPLEMENTATION_SUMMARY.md) - Technical implementation details
 
 ### Backend Integration
 - [Backend Integration Guide](docs/BACKEND_INTEGRATION.md)
-- [Testing Guide](TESTING.md)
 
 ## 🤝 Contributing
 
