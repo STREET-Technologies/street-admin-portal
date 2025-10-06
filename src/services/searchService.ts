@@ -4,7 +4,8 @@ import { mockUsers, mockRetailers, mockCouriers, mockReferralCodes } from "@/dat
 import { ApiService } from "./api";
 
 // Toggle between mock and real API
-const USE_MOCK_DATA = import.meta.env.VITE_USE_MOCK_DATA !== "false";
+// Default to real API in production, mock in dev (unless explicitly set)
+const USE_MOCK_DATA = import.meta.env.VITE_USE_MOCK_DATA === "true";
 
 export class SearchService {
   static async search(query: string, type: EntityType): Promise<SearchResult | null> {
