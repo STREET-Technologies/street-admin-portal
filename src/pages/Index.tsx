@@ -16,8 +16,16 @@ const Index = () => {
 
   const checkAuth = async () => {
     try {
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        setIsLoading(false);
+        return;
+      }
+
       const response = await fetch(`${API_BASE_URL}/auth/me`, {
-        credentials: 'include',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
       });
 
       if (response.ok) {
@@ -26,6 +34,10 @@ const Index = () => {
           setCurrentUser(data.data.email.split("@")[0]);
           setIsLoggedIn(true);
         }
+      } else if (response.status === 401) {
+        // Token expired, clear localStorage
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
       }
     } catch (error) {
       console.error('Auth check failed:', error);
@@ -41,9 +53,14 @@ const Index = () => {
 
   const handleLogout = async () => {
     try {
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+
       await fetch(`${API_BASE_URL}/auth/logout`, {
         method: 'POST',
-        credentials: 'include',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+        },
       });
     } catch (error) {
       console.error('Logout failed:', error);

@@ -11,19 +11,34 @@ interface LoginProps {
 
 export function Login({ onLogin }: LoginProps) {
   useEffect(() => {
-    // Check if redirected back from Google OAuth with success
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('auth') === 'success') {
-      // Extract email from JWT token if available
-      checkAuth();
+    // Check if redirected back from Google OAuth with tokens in URL hash
+    const hash = window.location.hash.substring(1);
+    const params = new URLSearchParams(hash);
+    const accessToken = params.get('access_token');
+    const refreshToken = params.get('refresh_token');
+
+    if (accessToken && refreshToken) {
+      // Store tokens in localStorage
+      localStorage.setItem('access_token', accessToken);
+      localStorage.setItem('refresh_token', refreshToken);
+
+      // Clear hash from URL
       window.history.replaceState({}, '', '/');
+
+      // Check auth with stored token
+      checkAuth();
     }
   }, []);
 
   const checkAuth = async () => {
     try {
+      const token = localStorage.getItem('access_token');
+      if (!token) return;
+
       const response = await fetch(`${API_BASE_URL}/auth/me`, {
-        credentials: 'include',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
       });
 
       if (response.ok) {
@@ -32,6 +47,10 @@ export function Login({ onLogin }: LoginProps) {
           onLogin(data.data.email);
           toast.success('Successfully logged in!');
         }
+      } else if (response.status === 401) {
+        // Token expired, clear localStorage
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
       }
     } catch (error) {
       console.error('Auth check failed:', error);

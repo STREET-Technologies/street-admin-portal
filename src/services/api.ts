@@ -87,9 +87,9 @@ const transformBackendUser = (user: BackendUser): User => {
   };
 };
 
-// Get auth token from localStorage or cookie
+// Get auth token from localStorage
 const getAuthToken = (): string | null => {
-  return localStorage.getItem("auth_token") || null;
+  return localStorage.getItem("access_token") || null;
 };
 
 interface BackendResponse<T> {
@@ -118,7 +118,6 @@ export class ApiService {
 
     const config: RequestInit = {
       ...options,
-      credentials: 'include', // Send cookies with all requests
       headers: {
         ...defaultHeaders,
         ...options.headers,
