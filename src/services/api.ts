@@ -148,8 +148,8 @@ export class ApiService {
   // User endpoints
   static async getUser(userId: string): Promise<User | null> {
     try {
-      // Backend endpoint: GET /v1/admin/users/:id (no auth required)
-      const user = await this.request<BackendUser>(`/admin/users/${userId}`);
+      // Backend endpoint: GET /v1/users/:id
+      const user = await this.request<BackendUser>(`/users/${userId}`);
       return transformBackendUser(user);
     } catch (error) {
       console.error("Failed to fetch user:", error);
@@ -159,7 +159,7 @@ export class ApiService {
 
   static async searchUsers(query: string): Promise<User[]> {
     try {
-      // Backend endpoint: GET /v1/admin/users?search=query (no auth required)
+      // Backend endpoint: GET /v1/users?search=query
       interface UserSearchResponse {
         users: BackendUser[];
         total: number;
@@ -167,7 +167,7 @@ export class ApiService {
         limit: number;
       }
       const response = await this.request<UserSearchResponse>(
-        `/admin/users?search=${encodeURIComponent(query)}&limit=10`
+        `/users?search=${encodeURIComponent(query)}&limit=10`
       );
       return (response.users || []).map(transformBackendUser);
     } catch (error) {
@@ -177,7 +177,7 @@ export class ApiService {
   }
 
   static async updateUser(userId: string, data: Partial<User>): Promise<User> {
-    // Backend endpoint: PATCH /v1/admin/users/:id (no auth required)
+    // Backend endpoint: PATCH /v1/users/:id
     // Transform frontend User fields to backend User fields
     const backendData: any = {};
 
@@ -193,7 +193,7 @@ export class ApiService {
     console.log('[API] Sending user PATCH request with data:', backendData);
 
     const response = await this.request<BackendUser>(
-      `/admin/users/${userId}`,
+      `/users/${userId}`,
       {
         method: "PATCH",
         body: JSON.stringify(backendData),
@@ -209,8 +209,8 @@ export class ApiService {
   // Vendor/Retailer endpoints
   static async getVendor(vendorId: string): Promise<Retailer | null> {
     try {
-      // Backend endpoint: GET /v1/admin/vendors/:vendorId (no auth required)
-      const vendor = await this.request<BackendVendor>(`/admin/vendors/${vendorId}`);
+      // Backend endpoint: GET /v1/vendors/:vendorId
+      const vendor = await this.request<BackendVendor>(`/vendors/${vendorId}`);
       return transformVendorToRetailer(vendor);
     } catch (error) {
       console.error("Failed to fetch vendor:", error);
@@ -220,7 +220,7 @@ export class ApiService {
 
   static async searchVendors(query: string): Promise<Retailer[]> {
     try {
-      // Backend endpoint: GET /v1/admin/vendors?name=query (no auth required)
+      // Backend endpoint: GET /v1/vendors?name=query
       interface VendorListResponse {
         data: BackendVendor[];  // Backend returns 'data' not 'vendors'
         meta: {
@@ -231,7 +231,7 @@ export class ApiService {
         };
       }
       const response = await this.request<VendorListResponse>(
-        `/admin/vendors?name=${encodeURIComponent(query)}&limit=10`
+        `/vendors?name=${encodeURIComponent(query)}&limit=10`
       );
 
       return (response.data || []).map(transformVendorToRetailer);
@@ -242,7 +242,7 @@ export class ApiService {
   }
 
   static async updateVendor(vendorId: string, data: Partial<Retailer>): Promise<Retailer> {
-    // Backend endpoint: PATCH /v1/admin/vendors/:vendorId (no auth required)
+    // Backend endpoint: PATCH /v1/vendors/:vendorId
     // Transform frontend Retailer fields to backend Vendor fields
     const backendData: any = {};
 
@@ -255,7 +255,7 @@ export class ApiService {
     if (data.status) backendData.isOnline = data.status === 'active';
 
     const response = await this.request<BackendVendor>(
-      `/admin/vendors/${vendorId}`,
+      `/vendors/${vendorId}`,
       {
         method: "PATCH",
         body: JSON.stringify(backendData),
@@ -313,7 +313,7 @@ export class ApiService {
   // User Address endpoints
   static async getUserAddresses(userId: string): Promise<UserAddress[]> {
     try {
-      const response = await this.request<UserAddress[]>(`/admin/users/${userId}/addresses`);
+      const response = await this.request<UserAddress[]>(`/users/${userId}/addresses`);
       return response;
     } catch (error) {
       console.error("Failed to fetch user addresses:", error);
@@ -336,7 +336,7 @@ export class ApiService {
     }
 
     const response = await this.request<UserAddress>(
-      `/admin/users/${userId}/addresses/${addressId}`,
+      `/users/${userId}/addresses/${addressId}`,
       {
         method: "PATCH",
         body: JSON.stringify(transformedData),
@@ -357,7 +357,7 @@ export class ApiService {
         };
       }
       const response = await this.request<OrdersResponse>(
-        `/admin/users/${userId}/orders?limit=${limit}&page=${page}`
+        `/users/${userId}/orders?limit=${limit}&page=${page}`
       );
       return response;
     } catch (error) {
