@@ -11,19 +11,26 @@ interface LoginProps {
 
 export function Login({ onLogin }: LoginProps) {
   useEffect(() => {
-    // Check if redirected back from Google OAuth with tokens in URL hash
+    // Check if redirected back from Google OAuth with tokens or error in URL hash
     const hash = window.location.hash.substring(1);
     const params = new URLSearchParams(hash);
     const accessToken = params.get('access_token');
     const refreshToken = params.get('refresh_token');
+    const error = params.get('error');
+
+    // Clear hash from URL
+    window.history.replaceState({}, '', '/');
+
+    if (error) {
+      // Show error message instead of raw JSON
+      toast.error(decodeURIComponent(error));
+      return;
+    }
 
     if (accessToken && refreshToken) {
       // Store tokens in localStorage
       localStorage.setItem('access_token', accessToken);
       localStorage.setItem('refresh_token', refreshToken);
-
-      // Clear hash from URL
-      window.history.replaceState({}, '', '/');
 
       // Check auth with stored token
       checkAuth();

@@ -1,7 +1,7 @@
 // API service for STREET backend integration
 import type { User, Retailer, Courier, UserAddress, Order } from "@/types";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/v1";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080/v1";
 
 // Backend entity types
 interface BackendVendor {
