@@ -366,6 +366,27 @@ export class ApiService {
     }
   }
 
+  // Vendor Orders endpoints
+  static async getVendorOrders(vendorId: string, limit: number = 10, page: number = 1): Promise<{ orders: Order[], meta: { total: number, limit: number, page: number } }> {
+    try {
+      interface OrdersResponse {
+        orders: Order[];
+        meta: {
+          total: number;
+          limit: number;
+          page: number;
+        };
+      }
+      const response = await this.request<OrdersResponse>(
+        `/admin/vendors/${vendorId}/orders?limit=${limit}&page=${page}`
+      );
+      return response;
+    } catch (error) {
+      console.error("Failed to fetch vendor orders:", error);
+      return { orders: [], meta: { total: 0, limit, page } };
+    }
+  }
+
   // User Devices endpoints
   static async getUserDevices(userId: string): Promise<Device[]> {
     try {

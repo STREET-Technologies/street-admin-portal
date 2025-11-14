@@ -29,9 +29,12 @@ export function AdminDashboard({ onLogout, currentUser }: AdminDashboardProps) {
     setSearchResults(result);
   };
 
-  const handleUserDataEnriched = useCallback((totalOrders: number, totalSpent: number) => {
+  const handleUserDataEnriched = useCallback((totalOrders: number, totalSpentOrRevenue: number) => {
     if (searchResults && searchResults.data) {
-      const updated = { ...searchResults.data, totalOrders, totalSpent };
+      // For users, this is totalSpent; for retailers, this is totalRevenue
+      const updated = searchResults.type === 'user'
+        ? { ...searchResults.data, totalOrders, totalSpent: totalSpentOrRevenue }
+        : { ...searchResults.data, totalOrders, totalRevenue: totalSpentOrRevenue };
       setEnrichedUserData(updated);
     }
   }, [searchResults]);
@@ -114,7 +117,7 @@ export function AdminDashboard({ onLogout, currentUser }: AdminDashboardProps) {
                 <UserCard
                   data={searchResults.data as any}
                   type={searchResults.type}
-                  onUserDataEnriched={searchResults.type === 'user' ? handleUserDataEnriched : undefined}
+                  onUserDataEnriched={searchResults.type === 'user' || searchResults.type === 'retail' ? handleUserDataEnriched : undefined}
                 />
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
                   <div className="space-y-8">

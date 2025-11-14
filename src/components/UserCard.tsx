@@ -9,7 +9,7 @@ import { MapPin, Calendar, Star, TrendingUp, Camera, Package, ChevronRight, Doll
 import { useToast } from "@/hooks/use-toast";
 import { OrdersDialog } from "@/components/OrdersDialog";
 import { InvoicesDialog } from "@/components/InvoicesDialog";
-import { mockOrders, mockInvoices } from "@/data/mockData";
+import { mockInvoices } from "@/data/mockData";
 import { getStatusColor, getInitials } from "@/utils/statusUtils";
 import { TEAM_MEMBERS, RETAIL_STATUS_OPTIONS, USER_STATUS_OPTIONS, COURIER_STATUS_OPTIONS } from "@/constants";
 import type { User, Retailer, Courier, EntityType, UserAddress, Order } from "@/types";
@@ -75,7 +75,7 @@ export function UserCard({ data, type, onUserDataEnriched }: UserCardProps) {
     }
   }, [data.id, type]);
 
-  // Fetch user orders for users
+  // Fetch orders for users and retailers
   useEffect(() => {
     if (type === 'user') {
       setIsLoadingOrders(true);
@@ -96,6 +96,26 @@ export function UserCard({ data, type, onUserDataEnriched }: UserCardProps) {
           }
         })
         .catch(err => console.error('Failed to load orders:', err))
+        .finally(() => setIsLoadingOrders(false));
+    } else if (type === 'retail') {
+      setIsLoadingOrders(true);
+      ApiService.getVendorOrders(data.id, 100, 1)  // Fetch all orders for stats
+        .then(response => {
+          setOrders(response.orders);
+          setTotalOrders(response.meta.total);
+
+          // Calculate total revenue from orders
+          const revenue = response.orders.reduce((sum, order) => {
+            const amount = typeof order.totalAmount === 'string' ? parseFloat(order.totalAmount) : order.totalAmount;
+            return sum + (isNaN(amount) ? 0 : amount);
+          }, 0);
+
+          // Notify parent component of enriched data for MetricsCards
+          if (onUserDataEnriched) {
+            onUserDataEnriched(response.meta.total, revenue);
+          }
+        })
+        .catch(err => console.error('Failed to load vendor orders:', err))
         .finally(() => setIsLoadingOrders(false));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -341,7 +361,7 @@ export function UserCard({ data, type, onUserDataEnriched }: UserCardProps) {
                   <span className="text-sm">Joined {new Date(editData.joinDate).toLocaleDateString()}</span>
                 </p>
                 {type === 'retail' && isRetailer(editData) && (
-                  <p className="flex items-start gap-2 pt-1">
+                  <div className="flex items-start gap-2 pt-1">
                     <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
                     {isEditing ? (
                       <div className="flex-1 space-y-1">
@@ -377,7 +397,7 @@ export function UserCard({ data, type, onUserDataEnriched }: UserCardProps) {
                         )}
                       </div>
                     )}
-                  </p>
+                  </div>
                 )}
               </div>
             </div>

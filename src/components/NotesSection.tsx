@@ -25,11 +25,17 @@ export function NotesSection({ entityId, entityName, entityType }: NotesSectionP
   const [isLoadingNotes, setIsLoadingNotes] = useState(false);
   const { toast } = useToast();
 
+  // Map frontend entity types to backend types
+  const mapEntityType = (type: string): string => {
+    return type === 'retail' ? 'vendor' : type;
+  };
+
   // Fetch notes from API
   useEffect(() => {
     if (entityId && entityType) {
       setIsLoadingNotes(true);
-      ApiService.getNotes(entityType, entityId)
+      const backendEntityType = mapEntityType(entityType);
+      ApiService.getNotes(backendEntityType, entityId)
         .then(fetchedNotes => setNotes(fetchedNotes))
         .catch(err => console.error('Failed to load notes:', err))
         .finally(() => setIsLoadingNotes(false));
@@ -39,8 +45,9 @@ export function NotesSection({ entityId, entityName, entityType }: NotesSectionP
   const handleAddNote = async () => {
     if (newNote.trim() && entityType) {
       try {
+        const backendEntityType = mapEntityType(entityType);
         const createdNote = await ApiService.createNote({
-          entityType,
+          entityType: backendEntityType,
           entityId,
           content: newNote.trim(),
           priority: selectedPriority,
