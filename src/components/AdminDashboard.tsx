@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { SearchBar } from "./SearchBar";
 import { UserCard } from "./UserCard";
 import { NotesSection } from "./NotesSection";
@@ -18,23 +18,34 @@ interface AdminDashboardProps {
 export function AdminDashboard({ onLogout, currentUser }: AdminDashboardProps) {
   const [searchResults, setSearchResults] = useState<SearchResult | null>(null);
   const [searchType, setSearchType] = useState<EntityType | "">("");
+  const [enrichedUserData, setEnrichedUserData] = useState<any>(null);
 
   const handleSearch = async (query: string, type: EntityType) => {
     setSearchType(type);
     setSearchResults(null);
+    setEnrichedUserData(null);
 
     const result = await SearchService.search(query, type);
     setSearchResults(result);
   };
 
+  const handleUserDataEnriched = useCallback((totalOrders: number, totalSpent: number) => {
+    if (searchResults && searchResults.data) {
+      const updated = { ...searchResults.data, totalOrders, totalSpent };
+      setEnrichedUserData(updated);
+    }
+  }, [searchResults]);
+
   const handleTypeChange = () => {
     setSearchResults(null);
     setSearchType("");
+    setEnrichedUserData(null);
   };
 
   const handleLogoClick = () => {
     setSearchResults(null);
     setSearchType("");
+    setEnrichedUserData(null);
   };
 
   const getSearchIcon = () => {
@@ -94,20 +105,33 @@ export function AdminDashboard({ onLogout, currentUser }: AdminDashboardProps) {
               {getSearchIcon()}
               <h2 className="street-title text-2xl capitalize">{searchType} Information</h2>
             </div>
-            
+
             {/* Handle different entity types */}
             {searchResults.type === "referralcode" ? (
               <ReferralCodesCard referralCodes={searchResults.data as ReferralCode[]} />
             ) : (
               <>
-                <UserCard data={searchResults.data as any} type={searchResults.type} />
-                <MetricsCards data={searchResults.data as any} type={searchResults.type} />
-                <AccountAssociations data={searchResults.data as any} type={searchResults.type} />
-                <NotesSection 
-                  entityId={(searchResults.data as any).id} 
-                  entityName={(searchResults.data as any).name} 
-                  entityType={searchResults.type} 
+                <UserCard
+                  data={searchResults.data as any}
+                  type={searchResults.type}
+                  onUserDataEnriched={searchResults.type === 'user' ? handleUserDataEnriched : undefined}
                 />
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                  <div className="space-y-8">
+                    <MetricsCards
+                      data={(enrichedUserData || searchResults.data) as any}
+                      type={searchResults.type}
+                    />
+                    <AccountAssociations data={searchResults.data as any} type={searchResults.type} />
+                  </div>
+                  <div className="space-y-8">
+                    <NotesSection
+                      entityId={(searchResults.data as any).id}
+                      entityName={(searchResults.data as any).name}
+                      entityType={searchResults.type}
+                    />
+                  </div>
+                </div>
               </>
             )}
           </div>

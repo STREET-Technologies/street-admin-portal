@@ -18,9 +18,10 @@ import { ApiService } from "@/services/api";
 interface UserCardProps {
   data: User | Retailer | Courier;
   type: EntityType;
+  onUserDataEnriched?: (totalOrders: number, totalSpent: number) => void;
 }
 
-export function UserCard({ data, type }: UserCardProps) {
+export function UserCard({ data, type, onUserDataEnriched }: UserCardProps) {
   const [avatarUrl, setAvatarUrl] = useState(data.avatar);
   const [isHovering, setIsHovering] = useState(false);
   const [ordersDialogOpen, setOrdersDialogOpen] = useState(false);
@@ -82,10 +83,22 @@ export function UserCard({ data, type }: UserCardProps) {
         .then(response => {
           setOrders(response.orders);
           setTotalOrders(response.meta.total);
+
+          // Calculate total spent from orders
+          const spent = response.orders.reduce((sum, order) => {
+            const amount = typeof order.totalAmount === 'string' ? parseFloat(order.totalAmount) : order.totalAmount;
+            return sum + (isNaN(amount) ? 0 : amount);
+          }, 0);
+
+          // Notify parent component of enriched data for MetricsCards
+          if (onUserDataEnriched) {
+            onUserDataEnriched(response.meta.total, spent);
+          }
         })
         .catch(err => console.error('Failed to load orders:', err))
         .finally(() => setIsLoadingOrders(false));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data.id, type]);
 
   const handleSave = async () => {
@@ -625,145 +638,146 @@ export function UserCard({ data, type }: UserCardProps) {
           </div>
         )}
 
-        {/* Saved Addresses - for users only */}
-        {type === 'user' && (
-          <div className="space-y-3">
-            <h4 className="font-semibold text-lg flex items-center gap-2">
-              <MapPin className="w-5 h-5" />
-              Saved Addresses
-            </h4>
-            {isLoadingAddresses ? (
-              <p className="text-sm text-muted-foreground">Loading addresses...</p>
-            ) : addresses.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No saved addresses</p>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {addresses.map((address) => {
-                  const isEditingThis = editingAddressId === address.id;
-                  const displayAddress = isEditingThis ? editingAddress : address;
+        {/* Two-column layout for Saved Addresses and Recent Activity on users */}
+        {type === 'user' ? (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Saved Addresses - Left Column */}
+            <div className="space-y-3">
+              <h4 className="font-semibold text-lg flex items-center gap-2">
+                <MapPin className="w-5 h-5" />
+                Saved Addresses
+              </h4>
+              {isLoadingAddresses ? (
+                <p className="text-sm text-muted-foreground">Loading addresses...</p>
+              ) : addresses.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No saved addresses</p>
+              ) : (
+                <div className="space-y-4">
+                  {addresses.map((address) => {
+                    const isEditingThis = editingAddressId === address.id;
+                    const displayAddress = isEditingThis ? editingAddress : address;
 
-                  if (!displayAddress) return null;
+                    if (!displayAddress) return null;
 
-                  return (
-                    <Card key={address.id} className="bg-muted/30">
-                      <CardContent className="p-4">
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex items-center gap-2">
-                            {isEditingThis ? (
-                              <Input
-                                value={displayAddress.label}
-                                onChange={(e) => updateAddressField('label', e.target.value)}
-                                className="h-7 text-sm font-medium"
-                              />
+                    return (
+                      <Card key={address.id} className="bg-muted/30">
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex items-center gap-2">
+                              {isEditingThis ? (
+                                <Input
+                                  value={displayAddress.label}
+                                  onChange={(e) => updateAddressField('label', e.target.value)}
+                                  className="h-7 text-sm font-medium"
+                                />
+                              ) : (
+                                <span className="font-medium">{displayAddress.label}</span>
+                              )}
+                              {displayAddress.isDefault && (
+                                <Badge variant="default" className="text-xs">Default</Badge>
+                              )}
+                            </div>
+                            {!isEditingThis ? (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEditAddress(address)}
+                                className="h-7 px-2"
+                              >
+                                <Edit className="w-3 h-3" />
+                              </Button>
                             ) : (
-                              <span className="font-medium">{displayAddress.label}</span>
-                            )}
-                            {displayAddress.isDefault && (
-                              <Badge variant="default" className="text-xs">Default</Badge>
+                              <div className="flex gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={handleSaveAddress}
+                                  disabled={isSavingAddress}
+                                  className="h-7 px-2"
+                                >
+                                  <Save className="w-3 h-3" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={handleCancelAddressEdit}
+                                  disabled={isSavingAddress}
+                                  className="h-7 px-2"
+                                >
+                                  <X className="w-3 h-3" />
+                                </Button>
+                              </div>
                             )}
                           </div>
-                          {!isEditingThis ? (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleEditAddress(address)}
-                              className="h-7 px-2"
-                            >
-                              <Edit className="w-3 h-3" />
-                            </Button>
-                          ) : (
-                            <div className="flex gap-1">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={handleSaveAddress}
-                                disabled={isSavingAddress}
-                                className="h-7 px-2"
-                              >
-                                <Save className="w-3 h-3" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={handleCancelAddressEdit}
-                                disabled={isSavingAddress}
-                                className="h-7 px-2"
-                              >
-                                <X className="w-3 h-3" />
-                              </Button>
-                            </div>
-                          )}
-                        </div>
-                        <div className="text-sm text-muted-foreground space-y-2">
-                          {isEditingThis ? (
-                            <>
-                              <Input
-                                value={displayAddress.line1}
-                                onChange={(e) => updateAddressField('line1', e.target.value)}
-                                placeholder="Address Line 1"
-                                className="h-8 text-sm"
-                              />
-                              <Input
-                                value={displayAddress.line2 || ''}
-                                onChange={(e) => updateAddressField('line2', e.target.value)}
-                                placeholder="Address Line 2 (optional)"
-                                className="h-8 text-sm"
-                              />
-                              <div className="grid grid-cols-2 gap-2">
+                          <div className="text-sm text-muted-foreground space-y-2">
+                            {isEditingThis ? (
+                              <>
                                 <Input
-                                  value={displayAddress.city}
-                                  onChange={(e) => updateAddressField('city', e.target.value)}
-                                  placeholder="City"
+                                  value={displayAddress.line1}
+                                  onChange={(e) => updateAddressField('line1', e.target.value)}
+                                  placeholder="Address Line 1"
                                   className="h-8 text-sm"
                                 />
                                 <Input
-                                  value={displayAddress.state}
-                                  onChange={(e) => updateAddressField('state', e.target.value)}
-                                  placeholder="State"
+                                  value={displayAddress.line2 || ''}
+                                  onChange={(e) => updateAddressField('line2', e.target.value)}
+                                  placeholder="Address Line 2 (optional)"
                                   className="h-8 text-sm"
                                 />
-                              </div>
-                              <div className="grid grid-cols-2 gap-2">
-                                <Input
-                                  value={displayAddress.postcode}
-                                  onChange={(e) => updateAddressField('postcode', e.target.value)}
-                                  placeholder="Postcode"
-                                  className="h-8 text-sm"
-                                />
-                                <Input
-                                  value={displayAddress.country}
-                                  onChange={(e) => updateAddressField('country', e.target.value)}
-                                  placeholder="Country"
-                                  className="h-8 text-sm"
-                                />
-                              </div>
-                            </>
-                          ) : (
-                            <>
-                              <p>{displayAddress.line1}</p>
-                              {displayAddress.line2 && <p>{displayAddress.line2}</p>}
-                              <p>{displayAddress.city}, {displayAddress.state}</p>
-                              <p>{displayAddress.postcode}, {displayAddress.country}</p>
-                            </>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
+                                <div className="grid grid-cols-2 gap-2">
+                                  <Input
+                                    value={displayAddress.city}
+                                    onChange={(e) => updateAddressField('city', e.target.value)}
+                                    placeholder="City"
+                                    className="h-8 text-sm"
+                                  />
+                                  <Input
+                                    value={displayAddress.state}
+                                    onChange={(e) => updateAddressField('state', e.target.value)}
+                                    placeholder="State"
+                                    className="h-8 text-sm"
+                                  />
+                                </div>
+                                <div className="grid grid-cols-2 gap-2">
+                                  <Input
+                                    value={displayAddress.postcode}
+                                    onChange={(e) => updateAddressField('postcode', e.target.value)}
+                                    placeholder="Postcode"
+                                    className="h-8 text-sm"
+                                  />
+                                  <Input
+                                    value={displayAddress.country}
+                                    onChange={(e) => updateAddressField('country', e.target.value)}
+                                    placeholder="Country"
+                                    className="h-8 text-sm"
+                                  />
+                                </div>
+                              </>
+                            ) : (
+                              <>
+                                <p>{displayAddress.line1}</p>
+                                {displayAddress.line2 && <p>{displayAddress.line2}</p>}
+                                <p>{displayAddress.city}, {displayAddress.state}</p>
+                                <p>{displayAddress.postcode}, {displayAddress.country}</p>
+                              </>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
 
-        {/* Recent Activity Section */}
-        <div className="space-y-4">
-          <h4 className="font-semibold text-lg flex items-center gap-3">
-            <Package className="w-5 h-5" />
-            Recent Activity
-          </h4>
-          
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Recent Activity - Right Column */}
+            <div className="space-y-4">
+              <h4 className="font-semibold text-lg flex items-center gap-3">
+                <Package className="w-5 h-5" />
+                Recent Activity
+              </h4>
+
+              <div className="space-y-6">
             {/* Recent Orders */}
             <Card className="bg-muted/30">
               <CardHeader className="pb-3">
@@ -815,50 +829,115 @@ export function UserCard({ data, type }: UserCardProps) {
               </CardContent>
             </Card>
 
-            {/* Recent Invoices - Only for Retailers */}
-            {type === "retail" && (
+                {/* Recent Invoices - Only for Users, not shown in this column */}
+              </div>
+            </div>
+          </div>
+        ) : (
+          /* Recent Activity for non-user types (retail/courier) - Full width */
+          <div className="space-y-4">
+            <h4 className="font-semibold text-lg flex items-center gap-3">
+              <Package className="w-5 h-5" />
+              Recent Activity
+            </h4>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Recent Orders */}
               <Card className="bg-muted/30">
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
-                    <h5 className="font-medium">Recent Invoices</h5>
+                    <h5 className="font-medium">Recent Orders</h5>
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => setInvoicesDialogOpen(true)}
-                      className="text-primary hover:text-primary/80"
+                      onClick={() => setOrdersDialogOpen(true)}
+                      className="text-foreground hover:text-foreground/80"
                     >
                       View All <ChevronRight className="w-4 h-4 ml-1" />
                     </Button>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
-                    {recentInvoices.map((invoice, index) => (
-                      <div key={invoice.id} className="flex items-center justify-between p-2 bg-background rounded">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-sm font-medium">#{invoice.id}</span>
-                            <Badge
-                              variant="outline"
-                              className={getStatusColor(invoice.status as any)}
-                            >
-                              {invoice.status}
-                            </Badge>
+                  {isLoadingOrders ? (
+                    <p className="text-sm text-muted-foreground">Loading orders...</p>
+                  ) : recentOrders.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No orders yet</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {recentOrders.map((order) => {
+                        const amount = typeof order.totalAmount === 'string' ? parseFloat(order.totalAmount) : order.totalAmount;
+                        return (
+                          <div key={order.id} className="flex items-center justify-between p-2 bg-background rounded">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-sm font-medium">{order.orderId}</span>
+                                <Badge
+                                  variant="outline"
+                                  className={getStatusColor(order.status as any)}
+                                >
+                                  {order.status}
+                                </Badge>
+                              </div>
+                              <p className="text-xs text-muted-foreground">
+                                {order.vendor?.storeName || 'Unknown vendor'} • {new Date(order.createdAt).toLocaleDateString()}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm font-bold text-green-600">£{amount.toFixed(2)}</p>
+                            </div>
                           </div>
-                          <p className="text-xs text-muted-foreground">{invoice.description}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm font-bold text-green-600">£{invoice.paidAmount.toFixed(2)}</p>
-                          <p className="text-xs text-muted-foreground">of £{invoice.amount.toFixed(2)}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
-            )}
+
+              {/* Recent Invoices - Only for Retailers */}
+              {type === "retail" && (
+                <Card className="bg-muted/30">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <h5 className="font-medium">Recent Invoices</h5>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setInvoicesDialogOpen(true)}
+                        className="text-primary hover:text-primary/80"
+                      >
+                        View All <ChevronRight className="w-4 h-4 ml-1" />
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {recentInvoices.map((invoice, index) => (
+                        <div key={invoice.id} className="flex items-center justify-between p-2 bg-background rounded">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-sm font-medium">#{invoice.id}</span>
+                              <Badge
+                                variant="outline"
+                                className={getStatusColor(invoice.status as any)}
+                              >
+                                {invoice.status}
+                              </Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground">{invoice.description}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-bold text-green-600">£{invoice.paidAmount.toFixed(2)}</p>
+                            <p className="text-xs text-muted-foreground">of £{invoice.amount.toFixed(2)}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
         <OrdersDialog
           open={ordersDialogOpen}

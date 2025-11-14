@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { toast } from "sonner";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/v1';
+const DEV_BYPASS_AUTH = import.meta.env.VITE_DEV_BYPASS_AUTH === 'true';
 
 interface LoginProps {
   onLogin: (email: string) => void;
@@ -69,6 +70,17 @@ export function Login({ onLogin }: LoginProps) {
     window.location.href = `${API_BASE_URL}/auth/admin/google`;
   };
 
+  const handleDevBypass = () => {
+    // Store fake tokens for dev bypass
+    localStorage.setItem('access_token', 'dev-bypass-token');
+    localStorage.setItem('refresh_token', 'dev-bypass-refresh-token');
+
+    // Log in with dev admin email
+    onLogin('dev-admin@street.local');
+    toast.success('Logged in with dev bypass mode!');
+    console.warn('⚠️ DEV BYPASS MODE ACTIVE - This should NEVER be enabled in production!');
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
       <div className="w-full max-w-md relative">
@@ -110,6 +122,33 @@ export function Login({ onLogin }: LoginProps) {
               </svg>
               Sign in with Google
             </Button>
+
+            {DEV_BYPASS_AUTH && (
+              <>
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-gray-300" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-white px-2 text-muted-foreground">Dev Only</span>
+                  </div>
+                </div>
+
+                <Button
+                  onClick={handleDevBypass}
+                  variant="outline"
+                  className="w-full h-12 bg-orange-50 hover:bg-orange-100 text-orange-700 border-orange-300 font-semibold transition-all duration-200"
+                >
+                  🔓 Dev Bypass Login
+                </Button>
+
+                <div className="text-center">
+                  <p className="text-xs text-orange-600 font-medium">
+                    ⚠️ Development bypass mode enabled
+                  </p>
+                </div>
+              </>
+            )}
 
             <div className="text-center pt-4">
               <p className="text-sm text-muted-foreground">

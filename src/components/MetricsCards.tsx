@@ -121,7 +121,7 @@ export function MetricsCards({ data, type }: MetricsCardsProps) {
   const metrics = getMetrics();
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       {metrics.map((metric, index) => {
         const IconComponent = metric.icon;
         return (
@@ -135,7 +135,7 @@ export function MetricsCards({ data, type }: MetricsCardsProps) {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold street-title">{metric.value}</div>
+              <div className="text-xl xl:text-2xl font-bold street-title truncate">{metric.value}</div>
             </CardContent>
           </Card>
         );

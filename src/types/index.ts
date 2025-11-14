@@ -82,9 +82,14 @@ export interface Invoice {
 export interface Note {
   id: string;
   content: string;
-  author: string;
-  authorAvatar?: string;
-  timestamp: string;
+  author?: {
+    id: string;
+    firstName: string | null;
+    lastName: string | null;
+    email: string | null;
+    profileImage?: string | null;
+  };
+  createdAt: string;
   priority: NotePriority;
 }
 
@@ -116,6 +121,18 @@ export interface UserAddress {
   latitude?: number;
   longitude?: number;
   isDefault: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Device {
+  id: string;
+  deviceId: string | null;
+  deviceName: string | null;
+  platform: 'ios' | 'android' | 'web';
+  lastUsedAt: string | null;
+  isActive: boolean;
+  metadata?: Record<string, any>;
   createdAt: string;
   updatedAt: string;
 }

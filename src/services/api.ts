@@ -1,5 +1,5 @@
 // API service for STREET backend integration
-import type { User, Retailer, Courier, UserAddress, Order } from "@/types";
+import type { User, Retailer, Courier, UserAddress, Order, Device, Note } from "@/types";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080/v1";
 
@@ -364,5 +364,40 @@ export class ApiService {
       console.error("Failed to fetch user orders:", error);
       return { orders: [], meta: { total: 0, limit, page } };
     }
+  }
+
+  // User Devices endpoints
+  static async getUserDevices(userId: string): Promise<Device[]> {
+    try {
+      const response = await this.request<Device[]>(`/admin/users/${userId}/devices`);
+      return response;
+    } catch (error) {
+      console.error("Failed to fetch user devices:", error);
+      return [];
+    }
+  }
+
+  // Admin Notes endpoints
+  static async getNotes(entityType: string, entityId: string): Promise<Note[]> {
+    try {
+      const response = await this.request<Note[]>(`/admin/notes/${entityType}/${entityId}`);
+      return response;
+    } catch (error) {
+      console.error("Failed to fetch notes:", error);
+      return [];
+    }
+  }
+
+  static async createNote(data: {
+    entityType: string;
+    entityId: string;
+    content: string;
+    priority: string;
+  }): Promise<Note> {
+    const response = await this.request<Note>(`/admin/notes`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+    return response;
   }
 }

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -8,6 +8,7 @@ import { Plus, MessageSquare, Clock, AlertTriangle, AlertCircle, Info } from "lu
 import { useToast } from "@/hooks/use-toast";
 import { getPriorityColor, getInitials, formatDate } from "@/utils/statusUtils";
 import { NOTE_PRIORITIES } from "@/constants";
+import { ApiService } from "@/services/api";
 import type { Note, NotePriority } from "@/types";
 
 interface NotesSectionProps {
@@ -17,46 +18,57 @@ interface NotesSectionProps {
 }
 
 export function NotesSection({ entityId, entityName, entityType }: NotesSectionProps) {
-  // Entity-specific notes storage key
-  const notesStorageKey = `notes_${entityType || 'entity'}_${entityId}`;
-  
-  // Load entity-specific notes from localStorage (empty by default)
-  const getEntityNotes = (): Note[] => {
-    const stored = localStorage.getItem(notesStorageKey);
-    return stored ? JSON.parse(stored) : [];
-  };
-
-  const [notes, setNotes] = useState<Note[]>(getEntityNotes());
+  const [notes, setNotes] = useState<Note[]>([]);
   const [newNote, setNewNote] = useState("");
   const [selectedPriority, setSelectedPriority] = useState<NotePriority>("medium");
   const [isAddingNote, setIsAddingNote] = useState(false);
+  const [isLoadingNotes, setIsLoadingNotes] = useState(false);
   const { toast } = useToast();
 
-  const handleAddNote = () => {
-    if (newNote.trim()) {
-      const note: Note = {
-        id: Date.now().toString(),
-        content: newNote.trim(),
-        author: "Current User", // In real app, get from auth context
-        timestamp: new Date().toISOString(),
-        priority: selectedPriority
-      };
-      
-      const updatedNotes = [note, ...notes];
-      setNotes(updatedNotes);
-      
-      // Save to localStorage for persistence
-      localStorage.setItem(notesStorageKey, JSON.stringify(updatedNotes));
-      
-      setNewNote("");
-      setSelectedPriority("medium");
-      setIsAddingNote(false);
-      
-      toast({
-        title: "Note Added",
-        description: `${selectedPriority.toUpperCase()} priority note has been saved.`,
-      });
+  // Fetch notes from API
+  useEffect(() => {
+    if (entityId && entityType) {
+      setIsLoadingNotes(true);
+      ApiService.getNotes(entityType, entityId)
+        .then(fetchedNotes => setNotes(fetchedNotes))
+        .catch(err => console.error('Failed to load notes:', err))
+        .finally(() => setIsLoadingNotes(false));
     }
+  }, [entityId, entityType]);
+
+  const handleAddNote = async () => {
+    if (newNote.trim() && entityType) {
+      try {
+        const createdNote = await ApiService.createNote({
+          entityType,
+          entityId,
+          content: newNote.trim(),
+          priority: selectedPriority,
+        });
+
+        setNotes([createdNote, ...notes]);
+        setNewNote("");
+        setSelectedPriority("medium");
+        setIsAddingNote(false);
+
+        toast({
+          title: "Note Added",
+          description: `${selectedPriority.toUpperCase()} priority note has been saved.`,
+        });
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to create note. Please try again.",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  const getAuthorName = (author: Note['author']): string => {
+    if (!author) return 'Unknown User';
+    const parts = [author.firstName, author.lastName].filter(Boolean);
+    return parts.length > 0 ? parts.join(' ') : author.email || 'Unknown User';
   };
 
   const formatNoteDate = (timestamp: string) => {
@@ -166,58 +178,63 @@ export function NotesSection({ entityId, entityName, entityType }: NotesSectionP
 
         {/* Notes List */}
         <div className="space-y-4 max-h-96 overflow-y-auto">
-          {notes.map((note) => {
-            const { date, time } = formatNoteDate(note.timestamp);
-            return (
-              <div
-                key={note.id}
-                className={`border-l-4 rounded-r-lg p-4 ${getNotePriorityColor(note.priority)}`}
-              >
-                <div className="flex items-start gap-3">
-                  <Avatar className="w-8 h-8">
-                    <AvatarImage src={note.authorAvatar} alt={note.author} />
-                    <AvatarFallback className="text-xs">
-                      {getInitials(note.author)}
-                    </AvatarFallback>
-                  </Avatar>
-                  
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="font-medium text-sm">{note.author}</span>
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <Clock className="w-3 h-3" />
-                        {date} at {time}
+          {isLoadingNotes ? (
+            <div className="text-center py-8 text-muted-foreground">
+              Loading notes...
+            </div>
+          ) : notes.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <MessageSquare className="w-12 h-12 mx-auto mb-3 opacity-50" />
+              <p>No notes yet. Add the first note about {entityName}.</p>
+            </div>
+          ) : (
+            notes.map((note) => {
+              const authorName = getAuthorName(note.author);
+              const { date, time } = formatNoteDate(note.createdAt);
+              return (
+                <div
+                  key={note.id}
+                  className={`border-l-4 rounded-r-lg p-4 ${getNotePriorityColor(note.priority)}`}
+                >
+                  <div className="flex items-start gap-3">
+                    <Avatar className="w-8 h-8">
+                      <AvatarImage src={note.author?.profileImage || undefined} alt={authorName} />
+                      <AvatarFallback className="text-xs">
+                        {getInitials(authorName)}
+                      </AvatarFallback>
+                    </Avatar>
+
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="font-medium text-sm">{authorName}</span>
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <Clock className="w-3 h-3" />
+                          {date} at {time}
+                        </div>
+                        {note.priority && (
+                          <Badge
+                            variant="outline"
+                            className={`text-xs border-0 ${
+                              note.priority === "high"
+                                ? "text-red-700"
+                                : note.priority === "medium"
+                                ? "text-yellow-700"
+                                : "text-green-700"
+                            }`}
+                          >
+                            {getPriorityIcon(note.priority)}
+                            <span className="ml-1">{note.priority.toUpperCase()}</span>
+                          </Badge>
+                        )}
                       </div>
-                      {note.priority && (
-                        <Badge 
-                          variant="outline" 
-                          className={`text-xs border-0 ${
-                            note.priority === "high" 
-                              ? "text-red-700" 
-                              : note.priority === "medium"
-                              ? "text-yellow-700"
-                              : "text-green-700"
-                          }`}
-                        >
-                          {getPriorityIcon(note.priority)}
-                          <span className="ml-1">{note.priority.toUpperCase()}</span>
-                        </Badge>
-                      )}
+                      <p className="text-sm text-gray-700 leading-relaxed">{note.content}</p>
                     </div>
-                    <p className="text-sm text-gray-700 leading-relaxed">{note.content}</p>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
         </div>
-
-        {notes.length === 0 && (
-          <div className="text-center py-8 text-muted-foreground">
-            <MessageSquare className="w-12 h-12 mx-auto mb-3 opacity-50" />
-            <p>No notes yet. Add the first note about {entityName}.</p>
-          </div>
-        )}
       </CardContent>
     </Card>
   );
