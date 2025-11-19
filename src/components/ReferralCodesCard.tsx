@@ -4,29 +4,34 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Ticket, Plus, Calendar, CreditCard, User, Users, Clock } from "lucide-react";
+import { Ticket, Plus, Settings } from "lucide-react";
+import { ReferralSettingsDialog } from "./ReferralSettingsDialog";
 import type { ReferralCode, ReferralCodeStatus } from "@/types";
-import { TEAM_MEMBERS } from "@/constants";
 import { formatDistanceToNow } from "date-fns";
+import { ApiService } from "@/services/api";
+import { useToast } from "@/hooks/use-toast";
 
 interface ReferralCodesCardProps {
   referralCodes: ReferralCode[];
 }
 
 export function ReferralCodesCard({ referralCodes }: ReferralCodesCardProps) {
+  const { toast } = useToast();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [creating, setCreating] = useState(false);
   const [newCode, setNewCode] = useState({
+    userId: "",
     code: "",
-    expiryDate: "",
-    creditAmount: "",
-    freeDeliveries: "",
-    belongsTo: "",
-    createdBy: "Ali Al Nasiri"
+    expiresAt: "",
+    friendRewardValue: "",
+    referrerRewardValue: "",
+    minimumOrderAmount: "",
+    maxUses: "",
+    isActive: true,
   });
 
   const getStatusColor = (status: ReferralCodeStatus) => {
@@ -35,7 +40,7 @@ export function ReferralCodesCard({ referralCodes }: ReferralCodesCardProps) {
         return "bg-green-100 text-green-800 border-green-200";
       case "expired":
         return "bg-red-100 text-red-800 border-red-200";
-      case "used":
+      case "maxed":
         return "bg-blue-100 text-blue-800 border-blue-200";
       case "disabled":
         return "bg-gray-100 text-gray-800 border-gray-200";
@@ -44,29 +49,59 @@ export function ReferralCodesCard({ referralCodes }: ReferralCodesCardProps) {
     }
   };
 
-  const handleCreateCode = () => {
-    // Here you would typically send the data to your backend
-    console.log("Creating new referral code:", newCode);
-    setIsCreateDialogOpen(false);
-    setNewCode({
-      code: "",
-      expiryDate: "",
-      creditAmount: "",
-      freeDeliveries: "",
-      belongsTo: "",
-      createdBy: "Ali Al Nasiri"
-    });
+  const handleCreateCode = async () => {
+    if (!newCode.userId) {
+      toast({
+        title: "Error",
+        description: "User ID is required",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setCreating(true);
+    try {
+      const payload: any = {
+        userId: newCode.userId,
+      };
+
+      if (newCode.code) payload.code = newCode.code;
+      if (newCode.friendRewardValue) payload.friendRewardValue = parseFloat(newCode.friendRewardValue);
+      if (newCode.referrerRewardValue) payload.referrerRewardValue = parseFloat(newCode.referrerRewardValue);
+      if (newCode.minimumOrderAmount) payload.minimumOrderAmount = parseFloat(newCode.minimumOrderAmount);
+      if (newCode.maxUses) payload.maxUses = parseInt(newCode.maxUses);
+      if (newCode.expiresAt) payload.expiresAt = new Date(newCode.expiresAt).toISOString();
+
+      await ApiService.createReferralCode(payload);
+
+      toast({
+        title: "Success",
+        description: "Referral code created successfully. Refresh to see it.",
+      });
+
+      setIsCreateDialogOpen(false);
+      setNewCode({
+        userId: "",
+        code: "",
+        expiresAt: "",
+        friendRewardValue: "",
+        referrerRewardValue: "",
+        minimumOrderAmount: "",
+        maxUses: "",
+        isActive: true,
+      });
+    } catch (error: any) {
+      console.error("Failed to create referral code:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create referral code",
+        variant: "destructive",
+      });
+    } finally {
+      setCreating(false);
+    }
   };
 
-  const formatCreditInfo = (code: ReferralCode) => {
-    if (code.creditAmount) {
-      return `£${code.creditAmount} credit`;
-    }
-    if (code.freeDeliveries) {
-      return `${code.freeDeliveries} free deliveries`;
-    }
-    return "No credit info";
-  };
 
   return (
     <Card className="mt-6">
@@ -75,96 +110,113 @@ export function ReferralCodesCard({ referralCodes }: ReferralCodesCardProps) {
           <Ticket className="w-5 h-5 text-primary" />
           Referral Codes ({referralCodes.length})
         </CardTitle>
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="flex items-center gap-2">
-              <Plus className="w-4 h-4" />
-              Add Code
-            </Button>
-          </DialogTrigger>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setShowSettings(true)}
+            className="flex items-center gap-2"
+          >
+            <Settings className="w-4 h-4" />
+            Settings
+          </Button>
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="flex items-center gap-2">
+                <Plus className="w-4 h-4" />
+                Add Code
+              </Button>
+            </DialogTrigger>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <DialogTitle>Create New Referral Code</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <Label htmlFor="code">Code</Label>
+                <Label htmlFor="userId">User ID</Label>
                 <Input
-                  id="code"
-                  value={newCode.code}
-                  onChange={(e) => setNewCode({...newCode, code: e.target.value})}
-                  placeholder="Enter referral code"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="belongsTo">Belongs To</Label>
-                <Input
-                  id="belongsTo"
-                  value={newCode.belongsTo}
-                  onChange={(e) => setNewCode({...newCode, belongsTo: e.target.value})}
-                  placeholder="e.g., Annie, Students, VIP Customers"
+                  id="userId"
+                  value={newCode.userId}
+                  onChange={(e) => setNewCode({...newCode, userId: e.target.value})}
+                  placeholder="Enter user ID"
+                  required
                 />
               </div>
 
               <div>
-                <Label htmlFor="expiryDate">Expiry Date</Label>
+                <Label htmlFor="code">Code (Optional)</Label>
                 <Input
-                  id="expiryDate"
-                  type="date"
-                  value={newCode.expiryDate}
-                  onChange={(e) => setNewCode({...newCode, expiryDate: e.target.value})}
+                  id="code"
+                  value={newCode.code}
+                  onChange={(e) => setNewCode({...newCode, code: e.target.value})}
+                  placeholder="Auto-generated if empty"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="creditAmount">Credit Amount (£)</Label>
+                  <Label htmlFor="friendReward">Friend Reward (£)</Label>
                   <Input
-                    id="creditAmount"
+                    id="friendReward"
                     type="number"
-                    value={newCode.creditAmount}
-                    onChange={(e) => setNewCode({...newCode, creditAmount: e.target.value, freeDeliveries: ""})}
-                    placeholder="0"
+                    step="0.5"
+                    value={newCode.friendRewardValue}
+                    onChange={(e) => setNewCode({...newCode, friendRewardValue: e.target.value})}
+                    placeholder="Uses default"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="freeDeliveries">Free Deliveries</Label>
+                  <Label htmlFor="referrerReward">Referrer Reward (£)</Label>
                   <Input
-                    id="freeDeliveries"
+                    id="referrerReward"
                     type="number"
-                    value={newCode.freeDeliveries}
-                    onChange={(e) => setNewCode({...newCode, freeDeliveries: e.target.value, creditAmount: ""})}
-                    placeholder="0"
+                    step="0.5"
+                    value={newCode.referrerRewardValue}
+                    onChange={(e) => setNewCode({...newCode, referrerRewardValue: e.target.value})}
+                    placeholder="Uses default"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="minOrder">Min Order (£)</Label>
+                  <Input
+                    id="minOrder"
+                    type="number"
+                    value={newCode.minimumOrderAmount}
+                    onChange={(e) => setNewCode({...newCode, minimumOrderAmount: e.target.value})}
+                    placeholder="Uses default"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="maxUses">Max Uses</Label>
+                  <Input
+                    id="maxUses"
+                    type="number"
+                    value={newCode.maxUses}
+                    onChange={(e) => setNewCode({...newCode, maxUses: e.target.value})}
+                    placeholder="Unlimited"
                   />
                 </div>
               </div>
 
               <div>
-                <Label htmlFor="createdBy">Created By</Label>
-                <Select 
-                  value={newCode.createdBy} 
-                  onValueChange={(value) => setNewCode({...newCode, createdBy: value})}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {TEAM_MEMBERS.map((member) => (
-                      <SelectItem key={member} value={member}>
-                        {member}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="expiresAt">Expiry Date (Optional)</Label>
+                <Input
+                  id="expiresAt"
+                  type="date"
+                  value={newCode.expiresAt}
+                  onChange={(e) => setNewCode({...newCode, expiresAt: e.target.value})}
+                />
               </div>
 
-              <Button onClick={handleCreateCode} className="w-full">
-                Create Referral Code
+              <Button onClick={handleCreateCode} className="w-full" disabled={creating}>
+                {creating ? "Creating..." : "Create Referral Code"}
               </Button>
             </div>
           </DialogContent>
         </Dialog>
+        </div>
       </CardHeader>
       
       <CardContent>
@@ -174,12 +226,13 @@ export function ReferralCodesCard({ referralCodes }: ReferralCodesCardProps) {
               <TableRow>
                 <TableHead className="font-semibold">Code</TableHead>
                 <TableHead className="font-semibold">Status</TableHead>
-                <TableHead className="font-semibold">Credit/Deliveries</TableHead>
+                <TableHead className="font-semibold">Owner</TableHead>
+                <TableHead className="font-semibold">Friend Reward</TableHead>
+                <TableHead className="font-semibold">Referrer Reward</TableHead>
+                <TableHead className="font-semibold">Uses</TableHead>
+                <TableHead className="font-semibold">Successful</TableHead>
+                <TableHead className="font-semibold">Total Rewards</TableHead>
                 <TableHead className="font-semibold">Expires</TableHead>
-                <TableHead className="font-semibold">Created By</TableHead>
-                <TableHead className="font-semibold">Belongs To</TableHead>
-                <TableHead className="font-semibold">Used By</TableHead>
-                <TableHead className="font-semibold">Used Date</TableHead>
                 <TableHead className="font-semibold">Created</TableHead>
               </TableRow>
             </TableHeader>
@@ -195,25 +248,29 @@ export function ReferralCodesCard({ referralCodes }: ReferralCodesCardProps) {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-black hover:text-primary transition-colors">
-                    {formatCreditInfo(code)}
+                    <div>{code.userName}</div>
+                    <div className="text-xs text-muted-foreground">{code.userEmail}</div>
                   </TableCell>
                   <TableCell className="text-black hover:text-primary transition-colors">
-                    {new Date(code.expiryDate).toLocaleDateString()}
+                    £{code.friendRewardValue.toFixed(2)}
                   </TableCell>
                   <TableCell className="text-black hover:text-primary transition-colors">
-                    {code.createdBy}
+                    £{code.referrerRewardValue.toFixed(2)}
                   </TableCell>
                   <TableCell className="text-black hover:text-primary transition-colors">
-                    {code.belongsTo}
+                    {code.totalUses}{code.maxUses ? ` / ${code.maxUses}` : ''}
                   </TableCell>
                   <TableCell className="text-black hover:text-primary transition-colors">
-                    {code.usedBy || "-"}
+                    {code.successfulReferrals}
                   </TableCell>
                   <TableCell className="text-black hover:text-primary transition-colors">
-                    {code.usedDate ? formatDistanceToNow(new Date(code.usedDate), { addSuffix: true }) : "-"}
+                    £{code.totalRewardsEarned.toFixed(2)}
+                  </TableCell>
+                  <TableCell className="text-black hover:text-primary transition-colors">
+                    {code.expiresAt ? new Date(code.expiresAt).toLocaleDateString() : 'Never'}
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
-                    {formatDistanceToNow(new Date(code.createdDate), { addSuffix: true })}
+                    {formatDistanceToNow(new Date(code.createdAt), { addSuffix: true })}
                   </TableCell>
                 </TableRow>
               ))}
@@ -221,6 +278,12 @@ export function ReferralCodesCard({ referralCodes }: ReferralCodesCardProps) {
           </Table>
         </ScrollArea>
       </CardContent>
+
+      {/* Referral Settings Dialog */}
+      <ReferralSettingsDialog
+        open={showSettings}
+        onOpenChange={setShowSettings}
+      />
     </Card>
   );
 }

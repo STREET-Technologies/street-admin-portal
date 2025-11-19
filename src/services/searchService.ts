@@ -19,7 +19,7 @@ export class SearchService {
       case "courier":
         return await this.searchCouriers(normalizedQuery);
       case "referralcode":
-        return this.searchReferralCodes(normalizedQuery);
+        return await this.searchReferralCodes(normalizedQuery);
       default:
         return null;
     }
@@ -95,15 +95,29 @@ export class SearchService {
     return null;
   }
 
-  private static searchReferralCodes(query: string): SearchResult | null {
-    // For referral codes, return all codes by default, filter if query provided
-    const filteredCodes = query ? mockReferralCodes.filter(code =>
+  private static async searchReferralCodes(query: string): Promise<SearchResult | null> {
+    if (USE_MOCK_DATA) {
+      // For referral codes, return all codes by default, filter if query provided
+      const filteredCodes = query ? mockReferralCodes.filter(code =>
+        code.code.toLowerCase().includes(query) ||
+        code.userName.toLowerCase().includes(query) ||
+        code.userEmail.toLowerCase().includes(query)
+      ) : mockReferralCodes;
+
+      return { data: filteredCodes, type: "referralcode" };
+    }
+
+    // Fetch all referral codes from API
+    const allCodes = await ApiService.getAllReferralCodes();
+
+    // Filter locally if query provided
+    const filteredCodes = query ? allCodes.filter(code =>
       code.code.toLowerCase().includes(query) ||
-      code.createdBy.toLowerCase().includes(query) ||
-      code.belongsTo.toLowerCase().includes(query) ||
-      (code.usedBy && code.usedBy.toLowerCase().includes(query))
-    ) : mockReferralCodes;
-    
+      code.userName.toLowerCase().includes(query) ||
+      code.userEmail.toLowerCase().includes(query) ||
+      code.userId.toLowerCase().includes(query)
+    ) : allCodes;
+
     return { data: filteredCodes, type: "referralcode" };
   }
 
@@ -178,11 +192,11 @@ export class SearchService {
       if (code.code.toLowerCase().includes(query)) {
         suggestions.push(code.code);
       }
-      if (code.createdBy.toLowerCase().includes(query)) {
-        suggestions.push(code.createdBy);
+      if (code.userName.toLowerCase().includes(query)) {
+        suggestions.push(code.userName);
       }
-      if (code.belongsTo.toLowerCase().includes(query)) {
-        suggestions.push(code.belongsTo);
+      if (code.userEmail.toLowerCase().includes(query)) {
+        suggestions.push(code.userEmail);
       }
     });
 

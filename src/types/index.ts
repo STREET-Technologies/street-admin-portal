@@ -96,15 +96,20 @@ export interface Note {
 export interface ReferralCode {
   id: string;
   code: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  friendRewardValue: number;
+  referrerRewardValue: number;
+  minimumOrderAmount: number;
+  totalUses: number;
+  maxUses?: number;
+  successfulReferrals: number;
+  totalRewardsEarned: number;
+  isActive: boolean;
+  expiresAt?: string;
+  createdAt: string;
   status: ReferralCodeStatus;
-  expiryDate: string;
-  creditAmount?: number;
-  freeDeliveries?: number;
-  createdBy: string;
-  belongsTo: string;
-  usedBy?: string;
-  usedDate?: string;
-  createdDate: string;
 }
 
 export interface UserAddress {
@@ -142,7 +147,7 @@ export type EntityStatus = "active" | "inactive" | "pending" | "blocked" | "with
 export type OrderStatus = "delivered" | "completed" | "pending" | "cancelled" | "in-progress";
 export type InvoiceStatus = "paid" | "partial" | "pending" | "overdue";
 export type NotePriority = "low" | "medium" | "high";
-export type ReferralCodeStatus = "active" | "expired" | "used" | "disabled";
+export type ReferralCodeStatus = "active" | "expired" | "disabled" | "maxed";
 export type EntityType = "user" | "retail" | "courier" | "referralcode";
 
 // Search types

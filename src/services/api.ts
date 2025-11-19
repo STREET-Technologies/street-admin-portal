@@ -1,5 +1,5 @@
 // API service for STREET backend integration
-import type { User, Retailer, Courier, UserAddress, Order, Device, Note } from "@/types";
+import type { User, Retailer, Courier, UserAddress, Order, Device, Note, ReferralCode } from "@/types";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080/v1";
 
@@ -420,5 +420,40 @@ export class ApiService {
       body: JSON.stringify(data),
     });
     return response;
+  }
+
+  // Referral Code endpoints
+  static async getAllReferralCodes(): Promise<ReferralCode[]> {
+    try {
+      const response = await this.request<ReferralCode[]>(`/referrals/admin/codes`);
+      return response;
+    } catch (error) {
+      console.error("Failed to fetch referral codes:", error);
+      return [];
+    }
+  }
+
+  static async createReferralCode(data: {
+    userId: string;
+    code?: string;
+    friendRewardValue?: number;
+    referrerRewardValue?: number;
+    minimumOrderAmount?: number;
+    maxUses?: number;
+    expiresAt?: string;
+    isActive?: boolean;
+  }): Promise<ReferralCode> {
+    const response = await this.request<ReferralCode>(`/referrals/admin/codes`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+    return response;
+  }
+
+  static async updateReferralCodeStatus(codeId: string, isActive: boolean): Promise<void> {
+    await this.request(`/referrals/admin/codes/${codeId}/status`, {
+      method: "PATCH",
+      body: JSON.stringify({ isActive }),
+    });
   }
 }
