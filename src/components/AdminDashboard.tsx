@@ -5,8 +5,9 @@ import { NotesSection } from "./NotesSection";
 import { MetricsCards } from "./MetricsCards";
 import { AccountAssociations } from "./AccountAssociations";
 import { ReferralCodesCard } from "./ReferralCodesCard";
+import { ReferralSettingsDialog } from "./ReferralSettingsDialog";
 import { Button } from "@/components/ui/button";
-import { LogOut, User, Store, Truck, Ticket } from "lucide-react";
+import { LogOut, User, Store, Truck, Ticket, Settings } from "lucide-react";
 import { SearchService } from "@/services/searchService";
 import type { SearchResult, EntityType, ReferralCode } from "@/types";
 
@@ -19,6 +20,7 @@ export function AdminDashboard({ onLogout, currentUser }: AdminDashboardProps) {
   const [searchResults, setSearchResults] = useState<SearchResult | null>(null);
   const [searchType, setSearchType] = useState<EntityType | "">("");
   const [enrichedUserData, setEnrichedUserData] = useState<any>(null);
+  const [showSettings, setShowSettings] = useState(false);
 
   const handleSearch = async (query: string, type: EntityType) => {
     setSearchType(type);
@@ -80,6 +82,15 @@ export function AdminDashboard({ onLogout, currentUser }: AdminDashboardProps) {
             
             <div className="flex items-center gap-4">
               <span className="text-sm text-muted-foreground">Welcome, {currentUser}</span>
+              <Button
+                onClick={() => setShowSettings(true)}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <Settings size={16} />
+                Settings
+              </Button>
               <Button
                 onClick={onLogout}
                 variant="outline"
@@ -160,6 +171,12 @@ export function AdminDashboard({ onLogout, currentUser }: AdminDashboardProps) {
           </div>
         )}
       </div>
+
+      {/* Referral Settings Dialog */}
+      <ReferralSettingsDialog
+        open={showSettings}
+        onOpenChange={setShowSettings}
+      />
     </div>
   );
 }
