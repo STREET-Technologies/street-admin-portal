@@ -24,7 +24,8 @@ export function ReferralCodesCard({ referralCodes }: ReferralCodesCardProps) {
   const [showSettings, setShowSettings] = useState(false);
   const [creating, setCreating] = useState(false);
   const [newCode, setNewCode] = useState({
-    userId: "",
+    codeType: "promotional" as const,
+    belongsTo: "",
     code: "",
     expiresAt: "",
     friendRewardValue: "",
@@ -50,10 +51,10 @@ export function ReferralCodesCard({ referralCodes }: ReferralCodesCardProps) {
   };
 
   const handleCreateCode = async () => {
-    if (!newCode.userId) {
+    if (!newCode.belongsTo && !newCode.code) {
       toast({
         title: "Error",
-        description: "User ID is required",
+        description: "Either 'Belongs To' or custom code is required for promotional codes",
         variant: "destructive",
       });
       return;
@@ -62,9 +63,10 @@ export function ReferralCodesCard({ referralCodes }: ReferralCodesCardProps) {
     setCreating(true);
     try {
       const payload: any = {
-        userId: newCode.userId,
+        codeType: newCode.codeType,
       };
 
+      if (newCode.belongsTo) payload.belongsTo = newCode.belongsTo;
       if (newCode.code) payload.code = newCode.code;
       if (newCode.friendRewardValue) payload.friendRewardValue = parseFloat(newCode.friendRewardValue);
       if (newCode.referrerRewardValue) payload.referrerRewardValue = parseFloat(newCode.referrerRewardValue);
@@ -76,12 +78,13 @@ export function ReferralCodesCard({ referralCodes }: ReferralCodesCardProps) {
 
       toast({
         title: "Success",
-        description: "Referral code created successfully. Refresh to see it.",
+        description: "Promotional code created successfully. Refresh to see it.",
       });
 
       setIsCreateDialogOpen(false);
       setNewCode({
-        userId: "",
+        codeType: "promotional" as const,
+        belongsTo: "",
         code: "",
         expiresAt: "",
         friendRewardValue: "",
@@ -128,22 +131,24 @@ export function ReferralCodesCard({ referralCodes }: ReferralCodesCardProps) {
             </DialogTrigger>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Create New Referral Code</DialogTitle>
+              <DialogTitle>Create Promotional Code</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <Label htmlFor="userId">User ID</Label>
+                <Label htmlFor="belongsTo">Belongs To</Label>
                 <Input
-                  id="userId"
-                  value={newCode.userId}
-                  onChange={(e) => setNewCode({...newCode, userId: e.target.value})}
-                  placeholder="Enter user ID"
-                  required
+                  id="belongsTo"
+                  value={newCode.belongsTo}
+                  onChange={(e) => setNewCode({...newCode, belongsTo: e.target.value})}
+                  placeholder="e.g., Students, VIP Customers, Welcome Offer"
                 />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Describes who this promotional code is for
+                </p>
               </div>
 
               <div>
-                <Label htmlFor="code">Code (Optional)</Label>
+                <Label htmlFor="code">Custom Code (Optional)</Label>
                 <Input
                   id="code"
                   value={newCode.code}
@@ -226,7 +231,7 @@ export function ReferralCodesCard({ referralCodes }: ReferralCodesCardProps) {
               <TableRow>
                 <TableHead className="font-semibold">Code</TableHead>
                 <TableHead className="font-semibold">Status</TableHead>
-                <TableHead className="font-semibold">Owner</TableHead>
+                <TableHead className="font-semibold">Belongs To</TableHead>
                 <TableHead className="font-semibold">Friend Reward</TableHead>
                 <TableHead className="font-semibold">Referrer Reward</TableHead>
                 <TableHead className="font-semibold">Uses</TableHead>
@@ -248,8 +253,7 @@ export function ReferralCodesCard({ referralCodes }: ReferralCodesCardProps) {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-black hover:text-primary transition-colors">
-                    <div>{code.userName}</div>
-                    <div className="text-xs text-muted-foreground">{code.userEmail}</div>
+                    {code.belongsTo || '-'}
                   </TableCell>
                   <TableCell className="text-black hover:text-primary transition-colors">
                     £{code.friendRewardValue.toFixed(2)}

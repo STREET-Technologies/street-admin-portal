@@ -96,9 +96,8 @@ export interface Note {
 export interface ReferralCode {
   id: string;
   code: string;
-  userId: string;
-  userName: string;
-  userEmail: string;
+  codeType: 'user_generated' | 'promotional';
+  belongsTo?: string; // For promotional codes (e.g., "Students", "VIP")
   friendRewardValue: number;
   referrerRewardValue: number;
   minimumOrderAmount: number;

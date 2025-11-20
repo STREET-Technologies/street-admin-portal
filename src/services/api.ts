@@ -434,7 +434,9 @@ export class ApiService {
   }
 
   static async createReferralCode(data: {
-    userId: string;
+    codeType?: 'user_generated' | 'promotional';
+    userId?: string;
+    belongsTo?: string;
     code?: string;
     friendRewardValue?: number;
     referrerRewardValue?: number;
