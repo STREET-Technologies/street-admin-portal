@@ -1,9 +1,6 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { SearchBar } from "./SearchBar";
 import { UserCard } from "./UserCard";
-import { NotesSection } from "./NotesSection";
-import { MetricsCards } from "./MetricsCards";
-import { AccountAssociations } from "./AccountAssociations";
 import { SettingsPanel } from "./SettingsPanel";
 import { Button } from "@/components/ui/button";
 import { LogOut, User, Store, Truck } from "lucide-react";
@@ -18,37 +15,23 @@ interface AdminDashboardProps {
 export function AdminDashboard({ onLogout, currentUser }: AdminDashboardProps) {
   const [searchResults, setSearchResults] = useState<SearchResult | null>(null);
   const [searchType, setSearchType] = useState<EntityType | "">("");
-  const [enrichedUserData, setEnrichedUserData] = useState<any>(null);
 
   const handleSearch = async (query: string, type: EntityType) => {
     setSearchType(type);
     setSearchResults(null);
-    setEnrichedUserData(null);
 
     const result = await SearchService.search(query, type);
     setSearchResults(result);
   };
 
-  const handleUserDataEnriched = useCallback((totalOrders: number, totalSpentOrRevenue: number) => {
-    if (searchResults && searchResults.data) {
-      // For users, this is totalSpent; for retailers, this is totalRevenue
-      const updated = searchResults.type === 'user'
-        ? { ...searchResults.data, totalOrders, totalSpent: totalSpentOrRevenue }
-        : { ...searchResults.data, totalOrders, totalRevenue: totalSpentOrRevenue };
-      setEnrichedUserData(updated);
-    }
-  }, [searchResults]);
-
   const handleTypeChange = () => {
     setSearchResults(null);
     setSearchType("");
-    setEnrichedUserData(null);
   };
 
   const handleLogoClick = () => {
     setSearchResults(null);
     setSearchType("");
-    setEnrichedUserData(null);
   };
 
   const getSearchIcon = () => {
@@ -116,24 +99,7 @@ export function AdminDashboard({ onLogout, currentUser }: AdminDashboardProps) {
                 <UserCard
                   data={searchResults.data as any}
                   type={searchResults.type}
-                  onUserDataEnriched={searchResults.type === 'user' || searchResults.type === 'retail' ? handleUserDataEnriched : undefined}
                 />
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-                  <div className="space-y-8">
-                    <MetricsCards
-                      data={(enrichedUserData || searchResults.data) as any}
-                      type={searchResults.type}
-                    />
-                    <AccountAssociations data={searchResults.data as any} type={searchResults.type} />
-                  </div>
-                  <div className="space-y-8">
-                    <NotesSection
-                      entityId={(searchResults.data as any).id}
-                      entityName={(searchResults.data as any).name}
-                      entityType={searchResults.type}
-                    />
-                  </div>
-                </div>
               </>
             )}
           </div>
