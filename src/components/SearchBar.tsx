@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, User, Store, Truck, Ticket } from "lucide-react";
+import { Search, User, Store, Truck, Settings } from "lucide-react";
 import { SearchService } from "@/services/searchService";
 import type { EntityType } from "@/types";
 
@@ -41,9 +41,9 @@ export function SearchBar({ onSearch, onTypeChange }: SearchBarProps) {
     setSelectedType(newType);
     setQuery("");
     setSuggestions([]);
-    
-    // For referral codes, immediately show all codes when type is selected
-    if (newType === "referralcode") {
+
+    // For settings, immediately trigger to show settings panel
+    if (newType === "settings") {
       onSearch("", newType);
     } else {
       onTypeChange?.();
@@ -53,7 +53,7 @@ export function SearchBar({ onSearch, onTypeChange }: SearchBarProps) {
   return (
     <div className="relative max-w-2xl mx-auto">
       {/* Type Selection Buttons */}
-      <div className="flex gap-2 mb-4">
+      <div className="flex gap-2 mb-4 justify-center">
         <Button
           type="button"
           variant={selectedType === "user" ? "default" : "outline"}
@@ -83,33 +83,35 @@ export function SearchBar({ onSearch, onTypeChange }: SearchBarProps) {
         </Button>
         <Button
           type="button"
-          variant={selectedType === "referralcode" ? "default" : "outline"}
-          onClick={() => handleTypeChange("referralcode")}
+          variant={selectedType === "settings" ? "default" : "outline"}
+          onClick={() => handleTypeChange("settings")}
           className="flex items-center gap-2"
         >
-          <Ticket className="w-4 h-4" />
-          ReferralCodes
+          <Settings className="w-4 h-4" />
+          Settings
         </Button>
       </div>
 
-      <form onSubmit={handleSubmit} className="relative">
-        <div className="relative">
-          <Input
-            value={query}
-            onChange={(e) => handleInputChange(e.target.value)}
-            placeholder={selectedType === "referralcode" ? "Search referral codes by code, creator, or belongs to" : `Search ${selectedType} by name, email, phone or ID`}
-            className="pr-24 h-14 text-lg border-2 focus:border-primary bg-white/95 backdrop-blur-sm"
-          />
-          <Button
-            type="submit"
-            className="absolute right-2 top-2 h-10 street-gradient text-black font-bold"
-            disabled={!query.trim()}
-          >
-            <Search className="w-4 h-4 mr-2" />
-            Search
-          </Button>
-        </div>
-      </form>
+      {selectedType !== "settings" && (
+        <form onSubmit={handleSubmit} className="relative">
+          <div className="relative">
+            <Input
+              value={query}
+              onChange={(e) => handleInputChange(e.target.value)}
+              placeholder={`Search ${selectedType} by name, email, phone or ID`}
+              className="pr-24 h-14 text-lg border-2 focus:border-primary bg-white/95 backdrop-blur-sm"
+            />
+            <Button
+              type="submit"
+              className="absolute right-2 top-2 h-10 street-gradient text-black font-bold"
+              disabled={!query.trim()}
+            >
+              <Search className="w-4 h-4 mr-2" />
+              Search
+            </Button>
+          </div>
+        </form>
+      )}
 
       {/* Suggestions */}
       {suggestions.length > 0 && (

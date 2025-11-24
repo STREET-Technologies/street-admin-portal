@@ -18,8 +18,8 @@ export class SearchService {
         return await this.searchRetailers(normalizedQuery);
       case "courier":
         return await this.searchCouriers(normalizedQuery);
-      case "referralcode":
-        return await this.searchReferralCodes(normalizedQuery);
+      case "settings":
+        return { type: "settings" };
       default:
         return null;
     }

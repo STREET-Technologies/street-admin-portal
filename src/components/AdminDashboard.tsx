@@ -4,11 +4,11 @@ import { UserCard } from "./UserCard";
 import { NotesSection } from "./NotesSection";
 import { MetricsCards } from "./MetricsCards";
 import { AccountAssociations } from "./AccountAssociations";
-import { ReferralCodesCard } from "./ReferralCodesCard";
+import { SettingsPanel } from "./SettingsPanel";
 import { Button } from "@/components/ui/button";
-import { LogOut, User, Store, Truck, Ticket } from "lucide-react";
+import { LogOut, User, Store, Truck } from "lucide-react";
 import { SearchService } from "@/services/searchService";
-import type { SearchResult, EntityType, ReferralCode } from "@/types";
+import type { SearchResult, EntityType } from "@/types";
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -56,7 +56,6 @@ export function AdminDashboard({ onLogout, currentUser }: AdminDashboardProps) {
       case "user": return <User className="w-5 h-5" />;
       case "retail": return <Store className="w-5 h-5" />;
       case "courier": return <Truck className="w-5 h-5" />;
-      case "referralcode": return <Ticket className="w-5 h-5" />;
       default: return null;
     }
   };
@@ -103,17 +102,17 @@ export function AdminDashboard({ onLogout, currentUser }: AdminDashboardProps) {
         {/* Results Section */}
         {searchResults && (
           <div className="space-y-8">
-            {/* Header */}
-            <div className="flex items-center gap-3 mb-6">
-              {getSearchIcon()}
-              <h2 className="street-title text-2xl capitalize">{searchType} Information</h2>
-            </div>
-
             {/* Handle different entity types */}
-            {searchResults.type === "referralcode" ? (
-              <ReferralCodesCard referralCodes={searchResults.data as ReferralCode[]} />
+            {searchResults.type === "settings" ? (
+              <SettingsPanel />
             ) : (
               <>
+                {/* Header */}
+                <div className="flex items-center gap-3 mb-6">
+                  {getSearchIcon()}
+                  <h2 className="street-title text-2xl capitalize">{searchType} Information</h2>
+                </div>
+
                 <UserCard
                   data={searchResults.data as any}
                   type={searchResults.type}
@@ -149,7 +148,7 @@ export function AdminDashboard({ onLogout, currentUser }: AdminDashboardProps) {
               className="h-32 mx-auto mb-4 opacity-20"
             />
             <h2 className="street-title text-2xl text-muted-foreground mb-2">Welcome to STREET admin {currentUser}</h2>
-            <p className="text-muted-foreground mb-8">Use the search bar above to find users, retailers, couriers, or referral codes</p>
+            <p className="text-muted-foreground mb-8">Use the search bar above to find users, retailers, or couriers, or access settings</p>
             
             <div className="max-w-4xl mx-auto bg-gray-100 border-2 border-lime-500 rounded-lg p-6">
               <h3 className="font-semibold text-black mb-3 text-lg">⚠️ Compliance Notice</h3>

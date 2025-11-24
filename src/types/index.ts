@@ -147,10 +147,10 @@ export type OrderStatus = "delivered" | "completed" | "pending" | "cancelled" | 
 export type InvoiceStatus = "paid" | "partial" | "pending" | "overdue";
 export type NotePriority = "low" | "medium" | "high";
 export type ReferralCodeStatus = "active" | "expired" | "disabled" | "maxed";
-export type EntityType = "user" | "retail" | "courier" | "referralcode";
+export type EntityType = "user" | "retail" | "courier" | "settings";
 
 // Search types
 export interface SearchResult {
-  data: User | Retailer | Courier | ReferralCode[];
+  data?: User | Retailer | Courier | ReferralCode[];
   type: EntityType;
 }
