@@ -157,7 +157,7 @@ export function ReferralsTab({ userId }: ReferralsTabProps) {
             </div>
           </div>
 
-          {/* Reward Configuration */}
+          {/* Reward Configuration & Key Details */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <div className="text-sm text-muted-foreground">Friend Reward</div>
@@ -171,44 +171,47 @@ export function ReferralsTab({ userId }: ReferralsTabProps) {
                 £{referralData!.referrerRewardValue.toFixed(2)}
               </div>
             </div>
+            <div className="space-y-1">
+              <div className="text-sm text-muted-foreground">Minimum Order</div>
+              <div className="text-xl font-bold">
+                £{referralData!.minimumOrderAmount.toFixed(2)}
+              </div>
+            </div>
+            <div className="space-y-1">
+              <div className="text-sm text-muted-foreground">Status</div>
+              <div className="flex items-center gap-2">
+                {referralData!.isActive ? (
+                  <>
+                    <Check className="w-5 h-5 text-green-600" />
+                    <span className="text-xl font-bold text-green-600">Active</span>
+                  </>
+                ) : (
+                  <>
+                    <X className="w-5 h-5 text-red-600" />
+                    <span className="text-xl font-bold text-red-600">Inactive</span>
+                  </>
+                )}
+              </div>
+            </div>
           </div>
 
-          {/* Constraints */}
-          <div className="flex items-center justify-between text-sm">
-            <div className="text-muted-foreground">Minimum Order</div>
-            <div className="font-semibold">£{referralData!.minimumOrderAmount.toFixed(2)}</div>
-          </div>
-
-          {referralData!.maxUses && (
-            <div className="flex items-center justify-between text-sm">
-              <div className="text-muted-foreground">Max Uses</div>
-              <div className="font-semibold">{referralData!.maxUses}</div>
-            </div>
-          )}
-
-          {referralData!.expiresAt && (
-            <div className="flex items-center justify-between text-sm">
-              <div className="text-muted-foreground">Expires</div>
-              <div className="font-semibold">{new Date(referralData!.expiresAt).toLocaleDateString()}</div>
-            </div>
-          )}
-
-          <div className="flex items-center justify-between text-sm">
-            <div className="text-muted-foreground">Status</div>
-            <div className="flex items-center gap-2">
-              {referralData!.isActive ? (
-                <>
-                  <Check className="w-4 h-4 text-green-600" />
-                  <span className="text-green-600 font-semibold">Active</span>
-                </>
-              ) : (
-                <>
-                  <X className="w-4 h-4 text-red-600" />
-                  <span className="text-red-600 font-semibold">Inactive</span>
-                </>
+          {/* Optional Constraints */}
+          {(referralData!.maxUses || referralData!.expiresAt) && (
+            <div className="flex items-center gap-6 text-sm pt-2 border-t">
+              {referralData!.maxUses && (
+                <div className="flex items-center gap-2">
+                  <span className="text-muted-foreground">Max Uses:</span>
+                  <span className="font-semibold">{referralData!.maxUses}</span>
+                </div>
+              )}
+              {referralData!.expiresAt && (
+                <div className="flex items-center gap-2">
+                  <span className="text-muted-foreground">Expires:</span>
+                  <span className="font-semibold">{new Date(referralData!.expiresAt).toLocaleDateString()}</span>
+                </div>
               )}
             </div>
-          </div>
+          )}
         </CardContent>
       </Card>
 
