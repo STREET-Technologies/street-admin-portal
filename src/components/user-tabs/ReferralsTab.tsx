@@ -45,12 +45,36 @@ export function ReferralsTab({ userId }: ReferralsTabProps) {
         },
       });
 
+      console.log('Referral API response status:', response.status);
+
       if (response.ok) {
         const data = await response.json();
-        setHasCode(data.hasCode);
-        if (data.hasCode) {
-          setReferralData(data.data);
+        console.log('Referral API response data:', data);
+
+        // Handle backend response wrapping
+        // Backend returns: { statusCode, message, data: { hasCode, data: {...} } }
+        // OR: { statusCode, message, data: { id, code, ... } } for existing codes
+        if (data.data) {
+          // Check if it's wrapped response with hasCode field
+          if ('hasCode' in data.data) {
+            setHasCode(data.data.hasCode);
+            if (data.data.hasCode && data.data.data) {
+              setReferralData(data.data.data);
+            }
+          } else if (data.data.id && data.data.code) {
+            // Direct referral object - user has a code
+            setHasCode(true);
+            setReferralData(data.data);
+          } else {
+            // No code
+            setHasCode(false);
+          }
+        } else {
+          // Fallback for unwrapped response
+          setHasCode(false);
         }
+      } else {
+        console.error('Referral API error:', response.status, await response.text());
       }
     } catch (error) {
       console.error('Failed to load referral data:', error);
