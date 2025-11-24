@@ -157,7 +157,7 @@ export function ReferralsTab({ userId }: ReferralsTabProps) {
             </div>
           </div>
 
-          {/* Reward Configuration & Key Details */}
+          {/* Reward Configuration */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <div className="text-sm text-muted-foreground">Friend Reward</div>
@@ -171,27 +171,27 @@ export function ReferralsTab({ userId }: ReferralsTabProps) {
                 £{referralData!.referrerRewardValue.toFixed(2)}
               </div>
             </div>
-            <div className="space-y-1">
-              <div className="text-sm text-muted-foreground">Minimum Order</div>
-              <div className="text-xl font-bold">
-                £{referralData!.minimumOrderAmount.toFixed(2)}
-              </div>
+          </div>
+
+          {/* Minimum Order & Status Inline */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Minimum Order:</span>
+              <span className="text-lg font-bold">£{referralData!.minimumOrderAmount.toFixed(2)}</span>
             </div>
-            <div className="space-y-1">
-              <div className="text-sm text-muted-foreground">Status</div>
-              <div className="flex items-center gap-2">
-                {referralData!.isActive ? (
-                  <>
-                    <Check className="w-5 h-5 text-green-600" />
-                    <span className="text-xl font-bold text-green-600">Active</span>
-                  </>
-                ) : (
-                  <>
-                    <X className="w-5 h-5 text-red-600" />
-                    <span className="text-xl font-bold text-red-600">Inactive</span>
-                  </>
-                )}
-              </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Status:</span>
+              {referralData!.isActive ? (
+                <>
+                  <Check className="w-5 h-5 text-green-600" />
+                  <span className="text-lg font-bold text-green-600">Active</span>
+                </>
+              ) : (
+                <>
+                  <X className="w-5 h-5 text-red-600" />
+                  <span className="text-lg font-bold text-red-600">Inactive</span>
+                </>
+              )}
             </div>
           </div>
 
