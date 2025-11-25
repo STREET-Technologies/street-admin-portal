@@ -59,7 +59,7 @@ export function AdminDashboard({ onLogout, currentUser }: AdminDashboardProps) {
               <div className="w-8 h-0.5 street-gradient"></div>
               <span className="text-muted-foreground">Admin Portal</span>
             </div>
-            
+
             <div className="flex items-center gap-4">
               <span className="text-sm text-muted-foreground">Welcome, {currentUser}</span>
               <Button
@@ -111,15 +111,14 @@ export function AdminDashboard({ onLogout, currentUser }: AdminDashboardProps) {
             <img
               src="/img/logo-green-transparent.png"
               alt="STREET Logo"
-              className="h-32 mx-auto mb-4 opacity-20"
+              className="h-24 mx-auto mb-4 opacity-50"
             />
             <h2 className="street-title text-2xl text-muted-foreground mb-2">Welcome to STREET admin {currentUser}</h2>
             <p className="text-muted-foreground mb-8">Use the search bar above to find users, retailers, or couriers, or access settings</p>
-            
-            <div className="max-w-4xl mx-auto bg-gray-100 border-2 border-lime-500 rounded-lg p-6">
-              <h3 className="font-semibold text-black mb-3 text-lg">⚠️ Compliance Notice</h3>
-              <p className="text-black leading-relaxed">
-                Access to this portal is restricted to authorised employees for legitimate business purposes only. Any access, retrieval, or use of user information must be directly related to your job responsibilities. It is strictly prohibited to search for, access, or use user details for personal, non-business, or unauthorised purposes (including but not limited to information relating to friends, family members, celebrities, or other individuals of personal interest). Unauthorised access, use, or disclosure of user information constitutes a breach of company policy and may result in disciplinary action, up to and including termination of employment, as well as potential legal consequences.
+
+            <div className="max-w-2xl mx-auto bg-gray-50 border border-gray-200 rounded-md p-4">
+              <p className="text-xs text-gray-500 leading-relaxed">
+                <span className="font-medium">Compliance Notice:</span> Access to this portal is restricted to authorised employees for legitimate business purposes only. Unauthorised access or misuse of user information may result in disciplinary action and legal consequences.
               </p>
             </div>
           </div>
