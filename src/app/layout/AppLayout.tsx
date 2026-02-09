@@ -7,6 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { AppSidebar } from "./AppSidebar";
 import { Breadcrumbs } from "./Breadcrumbs";
 import { ThemeToggle } from "./ThemeToggle";
+import { GlobalSearch } from "@/features/search/components/GlobalSearch";
 
 /**
  * Main app layout with sidebar navigation and content area.
@@ -21,7 +22,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           <SidebarTrigger />
           <Separator orientation="vertical" className="h-4" />
           <Breadcrumbs />
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-2">
+            <GlobalSearch />
             <ThemeToggle />
           </div>
         </header>
