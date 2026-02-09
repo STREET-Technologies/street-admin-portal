@@ -21,21 +21,21 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Entity Lists
 
-- [ ] **LIST-01**: Admin can view a paginated list of all users with sortable columns
-- [ ] **LIST-02**: Admin can view a paginated list of all retailers with sortable columns
+- [x] **LIST-01**: Admin can view a paginated list of all users with sortable columns
+- [x] **LIST-02**: Admin can view a paginated list of all retailers with sortable columns
 - [ ] **LIST-03**: Admin can view a paginated list of all couriers with sortable columns
 - [ ] **LIST-04**: Admin can view a paginated list of all orders with sortable columns
-- [ ] **LIST-05**: Admin can filter entity lists by status and date range
-- [ ] **LIST-06**: All list pages use server-side pagination (not client-side)
+- [x] **LIST-05**: Admin can filter entity lists by status and date range
+- [x] **LIST-06**: All list pages use server-side pagination (not client-side)
 
 ### Entity Details
 
-- [ ] **DETL-01**: Admin can view full-page user detail with tabs (Overview, Orders, Addresses, Devices, Notes)
-- [ ] **DETL-02**: Admin can view full-page retailer detail with tabs (Overview, Orders, Notes)
+- [x] **DETL-01**: Admin can view full-page user detail with tabs (Overview, Orders, Addresses, Devices, Notes)
+- [x] **DETL-02**: Admin can view full-page retailer detail with tabs (Overview, Orders, Notes)
 - [ ] **DETL-03**: Admin can view full-page courier detail with tabs (Overview, Notes)
 - [ ] **DETL-04**: Admin can view full-page order detail (items, payment status, delivery status, customer, retailer, courier info)
-- [ ] **DETL-05**: All entities display consistent color-coded status badges
-- [ ] **DETL-06**: Admin can copy IDs, emails, phone numbers, and order IDs to clipboard with one click
+- [x] **DETL-05**: All entities display consistent color-coded status badges
+- [x] **DETL-06**: Admin can copy IDs, emails, phone numbers, and order IDs to clipboard with one click
 - [ ] **DETL-07**: All entity references on detail pages are clickable links to the referenced entity's detail page
 - [ ] **DETL-08**: Admin can perform quick actions from entity detail pages (block user, change retailer status, etc.)
 - [ ] **DETL-09**: Admin can inline-edit fields on detail pages (click field, type, press Enter)
@@ -132,14 +132,14 @@ Which phases cover which requirements. Updated by create-roadmap.
 | INFR-04 | Phase 1 | Complete |
 | INFR-05 | Phase 1 | Complete |
 | INFR-06 | Phase 1 | Complete |
-| LIST-01 | Phase 2 | Pending |
-| LIST-02 | Phase 2 | Pending |
-| LIST-05 | Phase 2 | Pending |
-| LIST-06 | Phase 2 | Pending |
-| DETL-01 | Phase 2 | Pending |
-| DETL-02 | Phase 2 | Pending |
-| DETL-05 | Phase 2 | Pending |
-| DETL-06 | Phase 2 | Pending |
+| LIST-01 | Phase 2 | Complete |
+| LIST-02 | Phase 2 | Complete |
+| LIST-05 | Phase 2 | Complete |
+| LIST-06 | Phase 2 | Complete |
+| DETL-01 | Phase 2 | Complete |
+| DETL-02 | Phase 2 | Complete |
+| DETL-05 | Phase 2 | Complete |
+| DETL-06 | Phase 2 | Complete |
 | LIST-03 | Phase 3 | Pending |
 | LIST-04 | Phase 3 | Pending |
 | DETL-03 | Phase 3 | Pending |

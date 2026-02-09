@@ -5,33 +5,33 @@
 See: .planning/PROJECT.md (updated 2026-02-09)
 
 **Core value:** Fast, intuitive customer support workflows — find any user or order in seconds and resolve issues without friction.
-**Current focus:** Phase 2 — Users & Retailers
+**Current focus:** Phase 2 complete — ready for Phase 3
 
 ## Current Position
 
-Phase: 2 of 5 (Users & Retailers) — IN PROGRESS
-Plan: 3 of 4 complete (02-03 Retailer Feature)
-Status: In progress
-Last activity: 2026-02-09 — Completed 02-03-PLAN.md
+Phase: 2 of 5 (Users & Retailers) — COMPLETE
+Next: Phase 3 (Couriers, Orders & Search)
+Status: Phase 2 complete, Phase 3 not yet planned
+Last activity: 2026-02-09 — Completed Phase 2 (all 4 plans + gap fixes)
 
-Progress: ███████░░░ 75% (Phase 2)
+Progress: ██████████ 100% (Phase 2)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 7
+- Total plans completed: 8
 - Average duration: ~4 min
-- Total execution time: ~31 min
+- Total execution time: ~35 min
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1. Foundation | 4/4 | ~20 min | ~5 min |
-| 2. Users & Retailers | 3/4 | ~11 min | ~3.7 min |
+| 2. Users & Retailers | 4/4 | ~15 min | ~3.7 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-04 (15m incl. checkpoint), 02-01 (4m), 02-02 (3m), 02-03 (4m)
+- Last 5 plans: 02-01 (4m), 02-02 (3m), 02-03 (4m), 02-04 (checkpoint)
 - Trend: Steady, accelerating
 
 ## Accumulated Context
@@ -65,6 +65,9 @@ Recent decisions affecting current work:
 - Plain table for orders mini-table (no TanStack Table overhead for non-paginated data) (02-03)
 - Shared useDebounce hook for search input debouncing across features (02-03)
 - GBP currency formatting for order totals (backend stores pence) (02-03)
+- Client-side status filtering within page (backend lacks filter params) (02-04)
+- Dev bypass 401 skip in api-client (fake token causes 401 on all API calls) (02-04)
+- Button forwardRef for Radix asChild compatibility (02-04)
 
 ### Pending Todos
 
@@ -73,10 +76,11 @@ None.
 ### Blockers/Concerns
 
 - Backend has no user status field -- all users show as "active" (cosmetic, not blocking)
-- Backend has no sorting params for /admin/users -- client-side sort is page-only
+- Backend has no sorting/filtering params -- client-side sort/filter is page-only
+- Google OAuth redirect URI propagation may take time for local dev
 
 ## Session Continuity
 
 Last session: 2026-02-09
-Stopped at: Completed 02-03-PLAN.md
+Stopped at: Phase 2 complete
 Resume file: None
