@@ -1,3 +1,4 @@
+import { Link, useNavigate } from "@tanstack/react-router";
 import { Package } from "lucide-react";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { CopyButton } from "@/components/shared/CopyButton";
@@ -26,6 +27,7 @@ function formatCurrency(amountPence: number): string {
 }
 
 export function RetailerOrdersTab({ retailerId }: RetailerOrdersTabProps) {
+  const navigate = useNavigate();
   const { data: orders, isLoading, isError, refetch } =
     useRetailerOrdersQuery(retailerId);
 
@@ -67,12 +69,29 @@ export function RetailerOrdersTab({ retailerId }: RetailerOrdersTabProps) {
         </TableHeader>
         <TableBody>
           {orders.map((order) => (
-            <TableRow key={order.id}>
+            <TableRow
+              key={order.id}
+              className="cursor-pointer"
+              onClick={(e) => {
+                // Don't navigate when clicking interactive elements (copy button, links)
+                const target = e.target as HTMLElement;
+                if (target.closest("button") || target.closest("a")) return;
+                void navigate({
+                  to: "/orders/$orderId",
+                  params: { orderId: order.id },
+                });
+              }}
+            >
               <TableCell>
                 <div className="group/id flex items-center gap-1">
-                  <span className="font-mono text-xs">
-                    {order.id.slice(0, 8)}...
-                  </span>
+                  <Link
+                    to="/orders/$orderId"
+                    params={{ orderId: order.id }}
+                    className="font-mono text-xs font-medium text-primary hover:underline"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {order.orderNumber ?? order.id.slice(0, 8)}
+                  </Link>
                   <span className="opacity-0 transition-opacity group-hover/id:opacity-100">
                     <CopyButton value={order.id} label="Copy order ID" />
                   </span>
