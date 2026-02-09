@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-09)
 
 **Core value:** Fast, intuitive customer support workflows — find any user or order in seconds and resolve issues without friction.
-**Current focus:** Phase 4 complete — ready for Phase 5
+**Current focus:** Phase 5 in progress — Power Features
 
 ## Current Position
 
-Phase: 4 of 5 (Notes, Referrals & Settings) — COMPLETE
-Plan: 2 of 2
-Status: Phase 4 complete
-Last activity: 2026-02-09 — Completed 04-01-PLAN.md
+Phase: 5 of 5 (Power Features)
+Plan: 3 of 3
+Status: In progress
+Last activity: 2026-02-09 — Completed 05-03-PLAN.md
 
-Progress: ██████████ 100% (Phase 4: 2/2 plans complete)
+Progress: ███████████████░░ 88% (Phase 5: 1/3 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 14
+- Total plans completed: 15
 - Average duration: ~4 min
-- Total execution time: ~53 min
+- Total execution time: ~55 min
 
 **By Phase:**
 
@@ -31,6 +31,7 @@ Progress: ██████████ 100% (Phase 4: 2/2 plans complete)
 | 2. Users & Retailers | 4/4 | ~15 min | ~3.7 min |
 | 3. Orders & Search | 4/4 | ~15 min | ~3.7 min |
 | 4. Notes, Referrals & Settings | 2/2 | ~3 min | ~1.5 min |
+| 5. Power Features | 1/3 | ~2 min | ~2 min |
 
 ## Accumulated Context
 
@@ -82,6 +83,8 @@ Recent decisions affecting current work:
 - Shared NotesPanel component reused by UserNotesTab and RetailerNotesTab (04-01)
 - Controlled form state (useState) for simple note creation form (04-01)
 - Backend uses 'vendor' for retailer entityType -- mapped in RetailerNotesTab (04-01)
+- Custom relativeTime helper over Intl.RelativeTimeFormat for compact "2h ago" display (05-03)
+- Shared ActivityTimeline component reusable across any entity type (05-03)
 
 ### Pending Todos
 
@@ -99,5 +102,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-09
-Stopped at: Phase 4 complete, ready for Phase 5
+Stopped at: Completed 05-03-PLAN.md (activity timeline)
 Resume file: None
