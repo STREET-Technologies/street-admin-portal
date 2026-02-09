@@ -36,10 +36,10 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **DETL-04**: Admin can view full-page order detail (items, payment status, delivery status, customer, retailer, courier info)
 - [x] **DETL-05**: All entities display consistent color-coded status badges
 - [x] **DETL-06**: Admin can copy IDs, emails, phone numbers, and order IDs to clipboard with one click
-- [ ] **DETL-07**: All entity references on detail pages are clickable links to the referenced entity's detail page
-- [ ] **DETL-08**: Admin can perform quick actions from entity detail pages (block user, change retailer status, etc.)
-- [ ] **DETL-09**: Admin can inline-edit fields on detail pages (click field, type, press Enter)
-- [ ] **DETL-10**: Each entity detail page shows a chronological activity timeline of events
+- [x] **DETL-07**: All entity references on detail pages are clickable links to the referenced entity's detail page
+- [x] **DETL-08**: Admin can perform quick actions from entity detail pages (block user, change retailer status, etc.)
+- [x] **DETL-09**: Admin can inline-edit fields on detail pages (click field, type, press Enter)
+- [x] **DETL-10**: Each entity detail page shows a chronological activity timeline of events
 
 ### Notes
 
@@ -152,10 +152,10 @@ Which phases cover which requirements. Updated by create-roadmap.
 | REFL-01 | Descoped | Descoped (no admin referral endpoints in backend) |
 | REFL-02 | Descoped | Descoped (no admin referral endpoints in backend) |
 | INFR-07 | Phase 4 | Complete |
-| DETL-07 | Phase 5 | Pending |
-| DETL-08 | Phase 5 | Pending |
-| DETL-09 | Phase 5 | Pending |
-| DETL-10 | Phase 5 | Pending |
+| DETL-07 | Phase 5 | Complete |
+| DETL-08 | Phase 5 | Complete |
+| DETL-09 | Phase 5 | Complete |
+| DETL-10 | Phase 5 | Complete |
 
 **Coverage:**
 - v1 requirements: 37 total

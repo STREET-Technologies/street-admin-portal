@@ -14,7 +14,7 @@ Green-field rebuild of the STREET Admin Portal from an AI-generated (Lovable) pr
 - [x] **Phase 2: Users & Retailers** - User and retailer list + detail pages with data tables
 - [x] **Phase 3: Orders & Search** - Order pages plus unified global search (couriers descoped)
 - [x] **Phase 4: Notes, Referrals & Settings** - Cross-cutting features that attach to entities (REFL-01, REFL-02 descoped — no admin referral endpoints)
-- [ ] **Phase 5: Power Features** - Cross-entity linking, quick actions, inline editing, timeline
+- [x] **Phase 5: Power Features** - Cross-entity linking, quick actions, inline editing, timeline
 
 ## Phase Details
 
@@ -77,7 +77,8 @@ Green-field rebuild of the STREET Admin Portal from an AI-generated (Lovable) pr
   3. Admin can inline-edit fields on detail pages (click field, type, press Enter)
   4. Each entity detail page shows a chronological activity timeline of events
 **Research**: Unlikely (UI enhancement patterns using established components)
-**Plans**: TBD
+**Plans**: 05-01 (cross-entity linking), 05-02 (inline editing + quick actions), 05-03 (activity timeline)
+**Notes**: User block action not possible (no backend endpoint). Order mutations not possible (no admin endpoints). Retailer online toggle implemented via PATCH /admin/vendors/:id.
 
 ## Progress
 
@@ -87,4 +88,4 @@ Green-field rebuild of the STREET Admin Portal from an AI-generated (Lovable) pr
 | 2. Users & Retailers | 4/4 | Complete | 2026-02-09 |
 | 3. Orders & Search | 4/4 | Complete | 2026-02-09 |
 | 4. Notes, Referrals & Settings | 2/2 | Complete | 2026-02-09 |
-| 5. Power Features | 0/TBD | Not started | - |
+| 5. Power Features | 3/3 | Complete | 2026-02-09 |
