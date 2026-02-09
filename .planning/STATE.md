@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-09)
 
 **Core value:** Fast, intuitive customer support workflows — find any user or order in seconds and resolve issues without friction.
-**Current focus:** Phase 4 in progress — 04-02 complete
+**Current focus:** Phase 4 complete — ready for Phase 5
 
 ## Current Position
 
-Phase: 4 of 5 (Notes, Referrals & Settings)
+Phase: 4 of 5 (Notes, Referrals & Settings) — COMPLETE
 Plan: 2 of 2
-Status: 04-02 complete (04-01 may still be in progress)
-Last activity: 2026-02-09 — Completed 04-02-PLAN.md
+Status: Phase 4 complete
+Last activity: 2026-02-09 — Completed 04-01-PLAN.md
 
-Progress: █████████░ 50% (Phase 4: 1/2 plans complete)
+Progress: ██████████ 100% (Phase 4: 2/2 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 13
+- Total plans completed: 14
 - Average duration: ~4 min
-- Total execution time: ~51 min
+- Total execution time: ~53 min
 
 **By Phase:**
 
@@ -30,7 +30,7 @@ Progress: █████████░ 50% (Phase 4: 1/2 plans complete)
 | 1. Foundation | 4/4 | ~20 min | ~5 min |
 | 2. Users & Retailers | 4/4 | ~15 min | ~3.7 min |
 | 3. Orders & Search | 4/4 | ~15 min | ~3.7 min |
-| 4. Notes, Referrals & Settings | 1/2 | ~1 min | ~1 min |
+| 4. Notes, Referrals & Settings | 2/2 | ~3 min | ~1.5 min |
 
 ## Accumulated Context
 
@@ -79,6 +79,9 @@ Recent decisions affecting current work:
 - Referral settings (INFR-07 partial) deferred to Phase 5 settings page (04-planning)
 - BackendUserDevice aligned to FcmToken entity fields (04-02)
 - Referrals page uses structured Card with endpoint list instead of generic EmptyState (04-02)
+- Shared NotesPanel component reused by UserNotesTab and RetailerNotesTab (04-01)
+- Controlled form state (useState) for simple note creation form (04-01)
+- Backend uses 'vendor' for retailer entityType -- mapped in RetailerNotesTab (04-01)
 
 ### Pending Todos
 
@@ -96,5 +99,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-09
-Stopped at: Completed 04-02-PLAN.md
+Stopped at: Phase 4 complete, ready for Phase 5
 Resume file: None
