@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 ## Current Position
 
 Phase: 2 of 5 (Users & Retailers) — IN PROGRESS
-Plan: 2 of 4 complete (02-02 User Feature)
+Plan: 3 of 4 complete (02-03 Retailer Feature)
 Status: In progress
-Last activity: 2026-02-09 — Completed 02-02-PLAN.md
+Last activity: 2026-02-09 — Completed 02-03-PLAN.md
 
-Progress: █████░░░░░ 50% (Phase 2)
+Progress: ███████░░░ 75% (Phase 2)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6
+- Total plans completed: 7
 - Average duration: ~4 min
-- Total execution time: ~27 min
+- Total execution time: ~31 min
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1. Foundation | 4/4 | ~20 min | ~5 min |
-| 2. Users & Retailers | 2/4 | ~7 min | ~3.5 min |
+| 2. Users & Retailers | 3/4 | ~11 min | ~3.7 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-03 (2m), 01-04 (15m incl. checkpoint), 02-01 (4m), 02-02 (3m)
+- Last 5 plans: 01-04 (15m incl. checkpoint), 02-01 (4m), 02-02 (3m), 02-03 (4m)
 - Trend: Steady, accelerating
 
 ## Accumulated Context
@@ -62,6 +62,9 @@ Recent decisions affecting current work:
 - api.getRaw for paginated responses that need both data and meta (02-02)
 - Client-side sorting within page data when backend lacks sort params (02-02)
 - Each detail tab as separate component file for maintainability (02-02)
+- Plain table for orders mini-table (no TanStack Table overhead for non-paginated data) (02-03)
+- Shared useDebounce hook for search input debouncing across features (02-03)
+- GBP currency formatting for order totals (backend stores pence) (02-03)
 
 ### Pending Todos
 
@@ -75,5 +78,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-09
-Stopped at: Completed 02-02-PLAN.md
+Stopped at: Completed 02-03-PLAN.md
 Resume file: None
