@@ -96,11 +96,45 @@ async function request<T>(
 }
 
 /**
+ * Make a request and return parsed JSON WITHOUT envelope unwrapping.
+ * Use for paginated responses where both `data` and `meta` are needed.
+ */
+async function requestRaw<T>(
+  method: "get" | "post" | "patch" | "delete",
+  endpoint: string,
+  options?: Options,
+): Promise<T> {
+  try {
+    const response = await kyInstance[method](endpoint, options);
+    return (await response.json()) as T;
+  } catch (error) {
+    if (error instanceof HTTPError) {
+      const status = error.response.status;
+      const statusText = error.response.statusText;
+      let data: unknown;
+      try {
+        data = await error.response.json();
+      } catch {
+        // Response body may not be JSON
+      }
+      throw new ApiError(status, statusText, data);
+    }
+    throw error;
+  }
+}
+
+/**
  * Centralized API client.
  * All feature-level API modules import and use this.
  */
 export const api = {
   get: <T>(endpoint: string) => request<T>("get", endpoint),
+
+  /**
+   * GET without envelope unwrapping. Use for paginated endpoints
+   * where the response has both `data` and `meta` at the same level.
+   */
+  getRaw: <T>(endpoint: string) => requestRaw<T>("get", endpoint),
 
   post: <T>(endpoint: string, body?: unknown) =>
     request<T>("post", endpoint, body !== undefined ? { json: body } : undefined),
