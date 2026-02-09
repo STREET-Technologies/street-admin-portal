@@ -12,7 +12,7 @@ Green-field rebuild of the STREET Admin Portal from an AI-generated (Lovable) pr
 
 - [x] **Phase 1: Foundation** - Project scaffold, auth, layout shell, API client, infrastructure
 - [x] **Phase 2: Users & Retailers** - User and retailer list + detail pages with data tables
-- [ ] **Phase 3: Couriers, Orders & Search** - Courier/order pages plus unified search
+- [x] **Phase 3: Orders & Search** - Order pages plus unified global search (couriers descoped)
 - [ ] **Phase 4: Notes, Referrals & Settings** - Cross-cutting features that attach to entities
 - [ ] **Phase 5: Power Features** - Cross-entity linking, quick actions, inline editing, timeline
 
@@ -84,6 +84,6 @@ Green-field rebuild of the STREET Admin Portal from an AI-generated (Lovable) pr
 |-------|----------------|--------|-----------|
 | 1. Foundation | 4/4 | Complete | 2026-02-09 |
 | 2. Users & Retailers | 4/4 | Complete | 2026-02-09 |
-| 3. Orders & Search | 0/4 | Planned | - |
+| 3. Orders & Search | 4/4 | Complete | 2026-02-09 |
 | 4. Notes, Referrals & Settings | 0/TBD | Not started | - |
 | 5. Power Features | 0/TBD | Not started | - |

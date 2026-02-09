@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-09)
 
 **Core value:** Fast, intuitive customer support workflows — find any user or order in seconds and resolve issues without friction.
-**Current focus:** Phase 3 in progress — executing plans
+**Current focus:** Phase 3 complete — ready for Phase 4
 
 ## Current Position
 
-Phase: 3 of 5 (Couriers, Orders & Search) — IN PROGRESS
-Plan: 1 of 4 complete in Phase 3
-Status: In progress
-Last activity: 2026-02-09 — Completed 03-01-PLAN.md
+Phase: 3 of 5 (Orders & Search) — COMPLETE
+Next: Phase 4 (Notes, Referrals & Settings)
+Status: Phase 3 complete, Phase 4 not yet planned
+Last activity: 2026-02-09 — Completed Phase 3 (4 plans + gap fix)
 
-Progress: ██░░░░░░░░ 25% (Phase 3)
+Progress: ██████████ 100% (Phase 3)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 9
+- Total plans completed: 12
 - Average duration: ~4 min
-- Total execution time: ~39 min
+- Total execution time: ~50 min
 
 **By Phase:**
 
@@ -29,11 +29,7 @@ Progress: ██░░░░░░░░ 25% (Phase 3)
 |-------|-------|-------|----------|
 | 1. Foundation | 4/4 | ~20 min | ~5 min |
 | 2. Users & Retailers | 4/4 | ~15 min | ~3.7 min |
-| 3. Orders & Search | 1/4 | ~4 min | ~4 min |
-
-**Recent Trend:**
-- Last 5 plans: 02-02 (3m), 02-03 (4m), 02-04 (checkpoint), 03-01 (4m)
-- Trend: Steady, consistent ~4 min
+| 3. Orders & Search | 4/4 | ~15 min | ~3.7 min |
 
 ## Accumulated Context
 
@@ -70,12 +66,13 @@ Recent decisions affecting current work:
 - Dev bypass 401 skip in api-client (fake token causes 401 on all API calls) (02-04)
 - Button forwardRef for Radix asChild compatibility (02-04)
 - Couriers descoped from Phase 3: no backend entity exists (Stuart third-party only) (03-planning)
-- No global admin orders endpoint: order list scoped by vendor (03-planning)
-- Global search aggregates user + vendor search endpoints in parallel (03-planning)
-- Vendor selector auto-selects first vendor for order list (03-01)
+- No global admin orders endpoint: order list scoped by vendor (03-01)
 - VendorOrdersRawResponse for nested vendor orders envelope (03-01)
-- Client-side search within vendor's orders page (03-01)
-- Raw amount field (totalAmountRaw) for correct numeric sorting on Total column (03-01)
+- Vendor selector auto-selects first vendor for order list (03-01)
+- Order detail uses query cache lookup — no GET /admin/orders/:id endpoint (03-02)
+- Global search aggregates user + vendor search via Promise.allSettled (03-03)
+- cmdk command palette with Cmd+K keyboard shortcut (03-03)
+- Google OAuth not working in production — needs investigation (ongoing)
 
 ### Pending Todos
 
@@ -85,12 +82,12 @@ None.
 
 - Backend has no user status field -- all users show as "active" (cosmetic, not blocking)
 - Backend has no sorting/filtering params -- client-side sort/filter is page-only
-- Google OAuth redirect URI propagation may take time for local dev
+- Google OAuth not working in production (was working before, no changes made)
 - No `GET /admin/orders` endpoint -- order list must be scoped by vendor
-- No courier entity in backend -- couriers page stays as placeholder
+- No courier entity in backend -- couriers page explains Stuart integration
 
 ## Session Continuity
 
 Last session: 2026-02-09
-Stopped at: Completed 03-01-PLAN.md (Order Feature Module)
+Stopped at: Phase 3 complete
 Resume file: None

@@ -15,16 +15,16 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Search
 
-- [ ] **SRCH-01**: Admin can search across all entity types (users, retailers, couriers, orders) from a single search input
-- [ ] **SRCH-02**: Search results are grouped by entity type with type-ahead suggestions
-- [ ] **SRCH-03**: Search supports name, email, phone, and order ID as input
+- [x] **SRCH-01**: Admin can search across all entity types (users, retailers, couriers, orders) from a single search input
+- [x] **SRCH-02**: Search results are grouped by entity type with type-ahead suggestions
+- [x] **SRCH-03**: Search supports name, email, phone, and order ID as input
 
 ### Entity Lists
 
 - [x] **LIST-01**: Admin can view a paginated list of all users with sortable columns
 - [x] **LIST-02**: Admin can view a paginated list of all retailers with sortable columns
 - [ ] **LIST-03**: Admin can view a paginated list of all couriers with sortable columns
-- [ ] **LIST-04**: Admin can view a paginated list of all orders with sortable columns
+- [x] **LIST-04**: Admin can view a paginated list of all orders with sortable columns
 - [x] **LIST-05**: Admin can filter entity lists by status and date range
 - [x] **LIST-06**: All list pages use server-side pagination (not client-side)
 
@@ -33,7 +33,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **DETL-01**: Admin can view full-page user detail with tabs (Overview, Orders, Addresses, Devices, Notes)
 - [x] **DETL-02**: Admin can view full-page retailer detail with tabs (Overview, Orders, Notes)
 - [ ] **DETL-03**: Admin can view full-page courier detail with tabs (Overview, Notes)
-- [ ] **DETL-04**: Admin can view full-page order detail (items, payment status, delivery status, customer, retailer, courier info)
+- [x] **DETL-04**: Admin can view full-page order detail (items, payment status, delivery status, customer, retailer, courier info)
 - [x] **DETL-05**: All entities display consistent color-coded status badges
 - [x] **DETL-06**: Admin can copy IDs, emails, phone numbers, and order IDs to clipboard with one click
 - [ ] **DETL-07**: All entity references on detail pages are clickable links to the referenced entity's detail page
@@ -141,12 +141,12 @@ Which phases cover which requirements. Updated by create-roadmap.
 | DETL-05 | Phase 2 | Complete |
 | DETL-06 | Phase 2 | Complete |
 | LIST-03 | Descoped | Descoped (no backend courier entity) |
-| LIST-04 | Phase 3 | Pending |
+| LIST-04 | Phase 3 | Complete |
 | DETL-03 | Descoped | Descoped (no backend courier entity) |
-| DETL-04 | Phase 3 | Pending |
-| SRCH-01 | Phase 3 | Pending |
-| SRCH-02 | Phase 3 | Pending |
-| SRCH-03 | Phase 3 | Pending |
+| DETL-04 | Phase 3 | Complete |
+| SRCH-01 | Phase 3 | Complete |
+| SRCH-02 | Phase 3 | Complete |
+| SRCH-03 | Phase 3 | Complete |
 | NOTE-01 | Phase 4 | Pending |
 | NOTE-02 | Phase 4 | Pending |
 | REFL-01 | Phase 4 | Pending |
