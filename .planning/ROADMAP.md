@@ -13,7 +13,7 @@ Green-field rebuild of the STREET Admin Portal from an AI-generated (Lovable) pr
 - [x] **Phase 1: Foundation** - Project scaffold, auth, layout shell, API client, infrastructure
 - [x] **Phase 2: Users & Retailers** - User and retailer list + detail pages with data tables
 - [x] **Phase 3: Orders & Search** - Order pages plus unified global search (couriers descoped)
-- [ ] **Phase 4: Notes, Referrals & Settings** - Cross-cutting features that attach to entities
+- [x] **Phase 4: Notes, Referrals & Settings** - Cross-cutting features that attach to entities (REFL-01, REFL-02 descoped — no admin referral endpoints)
 - [ ] **Phase 5: Power Features** - Cross-entity linking, quick actions, inline editing, timeline
 
 ## Phase Details
@@ -63,8 +63,9 @@ Green-field rebuild of the STREET Admin Portal from an AI-generated (Lovable) pr
   1. Admin can create and view notes on any entity with priority level and author tracking
   2. Admin can manage referral codes (create, edit, deactivate) and configure referral settings
   3. Device info displays real data on user detail pages
-**Research**: Unlikely (standard CRUD patterns)
-**Plans**: TBD
+**Research**: Done during planning — no admin referral endpoints in backend
+**Plans**: 04-01 (notes feature), 04-02 (device fix + page updates)
+**Descoped**: REFL-01, REFL-02 — backend has no admin referral endpoints. Referrals page shows informative explanation.
 
 ### Phase 5: Power Features
 **Goal**: Differentiator features that elevate the portal beyond basic CRUD
@@ -85,5 +86,5 @@ Green-field rebuild of the STREET Admin Portal from an AI-generated (Lovable) pr
 | 1. Foundation | 4/4 | Complete | 2026-02-09 |
 | 2. Users & Retailers | 4/4 | Complete | 2026-02-09 |
 | 3. Orders & Search | 4/4 | Complete | 2026-02-09 |
-| 4. Notes, Referrals & Settings | 0/TBD | Not started | - |
+| 4. Notes, Referrals & Settings | 2/2 | Complete | 2026-02-09 |
 | 5. Power Features | 0/TBD | Not started | - |

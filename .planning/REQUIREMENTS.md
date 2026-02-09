@@ -43,8 +43,8 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Notes
 
-- [ ] **NOTE-01**: Admin can create notes on any entity with priority level and author tracking
-- [ ] **NOTE-02**: Admin can view all notes on an entity, sorted by date
+- [x] **NOTE-01**: Admin can create notes on any entity with priority level and author tracking
+- [x] **NOTE-02**: Admin can view all notes on an entity, sorted by date
 
 ### Referrals
 
@@ -66,7 +66,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **INFR-04**: All mutations show success/error toast notifications
 - [x] **INFR-05**: All data views have loading (skeleton), empty, and error states
 - [x] **INFR-06**: Dark mode toggle with OS preference detection and persistence
-- [ ] **INFR-07**: Device info displayed per user (real data from API)
+- [x] **INFR-07**: Device info displayed per user (real data from API)
 
 ## v2 Requirements
 
@@ -147,11 +147,11 @@ Which phases cover which requirements. Updated by create-roadmap.
 | SRCH-01 | Phase 3 | Complete |
 | SRCH-02 | Phase 3 | Complete |
 | SRCH-03 | Phase 3 | Complete |
-| NOTE-01 | Phase 4 | Pending |
-| NOTE-02 | Phase 4 | Pending |
-| REFL-01 | Phase 4 | Pending |
-| REFL-02 | Phase 4 | Pending |
-| INFR-07 | Phase 4 | Pending |
+| NOTE-01 | Phase 4 | Complete |
+| NOTE-02 | Phase 4 | Complete |
+| REFL-01 | Descoped | Descoped (no admin referral endpoints in backend) |
+| REFL-02 | Descoped | Descoped (no admin referral endpoints in backend) |
+| INFR-07 | Phase 4 | Complete |
 | DETL-07 | Phase 5 | Pending |
 | DETL-08 | Phase 5 | Pending |
 | DETL-09 | Phase 5 | Pending |
