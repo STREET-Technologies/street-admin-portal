@@ -13,8 +13,8 @@ function SettingsPage() {
       <PageHeader title="Settings" description="Application configuration" />
       <EmptyState
         icon={Settings}
-        title="Settings coming soon"
-        description="Settings and configuration will be built in Phase 5."
+        title="Coming in Phase 5"
+        description="Settings including referral configuration will be built in Phase 5."
       />
     </div>
   );
