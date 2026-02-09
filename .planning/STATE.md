@@ -5,33 +5,33 @@
 See: .planning/PROJECT.md (updated 2026-02-09)
 
 **Core value:** Fast, intuitive customer support workflows — find any user or order in seconds and resolve issues without friction.
-**Current focus:** Phase 1 — Foundation
+**Current focus:** Phase 1 complete — ready for Phase 2
 
 ## Current Position
 
-Phase: 1 of 5 (Foundation)
-Plan: 3 of 4 in current phase
-Status: In progress
-Last activity: 2026-02-09 — Completed 01-03-PLAN.md
+Phase: 1 of 5 (Foundation) — COMPLETE
+Next: Phase 2 (Users & Retailers)
+Status: Phase 1 complete, Phase 2 not yet planned
+Last activity: 2026-02-09 — Completed Phase 1 (all 4 plans)
 
-Progress: ██████░░░░ 75% (Phase 1)
+Progress: ██████████ 100% (Phase 1)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
-- Average duration: 3 min
-- Total execution time: 10 min
+- Total plans completed: 4
+- Average duration: ~5 min
+- Total execution time: ~20 min
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 1. Foundation | 3/4 | 10 min | 3 min |
+| 1. Foundation | 4/4 | ~20 min | ~5 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (6m), 01-02 (2m), 01-03 (2m)
-- Trend: Accelerating
+- Last 5 plans: 01-01 (6m), 01-02 (2m), 01-03 (2m), 01-04 (15m incl. checkpoint)
+- Trend: Steady (01-04 longer due to human verification checkpoint)
 
 ## Accumulated Context
 
@@ -52,6 +52,9 @@ Recent decisions affecting current work:
 - ky HTTP client over raw fetch for hook system (01-03)
 - Response envelope unwrapping in API client layer (01-03)
 - Logout calls API before clearing localStorage -- fixes existing bug (01-03)
+- Provider composition in src/app/providers.tsx (01-04)
+- Login route validates search params with zod for type-safe redirect (01-04)
+- login() accepts optional user param for dev bypass (01-04)
 
 ### Pending Todos
 
@@ -63,6 +66,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-09 19:07 UTC
-Stopped at: Completed 01-03-PLAN.md
+Last session: 2026-02-09
+Stopped at: Phase 1 complete
 Resume file: None

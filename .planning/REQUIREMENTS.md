@@ -9,9 +9,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Navigation
 
-- [ ] **NAV-01**: Admin can navigate between sections via persistent left sidebar (Users, Retailers, Couriers, Orders, Referrals, Settings)
-- [ ] **NAV-02**: Admin sees breadcrumb trail on all pages below top level
-- [ ] **NAV-03**: All pages have unique URLs that survive browser refresh and support back/forward navigation
+- [x] **NAV-01**: Admin can navigate between sections via persistent left sidebar (Users, Retailers, Couriers, Orders, Referrals, Settings)
+- [x] **NAV-02**: Admin sees breadcrumb trail on all pages below top level
+- [x] **NAV-03**: All pages have unique URLs that survive browser refresh and support back/forward navigation
 
 ### Search
 
@@ -53,19 +53,19 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Auth
 
-- [ ] **AUTH-01**: Admin can log in via existing Google OAuth flow
-- [ ] **AUTH-02**: Admin can log out (token properly invalidated before redirect)
-- [ ] **AUTH-03**: Unauthenticated users are redirected to login page
-- [ ] **AUTH-04**: Admin session persists across browser refresh
+- [x] **AUTH-01**: Admin can log in via existing Google OAuth flow
+- [x] **AUTH-02**: Admin can log out (token properly invalidated before redirect)
+- [x] **AUTH-03**: Unauthenticated users are redirected to login page
+- [x] **AUTH-04**: Admin session persists across browser refresh
 
 ### Infrastructure
 
-- [ ] **INFR-01**: All API calls go through a single centralized API client with auth headers and error handling
-- [ ] **INFR-02**: TypeScript strict mode enabled (strictNullChecks, noImplicitAny, no `as any`)
-- [ ] **INFR-03**: API base URL configured via environment variables (no hardcoded URLs)
-- [ ] **INFR-04**: All mutations show success/error toast notifications
-- [ ] **INFR-05**: All data views have loading (skeleton), empty, and error states
-- [ ] **INFR-06**: Dark mode toggle with OS preference detection and persistence
+- [x] **INFR-01**: All API calls go through a single centralized API client with auth headers and error handling
+- [x] **INFR-02**: TypeScript strict mode enabled (strictNullChecks, noImplicitAny, no `as any`)
+- [x] **INFR-03**: API base URL configured via environment variables (no hardcoded URLs)
+- [x] **INFR-04**: All mutations show success/error toast notifications
+- [x] **INFR-05**: All data views have loading (skeleton), empty, and error states
+- [x] **INFR-06**: Dark mode toggle with OS preference detection and persistence
 - [ ] **INFR-07**: Device info displayed per user (real data from API)
 
 ## v2 Requirements
@@ -119,19 +119,19 @@ Which phases cover which requirements. Updated by create-roadmap.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| NAV-01 | Phase 1 | Pending |
-| NAV-02 | Phase 1 | Pending |
-| NAV-03 | Phase 1 | Pending |
-| AUTH-01 | Phase 1 | Pending |
-| AUTH-02 | Phase 1 | Pending |
-| AUTH-03 | Phase 1 | Pending |
-| AUTH-04 | Phase 1 | Pending |
-| INFR-01 | Phase 1 | Pending |
-| INFR-02 | Phase 1 | Pending |
-| INFR-03 | Phase 1 | Pending |
-| INFR-04 | Phase 1 | Pending |
-| INFR-05 | Phase 1 | Pending |
-| INFR-06 | Phase 1 | Pending |
+| NAV-01 | Phase 1 | Complete |
+| NAV-02 | Phase 1 | Complete |
+| NAV-03 | Phase 1 | Complete |
+| AUTH-01 | Phase 1 | Complete |
+| AUTH-02 | Phase 1 | Complete |
+| AUTH-03 | Phase 1 | Complete |
+| AUTH-04 | Phase 1 | Complete |
+| INFR-01 | Phase 1 | Complete |
+| INFR-02 | Phase 1 | Complete |
+| INFR-03 | Phase 1 | Complete |
+| INFR-04 | Phase 1 | Complete |
+| INFR-05 | Phase 1 | Complete |
+| INFR-06 | Phase 1 | Complete |
 | LIST-01 | Phase 2 | Pending |
 | LIST-02 | Phase 2 | Pending |
 | LIST-05 | Phase 2 | Pending |
