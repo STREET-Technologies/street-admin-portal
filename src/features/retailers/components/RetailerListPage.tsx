@@ -1,8 +1,15 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Search, Store } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DataTable } from "@/components/shared/DataTable";
 import { DataTableColumnHeader } from "@/components/shared/DataTableColumnHeader";
@@ -117,6 +124,7 @@ const columns: ColumnDef<RetailerViewModel, unknown>[] = [
 
 export function RetailerListPage() {
   const [searchValue, setSearchValue] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const debouncedSearch = useDebounce(searchValue, 300);
 
   const { pagination, sorting, onPaginationChange, onSortingChange, searchParams } =
@@ -130,6 +138,28 @@ export function RetailerListPage() {
 
   const retailers = data?.data ?? [];
   const totalPages = data?.meta.totalPages ?? 0;
+
+  // Client-side status filter (backend has no status filter param)
+  const filteredRetailers = useMemo(() => {
+    if (statusFilter === "all") return retailers;
+    return retailers.filter((r) => r.status === statusFilter);
+  }, [retailers, statusFilter]);
+
+  // Client-side sort (backend has no sorting params)
+  const sortedRetailers = useMemo(() => {
+    if (sorting.length === 0) return filteredRetailers;
+    const [sort] = sorting;
+    const key = sort.id as keyof RetailerViewModel;
+    return [...filteredRetailers].sort((a, b) => {
+      const aVal = a[key];
+      const bVal = b[key];
+      if (aVal == null && bVal == null) return 0;
+      if (aVal == null) return 1;
+      if (bVal == null) return -1;
+      const cmp = String(aVal).localeCompare(String(bVal));
+      return sort.desc ? -cmp : cmp;
+    });
+  }, [filteredRetailers, sorting]);
 
   if (isError) {
     return (
@@ -148,7 +178,7 @@ export function RetailerListPage() {
     <div className="space-y-6">
       <PageHeader title="Retailers" description="Manage retailer accounts" />
 
-      {/* Search bar */}
+      {/* Filters */}
       <div className="flex items-center gap-4">
         <div className="relative max-w-sm flex-1">
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -159,12 +189,23 @@ export function RetailerListPage() {
             className="pl-9"
           />
         </div>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-[140px]">
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All statuses</SelectItem>
+            <SelectItem value="active">Active</SelectItem>
+            <SelectItem value="inactive">Inactive</SelectItem>
+            <SelectItem value="blocked">Blocked</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Data table */}
       <DataTable
         columns={columns}
-        data={retailers}
+        data={sortedRetailers}
         pageCount={totalPages}
         pageIndex={pagination.pageIndex}
         pageSize={pagination.pageSize}

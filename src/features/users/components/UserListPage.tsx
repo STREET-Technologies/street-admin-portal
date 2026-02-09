@@ -3,6 +3,13 @@ import { useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Search, Users } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { DataTable } from "@/components/shared/DataTable";
@@ -136,6 +143,7 @@ export function UserListPage() {
   // Debounced search input
   const [searchInput, setSearchInput] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -154,12 +162,18 @@ export function UserListPage() {
   const users = data?.data ?? [];
   const pageCount = data?.meta?.totalPages ?? 0;
 
+  // Client-side status filter (backend has no status filter param)
+  const filteredUsers = useMemo(() => {
+    if (statusFilter === "all") return users;
+    return users.filter((u) => u.status === statusFilter);
+  }, [users, statusFilter]);
+
   // Client-side sort (backend has no sorting params)
   const sortedUsers = useMemo(() => {
-    if (sorting.length === 0) return users;
+    if (sorting.length === 0) return filteredUsers;
     const [sort] = sorting;
     const key = sort.id as keyof UserViewModel;
-    return [...users].sort((a, b) => {
+    return [...filteredUsers].sort((a, b) => {
       const aVal = a[key];
       const bVal = b[key];
       if (aVal == null && bVal == null) return 0;
@@ -168,7 +182,7 @@ export function UserListPage() {
       const cmp = String(aVal).localeCompare(String(bVal));
       return sort.desc ? -cmp : cmp;
     });
-  }, [users, sorting]);
+  }, [filteredUsers, sorting]);
 
   const columns = useMemo(
     () =>
@@ -195,15 +209,29 @@ export function UserListPage() {
     <div className="space-y-6">
       <PageHeader title="Users" description="Manage user accounts" />
 
-      {/* Search bar */}
-      <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          placeholder="Search users by name, email, or phone..."
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-          className="pl-9"
-        />
+      {/* Filters */}
+      <div className="flex items-center gap-4">
+        <div className="relative max-w-sm flex-1">
+          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Search users by name, email, or phone..."
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-[140px]">
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All statuses</SelectItem>
+            <SelectItem value="active">Active</SelectItem>
+            <SelectItem value="inactive">Inactive</SelectItem>
+            <SelectItem value="blocked">Blocked</SelectItem>
+            <SelectItem value="suspended">Suspended</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Data table */}
