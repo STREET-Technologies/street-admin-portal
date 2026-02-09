@@ -36,14 +36,17 @@ export interface BackendUserAddress {
   updatedAt: string;
 }
 
-/** Device entity as returned by GET /admin/users/:id/devices. */
+/** Device entity as returned by GET /admin/users/:id/devices (FcmToken entity). */
 export interface BackendUserDevice {
   id: string;
-  platform: string | null;
-  model: string | null;
-  osVersion: string | null;
-  appVersion: string | null;
-  pushToken: string | null;
+  token: string;
+  platform: "web" | "ios" | "android";
+  deviceName: string | null;
+  deviceId: string | null;
+  recipientType: "vendor" | "user";
+  isActive: boolean;
+  lastUsedAt: string | null;
+  metadata: Record<string, unknown> | null;
   createdAt: string;
   updatedAt: string;
 }

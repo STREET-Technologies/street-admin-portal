@@ -8,6 +8,7 @@ import {
 import { LoadingState } from "@/components/shared/LoadingState";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
+import { StatusBadge } from "@/components/shared/StatusBadge";
 import { useUserDevicesQuery } from "../api/user-queries";
 
 interface UserDevicesTabProps {
@@ -46,34 +47,44 @@ export function UserDevicesTab({ userId }: UserDevicesTabProps) {
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       {devices.map((device) => (
         <Card key={device.id}>
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm">
-              {device.model ?? device.platform ?? "Unknown Device"}
+              {device.deviceName ?? device.platform ?? "Unknown Device"}
             </CardTitle>
+            <StatusBadge
+              status={device.isActive ? "active" : "inactive"}
+              size="sm"
+            />
           </CardHeader>
           <CardContent className="space-y-3">
-            {device.platform && (
+            <div className="space-y-1">
+              <p className="text-xs font-medium text-muted-foreground">
+                Platform
+              </p>
+              <p className="text-sm capitalize">{device.platform}</p>
+            </div>
+            {device.deviceId && (
               <div className="space-y-1">
                 <p className="text-xs font-medium text-muted-foreground">
-                  Platform
+                  Device ID
                 </p>
-                <p className="text-sm capitalize">{device.platform}</p>
+                <p className="text-sm font-mono text-muted-foreground">
+                  {device.deviceId}
+                </p>
               </div>
             )}
-            {device.osVersion && (
+            {device.lastUsedAt && (
               <div className="space-y-1">
                 <p className="text-xs font-medium text-muted-foreground">
-                  OS Version
+                  Last Used
                 </p>
-                <p className="text-sm">{device.osVersion}</p>
-              </div>
-            )}
-            {device.appVersion && (
-              <div className="space-y-1">
-                <p className="text-xs font-medium text-muted-foreground">
-                  App Version
+                <p className="text-sm text-muted-foreground">
+                  {new Date(device.lastUsedAt).toLocaleDateString("en-GB", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })}
                 </p>
-                <p className="text-sm">{device.appVersion}</p>
               </div>
             )}
             <div className="space-y-1">
@@ -86,6 +97,14 @@ export function UserDevicesTab({ userId }: UserDevicesTabProps) {
                   month: "short",
                   year: "numeric",
                 })}
+              </p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs font-medium text-muted-foreground">
+                FCM Token
+              </p>
+              <p className="text-xs font-mono text-muted-foreground truncate">
+                {device.token.slice(0, 20)}...
               </p>
             </div>
           </CardContent>
