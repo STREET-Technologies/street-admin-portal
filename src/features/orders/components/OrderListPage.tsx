@@ -322,6 +322,9 @@ export function OrderListPage() {
         isLoading={isLoading}
         emptyMessage="No orders found"
         emptyIcon={ShoppingCart}
+        onRowClick={(order) => {
+          void navigate({ to: "/orders/$orderId", params: { orderId: order.id } });
+        }}
       />
     </div>
   );

@@ -61,6 +61,8 @@ interface DataTableProps<TData> {
   emptyMessage?: string;
   /** Icon shown on the empty state. */
   emptyIcon?: LucideIcon;
+  /** Called when a row is clicked. Skips clicks on buttons/links. */
+  onRowClick?: (row: TData) => void;
 }
 
 export function DataTable<TData>({
@@ -75,6 +77,7 @@ export function DataTable<TData>({
   isLoading = false,
   emptyMessage = "No results found",
   emptyIcon,
+  onRowClick,
 }: DataTableProps<TData>) {
   const table = useReactTable({
     data,
@@ -137,7 +140,21 @@ export function DataTable<TData>({
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id}>
+              <TableRow
+                key={row.id}
+                className={onRowClick ? "cursor-pointer" : undefined}
+                onClick={
+                  onRowClick
+                    ? (e) => {
+                        // Don't navigate when clicking interactive elements
+                        const target = e.target as HTMLElement;
+                        if (target.closest("button") || target.closest("a"))
+                          return;
+                        onRowClick(row.original);
+                      }
+                    : undefined
+                }
+              >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
