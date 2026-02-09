@@ -1,12 +1,9 @@
-import { StickyNote } from "lucide-react";
-import { EmptyState } from "@/components/shared/EmptyState";
+import { NotesPanel } from "@/features/notes/components/NotesPanel";
 
-export function RetailerNotesTab() {
-  return (
-    <EmptyState
-      icon={StickyNote}
-      title="Notes coming soon"
-      description="Admin notes for retailers will be available in Phase 4."
-    />
-  );
+interface RetailerNotesTabProps {
+  retailerId: string;
+}
+
+export function RetailerNotesTab({ retailerId }: RetailerNotesTabProps) {
+  return <NotesPanel entityType="vendor" entityId={retailerId} />;
 }

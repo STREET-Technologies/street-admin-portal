@@ -75,7 +75,7 @@ export function RetailerDetailPage({ retailerId }: RetailerDetailPageProps) {
         </TabsContent>
 
         <TabsContent value="notes" className="mt-6">
-          <RetailerNotesTab />
+          <RetailerNotesTab retailerId={retailerId} />
         </TabsContent>
       </Tabs>
     </div>

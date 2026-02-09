@@ -1,12 +1,9 @@
-import { StickyNote } from "lucide-react";
-import { EmptyState } from "@/components/shared/EmptyState";
+import { NotesPanel } from "@/features/notes/components/NotesPanel";
 
-export function UserNotesTab() {
-  return (
-    <EmptyState
-      icon={StickyNote}
-      title="Notes"
-      description="Notes will be available in Phase 4."
-    />
-  );
+interface UserNotesTabProps {
+  userId: string;
+}
+
+export function UserNotesTab({ userId }: UserNotesTabProps) {
+  return <NotesPanel entityType="user" entityId={userId} />;
 }

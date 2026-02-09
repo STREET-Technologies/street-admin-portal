@@ -98,7 +98,7 @@ export function UserDetailPage({ userId }: UserDetailPageProps) {
         </TabsContent>
 
         <TabsContent value="notes" className="mt-6">
-          <UserNotesTab />
+          <UserNotesTab userId={userId} />
         </TabsContent>
       </Tabs>
     </div>
