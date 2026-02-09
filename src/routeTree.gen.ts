@@ -20,6 +20,7 @@ import { Route as AuthenticatedOrdersIndexRouteImport } from './app/routes/_auth
 import { Route as AuthenticatedCouriersIndexRouteImport } from './app/routes/_authenticated/couriers/index'
 import { Route as AuthenticatedUsersUserIdRouteImport } from './app/routes/_authenticated/users/$userId'
 import { Route as AuthenticatedRetailersRetailerIdRouteImport } from './app/routes/_authenticated/retailers/$retailerId'
+import { Route as AuthenticatedOrdersOrderIdRouteImport } from './app/routes/_authenticated/orders/$orderId'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -82,10 +83,17 @@ const AuthenticatedRetailersRetailerIdRoute =
     path: '/retailers/$retailerId',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedOrdersOrderIdRoute =
+  AuthenticatedOrdersOrderIdRouteImport.update({
+    id: '/orders/$orderId',
+    path: '/orders/$orderId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/login': typeof LoginRoute
+  '/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
   '/retailers/$retailerId': typeof AuthenticatedRetailersRetailerIdRoute
   '/users/$userId': typeof AuthenticatedUsersUserIdRoute
   '/couriers/': typeof AuthenticatedCouriersIndexRoute
@@ -98,6 +106,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/': typeof AuthenticatedIndexRoute
+  '/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
   '/retailers/$retailerId': typeof AuthenticatedRetailersRetailerIdRoute
   '/users/$userId': typeof AuthenticatedUsersUserIdRoute
   '/couriers': typeof AuthenticatedCouriersIndexRoute
@@ -112,6 +121,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
   '/_authenticated/retailers/$retailerId': typeof AuthenticatedRetailersRetailerIdRoute
   '/_authenticated/users/$userId': typeof AuthenticatedUsersUserIdRoute
   '/_authenticated/couriers/': typeof AuthenticatedCouriersIndexRoute
@@ -126,6 +136,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login'
+    | '/orders/$orderId'
     | '/retailers/$retailerId'
     | '/users/$userId'
     | '/couriers/'
@@ -138,6 +149,7 @@ export interface FileRouteTypes {
   to:
     | '/login'
     | '/'
+    | '/orders/$orderId'
     | '/retailers/$retailerId'
     | '/users/$userId'
     | '/couriers'
@@ -151,6 +163,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/login'
     | '/_authenticated/'
+    | '/_authenticated/orders/$orderId'
     | '/_authenticated/retailers/$retailerId'
     | '/_authenticated/users/$userId'
     | '/_authenticated/couriers/'
@@ -245,11 +258,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRetailersRetailerIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/orders/$orderId': {
+      id: '/_authenticated/orders/$orderId'
+      path: '/orders/$orderId'
+      fullPath: '/orders/$orderId'
+      preLoaderRoute: typeof AuthenticatedOrdersOrderIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
 interface AuthenticatedRouteChildren {
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedOrdersOrderIdRoute: typeof AuthenticatedOrdersOrderIdRoute
   AuthenticatedRetailersRetailerIdRoute: typeof AuthenticatedRetailersRetailerIdRoute
   AuthenticatedUsersUserIdRoute: typeof AuthenticatedUsersUserIdRoute
   AuthenticatedCouriersIndexRoute: typeof AuthenticatedCouriersIndexRoute
@@ -262,6 +283,7 @@ interface AuthenticatedRouteChildren {
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedOrdersOrderIdRoute: AuthenticatedOrdersOrderIdRoute,
   AuthenticatedRetailersRetailerIdRoute: AuthenticatedRetailersRetailerIdRoute,
   AuthenticatedUsersUserIdRoute: AuthenticatedUsersUserIdRoute,
   AuthenticatedCouriersIndexRoute: AuthenticatedCouriersIndexRoute,
