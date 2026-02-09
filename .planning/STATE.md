@@ -49,6 +49,9 @@ Recent decisions affecting current work:
 - Removed bun.lockb; npm is the package manager (01-01)
 - String literal unions over enums for status types (01-02)
 - Custom StatusBadge with dot indicator for Stripe-style status display (01-02)
+- ky HTTP client over raw fetch for hook system (01-03)
+- Response envelope unwrapping in API client layer (01-03)
+- Logout calls API before clearing localStorage -- fixes existing bug (01-03)
 
 ### Pending Todos
 
@@ -61,5 +64,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-09 19:07 UTC
-Stopped at: Completed 01-02-PLAN.md
+Stopped at: Completed 01-03-PLAN.md
 Resume file: None

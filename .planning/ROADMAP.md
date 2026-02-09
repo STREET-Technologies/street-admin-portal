@@ -82,7 +82,7 @@ Green-field rebuild of the STREET Admin Portal from an AI-generated (Lovable) pr
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 2/4 | In progress | - |
+| 1. Foundation | 3/4 | In progress | - |
 | 2. Users & Retailers | 0/TBD | Not started | - |
 | 3. Couriers, Orders & Search | 0/TBD | Not started | - |
 | 4. Notes, Referrals & Settings | 0/TBD | Not started | - |
