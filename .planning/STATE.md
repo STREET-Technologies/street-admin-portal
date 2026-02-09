@@ -14,12 +14,12 @@ Plan: 3 of 3
 Status: In progress
 Last activity: 2026-02-09 — Completed 05-03-PLAN.md
 
-Progress: ███████████████░░ 88% (Phase 5: 1/3 plans complete)
+Progress: ███████████████░░ 88% (Phase 5: 2/3 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 15
+- Total plans completed: 16
 - Average duration: ~4 min
 - Total execution time: ~55 min
 
@@ -31,7 +31,7 @@ Progress: ███████████████░░ 88% (Phase 5: 1/3 
 | 2. Users & Retailers | 4/4 | ~15 min | ~3.7 min |
 | 3. Orders & Search | 4/4 | ~15 min | ~3.7 min |
 | 4. Notes, Referrals & Settings | 2/2 | ~3 min | ~1.5 min |
-| 5. Power Features | 1/3 | ~2 min | ~2 min |
+| 5. Power Features | 2/3 | ~4 min | ~2 min |
 
 ## Accumulated Context
 
@@ -85,6 +85,9 @@ Recent decisions affecting current work:
 - Backend uses 'vendor' for retailer entityType -- mapped in RetailerNotesTab (04-01)
 - Custom relativeTime helper over Intl.RelativeTimeFormat for compact "2h ago" display (05-03)
 - Shared ActivityTimeline component reusable across any entity type (05-03)
+- Generic onRowClick prop on DataTable for reusable row click navigation (05-01)
+- Customer names in RetailerOrdersTab are plain text -- no customerId from vendor orders endpoint (05-01)
+- target.closest("button" | "a") guard pattern for row click handlers (05-01)
 
 ### Pending Todos
 
