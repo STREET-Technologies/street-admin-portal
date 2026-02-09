@@ -1,3 +1,4 @@
+import * as React from "react";
 import { Link, useLocation } from "@tanstack/react-router";
 import {
   Breadcrumb,
@@ -61,16 +62,18 @@ export function Breadcrumbs() {
           const isLast = index === segments.length - 1;
 
           return (
-            <BreadcrumbItem key={path}>
+            <React.Fragment key={path}>
               <BreadcrumbSeparator />
-              {isLast ? (
-                <BreadcrumbPage>{formatSegment(segment)}</BreadcrumbPage>
-              ) : (
-                <BreadcrumbLink asChild>
-                  <Link to={path}>{formatSegment(segment)}</Link>
-                </BreadcrumbLink>
-              )}
-            </BreadcrumbItem>
+              <BreadcrumbItem>
+                {isLast ? (
+                  <BreadcrumbPage>{formatSegment(segment)}</BreadcrumbPage>
+                ) : (
+                  <BreadcrumbLink asChild>
+                    <Link to={path}>{formatSegment(segment)}</Link>
+                  </BreadcrumbLink>
+                )}
+              </BreadcrumbItem>
+            </React.Fragment>
           );
         })}
       </BreadcrumbList>
