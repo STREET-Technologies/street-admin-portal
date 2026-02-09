@@ -9,27 +9,233 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './app/routes/__root'
+import { Route as LoginRouteImport } from './app/routes/login'
+import { Route as AuthenticatedRouteImport } from './app/routes/_authenticated'
+import { Route as AuthenticatedIndexRouteImport } from './app/routes/_authenticated/index'
+import { Route as AuthenticatedUsersIndexRouteImport } from './app/routes/_authenticated/users/index'
+import { Route as AuthenticatedSettingsIndexRouteImport } from './app/routes/_authenticated/settings/index'
+import { Route as AuthenticatedRetailersIndexRouteImport } from './app/routes/_authenticated/retailers/index'
+import { Route as AuthenticatedReferralsIndexRouteImport } from './app/routes/_authenticated/referrals/index'
+import { Route as AuthenticatedOrdersIndexRouteImport } from './app/routes/_authenticated/orders/index'
+import { Route as AuthenticatedCouriersIndexRouteImport } from './app/routes/_authenticated/couriers/index'
 
-export interface FileRoutesByFullPath {}
-export interface FileRoutesByTo {}
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRoute = AuthenticatedRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedUsersIndexRoute = AuthenticatedUsersIndexRouteImport.update({
+  id: '/users/',
+  path: '/users/',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedSettingsIndexRoute =
+  AuthenticatedSettingsIndexRouteImport.update({
+    id: '/settings/',
+    path: '/settings/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedRetailersIndexRoute =
+  AuthenticatedRetailersIndexRouteImport.update({
+    id: '/retailers/',
+    path: '/retailers/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedReferralsIndexRoute =
+  AuthenticatedReferralsIndexRouteImport.update({
+    id: '/referrals/',
+    path: '/referrals/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedOrdersIndexRoute =
+  AuthenticatedOrdersIndexRouteImport.update({
+    id: '/orders/',
+    path: '/orders/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedCouriersIndexRoute =
+  AuthenticatedCouriersIndexRouteImport.update({
+    id: '/couriers/',
+    path: '/couriers/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+
+export interface FileRoutesByFullPath {
+  '/': typeof AuthenticatedIndexRoute
+  '/login': typeof LoginRoute
+  '/couriers/': typeof AuthenticatedCouriersIndexRoute
+  '/orders/': typeof AuthenticatedOrdersIndexRoute
+  '/referrals/': typeof AuthenticatedReferralsIndexRoute
+  '/retailers/': typeof AuthenticatedRetailersIndexRoute
+  '/settings/': typeof AuthenticatedSettingsIndexRoute
+  '/users/': typeof AuthenticatedUsersIndexRoute
+}
+export interface FileRoutesByTo {
+  '/login': typeof LoginRoute
+  '/': typeof AuthenticatedIndexRoute
+  '/couriers': typeof AuthenticatedCouriersIndexRoute
+  '/orders': typeof AuthenticatedOrdersIndexRoute
+  '/referrals': typeof AuthenticatedReferralsIndexRoute
+  '/retailers': typeof AuthenticatedRetailersIndexRoute
+  '/settings': typeof AuthenticatedSettingsIndexRoute
+  '/users': typeof AuthenticatedUsersIndexRoute
+}
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/login': typeof LoginRoute
+  '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/couriers/': typeof AuthenticatedCouriersIndexRoute
+  '/_authenticated/orders/': typeof AuthenticatedOrdersIndexRoute
+  '/_authenticated/referrals/': typeof AuthenticatedReferralsIndexRoute
+  '/_authenticated/retailers/': typeof AuthenticatedRetailersIndexRoute
+  '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
+  '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: never
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/couriers/'
+    | '/orders/'
+    | '/referrals/'
+    | '/retailers/'
+    | '/settings/'
+    | '/users/'
   fileRoutesByTo: FileRoutesByTo
-  to: never
-  id: '__root__'
+  to:
+    | '/login'
+    | '/'
+    | '/couriers'
+    | '/orders'
+    | '/referrals'
+    | '/retailers'
+    | '/settings'
+    | '/users'
+  id:
+    | '__root__'
+    | '/_authenticated'
+    | '/login'
+    | '/_authenticated/'
+    | '/_authenticated/couriers/'
+    | '/_authenticated/orders/'
+    | '/_authenticated/referrals/'
+    | '/_authenticated/retailers/'
+    | '/_authenticated/settings/'
+    | '/_authenticated/users/'
   fileRoutesById: FileRoutesById
 }
-export interface RootRouteChildren {}
-
-declare module '@tanstack/react-router' {
-  interface FileRoutesByPath {}
+export interface RootRouteChildren {
+  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  LoginRoute: typeof LoginRoute
 }
 
-const rootRouteChildren: RootRouteChildren = {}
+declare module '@tanstack/react-router' {
+  interface FileRoutesByPath {
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/': {
+      id: '/_authenticated/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/users/': {
+      id: '/_authenticated/users/'
+      path: '/users'
+      fullPath: '/users/'
+      preLoaderRoute: typeof AuthenticatedUsersIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/settings/': {
+      id: '/_authenticated/settings/'
+      path: '/settings'
+      fullPath: '/settings/'
+      preLoaderRoute: typeof AuthenticatedSettingsIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/retailers/': {
+      id: '/_authenticated/retailers/'
+      path: '/retailers'
+      fullPath: '/retailers/'
+      preLoaderRoute: typeof AuthenticatedRetailersIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/referrals/': {
+      id: '/_authenticated/referrals/'
+      path: '/referrals'
+      fullPath: '/referrals/'
+      preLoaderRoute: typeof AuthenticatedReferralsIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/orders/': {
+      id: '/_authenticated/orders/'
+      path: '/orders'
+      fullPath: '/orders/'
+      preLoaderRoute: typeof AuthenticatedOrdersIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/couriers/': {
+      id: '/_authenticated/couriers/'
+      path: '/couriers'
+      fullPath: '/couriers/'
+      preLoaderRoute: typeof AuthenticatedCouriersIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+  }
+}
+
+interface AuthenticatedRouteChildren {
+  AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedCouriersIndexRoute: typeof AuthenticatedCouriersIndexRoute
+  AuthenticatedOrdersIndexRoute: typeof AuthenticatedOrdersIndexRoute
+  AuthenticatedReferralsIndexRoute: typeof AuthenticatedReferralsIndexRoute
+  AuthenticatedRetailersIndexRoute: typeof AuthenticatedRetailersIndexRoute
+  AuthenticatedSettingsIndexRoute: typeof AuthenticatedSettingsIndexRoute
+  AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
+}
+
+const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedCouriersIndexRoute: AuthenticatedCouriersIndexRoute,
+  AuthenticatedOrdersIndexRoute: AuthenticatedOrdersIndexRoute,
+  AuthenticatedReferralsIndexRoute: AuthenticatedReferralsIndexRoute,
+  AuthenticatedRetailersIndexRoute: AuthenticatedRetailersIndexRoute,
+  AuthenticatedSettingsIndexRoute: AuthenticatedSettingsIndexRoute,
+  AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
+}
+
+const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
+  AuthenticatedRouteChildren,
+)
+
+const rootRouteChildren: RootRouteChildren = {
+  AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  LoginRoute: LoginRoute,
+}
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()

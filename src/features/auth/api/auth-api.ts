@@ -24,8 +24,8 @@ export const authApi = {
     const data = await api.get<MeResponse>("auth/me");
     const name =
       data.name ??
-      [data.firstName, data.lastName].filter(Boolean).join(" ") ||
-      data.email;
+      ([data.firstName, data.lastName].filter(Boolean).join(" ") ||
+        data.email);
     return { email: data.email, name };
   },
 
