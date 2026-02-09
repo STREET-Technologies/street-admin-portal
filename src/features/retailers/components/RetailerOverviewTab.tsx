@@ -1,3 +1,6 @@
+import { useState } from "react";
+import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -5,7 +8,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { CopyableField } from "@/components/shared/CopyableField";
+import { EditableField } from "@/components/shared/EditableField";
 import { StatusBadge } from "@/components/shared/StatusBadge";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { useUpdateRetailerMutation } from "../api/retailer-queries";
 import type { RetailerViewModel } from "../types";
 
 interface RetailerOverviewTabProps {
@@ -13,6 +20,21 @@ interface RetailerOverviewTabProps {
 }
 
 export function RetailerOverviewTab({ retailer }: RetailerOverviewTabProps) {
+  const updateRetailer = useUpdateRetailerMutation(retailer.id);
+  const [isTogglingOnline, setIsTogglingOnline] = useState(false);
+
+  async function handleOnlineToggle(checked: boolean) {
+    setIsTogglingOnline(true);
+    try {
+      await updateRetailer.mutateAsync({ isOnline: checked });
+      toast.success(checked ? "Retailer set to online" : "Retailer set to offline");
+    } catch {
+      toast.error("Failed to update online status");
+    } finally {
+      setIsTogglingOnline(false);
+    }
+  }
+
   return (
     <div className="grid gap-6 md:grid-cols-2">
       {/* Contact Information */}
@@ -21,20 +43,27 @@ export function RetailerOverviewTab({ retailer }: RetailerOverviewTabProps) {
           <CardTitle>Contact Information</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {retailer.email && (
-            <CopyableField label="Email" value={retailer.email} />
-          )}
-          {retailer.phone && (
-            <CopyableField label="Phone" value={retailer.phone} />
-          )}
-          {retailer.address && (
-            <CopyableField label="Address" value={retailer.address} />
-          )}
-          {!retailer.email && !retailer.phone && !retailer.address && (
-            <p className="text-sm text-muted-foreground">
-              No contact information available.
-            </p>
-          )}
+          <EditableField
+            label="Email"
+            value={retailer.email || "No email"}
+            onSave={async (val) => {
+              await updateRetailer.mutateAsync({ email: val });
+            }}
+          />
+          <EditableField
+            label="Phone"
+            value={retailer.phone || "No phone"}
+            onSave={async (val) => {
+              await updateRetailer.mutateAsync({ phone: val });
+            }}
+          />
+          <EditableField
+            label="Address"
+            value={retailer.address || "No address"}
+            onSave={async (val) => {
+              await updateRetailer.mutateAsync({ address: val });
+            }}
+          />
         </CardContent>
       </Card>
 
@@ -62,42 +91,58 @@ export function RetailerOverviewTab({ retailer }: RetailerOverviewTabProps) {
               mono
             />
           )}
-          {retailer.storeUrl && (
-            <div className="space-y-1">
-              <p className="text-xs font-medium text-muted-foreground">Store URL</p>
-              <a
-                href={retailer.storeUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm text-primary underline-offset-4 hover:underline"
-              >
-                {retailer.storeUrl}
-              </a>
-            </div>
-          )}
+          <EditableField
+            label="Store URL"
+            value={retailer.storeUrl || ""}
+            onSave={async (val) => {
+              await updateRetailer.mutateAsync({ storeUrl: val });
+            }}
+          />
           <div className="space-y-1">
             <p className="text-xs font-medium text-muted-foreground">Online Status</p>
-            <StatusBadge
-              status={retailer.isOnline ? "active" : "inactive"}
-              size="sm"
-            />
+            <div className="flex items-center gap-3">
+              <StatusBadge
+                status={retailer.isOnline ? "active" : "inactive"}
+                size="sm"
+              />
+              <div className="flex items-center gap-2">
+                {isTogglingOnline && (
+                  <Loader2 className="size-3.5 animate-spin text-muted-foreground" />
+                )}
+                <Switch
+                  id="online-toggle"
+                  checked={retailer.isOnline}
+                  onCheckedChange={(checked) => void handleOnlineToggle(checked)}
+                  disabled={isTogglingOnline}
+                  size="sm"
+                />
+                <Label
+                  htmlFor="online-toggle"
+                  className="text-xs text-muted-foreground cursor-pointer"
+                >
+                  {retailer.isOnline ? "Online" : "Offline"}
+                </Label>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Description (if present, full-width) */}
-      {retailer.description && (
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <CardTitle>Description</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {retailer.description}
-            </p>
-          </CardContent>
-        </Card>
-      )}
+      {/* Description (editable, full-width) */}
+      <Card className="md:col-span-2">
+        <CardHeader>
+          <CardTitle>Description</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <EditableField
+            label="Description"
+            value={retailer.description || "No description"}
+            onSave={async (val) => {
+              await updateRetailer.mutateAsync({ description: val });
+            }}
+          />
+        </CardContent>
+      </Card>
 
       {/* Dates */}
       <Card className="md:col-span-2">

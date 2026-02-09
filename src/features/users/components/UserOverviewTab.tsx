@@ -6,6 +6,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { CopyableField } from "@/components/shared/CopyableField";
+import { EditableField } from "@/components/shared/EditableField";
+import { useUpdateUserMutation } from "../api/user-queries";
 import type { UserViewModel } from "../types";
 
 interface UserOverviewTabProps {
@@ -23,6 +25,8 @@ function formatDate(iso: string): string {
 }
 
 export function UserOverviewTab({ user }: UserOverviewTabProps) {
+  const updateUser = useUpdateUserMutation(user.id);
+
   return (
     <div className="grid gap-6 md:grid-cols-2">
       {/* Contact Info */}
@@ -31,15 +35,28 @@ export function UserOverviewTab({ user }: UserOverviewTabProps) {
           <CardTitle>Contact Information</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <CopyableField label="Email" value={user.email} />
-          <CopyableField label="Phone" value={user.phone} />
+          <EditableField
+            label="Email"
+            value={user.email}
+            onSave={async (val) => {
+              await updateUser.mutateAsync({ email: val });
+            }}
+          />
+          <EditableField
+            label="Phone"
+            value={user.phone}
+            onSave={async (val) => {
+              await updateUser.mutateAsync({ phone: val });
+            }}
+          />
           {user.language && (
-            <div className="space-y-1">
-              <p className="text-xs font-medium text-muted-foreground">
-                Language
-              </p>
-              <p className="text-sm">{user.language}</p>
-            </div>
+            <EditableField
+              label="Language"
+              value={user.language}
+              onSave={async (val) => {
+                await updateUser.mutateAsync({ language: val });
+              }}
+            />
           )}
         </CardContent>
       </Card>
