@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-09)
 
 **Core value:** Fast, intuitive customer support workflows — find any user or order in seconds and resolve issues without friction.
-**Current focus:** Phase 3 planned — ready to execute
+**Current focus:** Phase 3 in progress — executing plans
 
 ## Current Position
 
-Phase: 3 of 5 (Couriers, Orders & Search) — PLANNED
-Next: Execute Phase 3
-Status: Phase 3 plans written (4 plans in 3 waves), ready for execution
-Last activity: 2026-02-09 — Phase 3 planning complete
+Phase: 3 of 5 (Couriers, Orders & Search) — IN PROGRESS
+Plan: 1 of 4 complete in Phase 3
+Status: In progress
+Last activity: 2026-02-09 — Completed 03-01-PLAN.md
 
-Progress: ░░░░░░░░░░ 0% (Phase 3)
+Progress: ██░░░░░░░░ 25% (Phase 3)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 8
+- Total plans completed: 9
 - Average duration: ~4 min
-- Total execution time: ~35 min
+- Total execution time: ~39 min
 
 **By Phase:**
 
@@ -29,10 +29,11 @@ Progress: ░░░░░░░░░░ 0% (Phase 3)
 |-------|-------|-------|----------|
 | 1. Foundation | 4/4 | ~20 min | ~5 min |
 | 2. Users & Retailers | 4/4 | ~15 min | ~3.7 min |
+| 3. Orders & Search | 1/4 | ~4 min | ~4 min |
 
 **Recent Trend:**
-- Last 5 plans: 02-01 (4m), 02-02 (3m), 02-03 (4m), 02-04 (checkpoint)
-- Trend: Steady, accelerating
+- Last 5 plans: 02-02 (3m), 02-03 (4m), 02-04 (checkpoint), 03-01 (4m)
+- Trend: Steady, consistent ~4 min
 
 ## Accumulated Context
 
@@ -71,6 +72,10 @@ Recent decisions affecting current work:
 - Couriers descoped from Phase 3: no backend entity exists (Stuart third-party only) (03-planning)
 - No global admin orders endpoint: order list scoped by vendor (03-planning)
 - Global search aggregates user + vendor search endpoints in parallel (03-planning)
+- Vendor selector auto-selects first vendor for order list (03-01)
+- VendorOrdersRawResponse for nested vendor orders envelope (03-01)
+- Client-side search within vendor's orders page (03-01)
+- Raw amount field (totalAmountRaw) for correct numeric sorting on Total column (03-01)
 
 ### Pending Todos
 
@@ -87,5 +92,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-09
-Stopped at: Phase 3 planned, ready for execution
+Stopped at: Completed 03-01-PLAN.md (Order Feature Module)
 Resume file: None
