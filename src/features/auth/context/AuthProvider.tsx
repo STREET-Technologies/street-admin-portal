@@ -11,8 +11,8 @@ import { authApi } from "../api/auth-api";
 import type { AuthState, AuthUser } from "../types";
 
 export interface AuthContextValue extends AuthState {
-  /** Store token and validate via /auth/me */
-  login: (token: string) => void;
+  /** Store token and validate via /auth/me. Pass user to skip validation (dev bypass). */
+  login: (token: string, user?: AuthUser) => void;
   /** Call API logout THEN clear local state (fixes existing logout bug) */
   logout: () => Promise<void>;
 }
@@ -108,9 +108,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    * Login: store token, validate, set user.
    */
   const login = useCallback(
-    (token: string) => {
+    (token: string, devUser?: AuthUser) => {
       localStorage.setItem("access_token", token);
-      void validateToken();
+      if (devUser) {
+        setUser(devUser);
+      } else {
+        void validateToken();
+      }
     },
     [validateToken],
   );

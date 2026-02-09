@@ -1,3 +1,4 @@
+import { Navigate, useSearch } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -36,16 +37,23 @@ function GoogleIcon() {
 }
 
 export function LoginPage() {
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
+  const { redirect } = useSearch({ from: "/login" });
+
+  if (isAuthenticated) {
+    return <Navigate to={redirect ?? "/users"} />;
+  }
 
   function handleGoogleLogin() {
     window.location.href = authApi.getGoogleLoginUrl();
   }
 
   function handleDevBypass() {
-    localStorage.setItem("access_token", "dev-bypass-token");
     localStorage.setItem("refresh_token", "dev-bypass-refresh-token");
-    login("dev-bypass-token");
+    login("dev-bypass-token", {
+      email: "dev@street.london",
+      name: "Dev User",
+    });
     toast.warning(
       "Dev bypass mode active -- this should NEVER be enabled in production!",
     );
