@@ -10,6 +10,7 @@ import { useRetailerQuery } from "../api/retailer-queries";
 import { RetailerOverviewTab } from "./RetailerOverviewTab";
 import { RetailerOrdersTab } from "./RetailerOrdersTab";
 import { RetailerNotesTab } from "./RetailerNotesTab";
+import { RetailerActivityTab } from "./RetailerActivityTab";
 
 interface RetailerDetailPageProps {
   retailerId: string;
@@ -64,6 +65,7 @@ export function RetailerDetailPage({ retailerId }: RetailerDetailPageProps) {
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="orders">Orders</TabsTrigger>
           <TabsTrigger value="notes">Notes</TabsTrigger>
+          <TabsTrigger value="activity">Activity</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-6">
@@ -76,6 +78,10 @@ export function RetailerDetailPage({ retailerId }: RetailerDetailPageProps) {
 
         <TabsContent value="notes" className="mt-6">
           <RetailerNotesTab retailerId={retailerId} />
+        </TabsContent>
+
+        <TabsContent value="activity" className="mt-6">
+          <RetailerActivityTab retailerId={retailerId} retailer={retailer} />
         </TabsContent>
       </Tabs>
     </div>
