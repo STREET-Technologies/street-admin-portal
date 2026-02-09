@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 
 ## Current Position
 
-Phase: 3 of 5 (Orders & Search) — COMPLETE
-Next: Phase 4 (Notes, Referrals & Settings)
-Status: Phase 3 complete, Phase 4 not yet planned
-Last activity: 2026-02-09 — Completed Phase 3 (4 plans + gap fix)
+Phase: 4 of 5 (Notes, Referrals & Settings) — PLANNED
+Next: Execute Phase 4
+Status: Phase 4 planned (2 plans, 1 wave), ready for execution
+Last activity: 2026-02-09 — Planned Phase 4
 
-Progress: ██████████ 100% (Phase 3)
+Progress: ░░░░░░░░░░ 0% (Phase 4)
 
 ## Performance Metrics
 
@@ -73,6 +73,9 @@ Recent decisions affecting current work:
 - Global search aggregates user + vendor search via Promise.allSettled (03-03)
 - cmdk command palette with Cmd+K keyboard shortcut (03-03)
 - Google OAuth not working in production — needs investigation (ongoing)
+- REFL-01/REFL-02 descoped from Phase 4: no admin referral endpoints in backend (04-planning)
+- BackendUserDevice type mismatch with FcmToken entity — fixing in 04-02 (04-planning)
+- Referral settings (INFR-07 partial) deferred to Phase 5 settings page (04-planning)
 
 ### Pending Todos
 
@@ -85,9 +88,10 @@ None.
 - Google OAuth not working in production (was working before, no changes made)
 - No `GET /admin/orders` endpoint -- order list must be scoped by vendor
 - No courier entity in backend -- couriers page explains Stuart integration
+- No admin referral endpoints -- cannot list/search/manage referral codes from admin portal
 
 ## Session Continuity
 
 Last session: 2026-02-09
-Stopped at: Phase 3 complete
+Stopped at: Phase 4 planned, ready for execution
 Resume file: None
