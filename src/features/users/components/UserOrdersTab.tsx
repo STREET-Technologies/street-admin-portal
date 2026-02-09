@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { Link } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import { ShoppingBag } from "lucide-react";
 import { StatusBadge } from "@/components/shared/StatusBadge";
@@ -43,9 +44,13 @@ const columns: ColumnDef<BackendUserOrder, unknown>[] = [
     header: "Order ID",
     cell: ({ row }) => (
       <div className="group/id flex items-center gap-1">
-        <span className="font-mono text-xs">
+        <Link
+          to="/orders/$orderId"
+          params={{ orderId: row.original.id }}
+          className="font-mono text-xs font-medium text-primary hover:underline"
+        >
           {row.original.orderNumber ?? row.original.id.slice(0, 8)}
-        </span>
+        </Link>
         <span className="opacity-0 transition-opacity group-hover/id:opacity-100">
           <CopyButton value={row.original.id} label="Copy order ID" />
         </span>
@@ -55,11 +60,20 @@ const columns: ColumnDef<BackendUserOrder, unknown>[] = [
   {
     accessorKey: "retailerName",
     header: "Retailer",
-    cell: ({ row }) => (
-      <span className="text-sm">
-        {row.original.retailerName ?? "Unknown retailer"}
-      </span>
-    ),
+    cell: ({ row }) =>
+      row.original.retailerId ? (
+        <Link
+          to="/retailers/$retailerId"
+          params={{ retailerId: row.original.retailerId }}
+          className="text-sm font-medium hover:underline"
+        >
+          {row.original.retailerName ?? "Unknown retailer"}
+        </Link>
+      ) : (
+        <span className="text-sm">
+          {row.original.retailerName ?? "Unknown retailer"}
+        </span>
+      ),
   },
   {
     accessorKey: "status",
