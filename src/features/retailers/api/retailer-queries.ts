@@ -1,5 +1,16 @@
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
-import { getRetailers, getRetailer, getRetailerOrders } from "./retailer-api";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  keepPreviousData,
+} from "@tanstack/react-query";
+import {
+  getRetailers,
+  getRetailer,
+  getRetailerOrders,
+  updateRetailer,
+  type UpdateRetailerPayload,
+} from "./retailer-api";
 import { toRetailerViewModel } from "../types";
 import type { RetailerListParams } from "../types";
 
@@ -62,5 +73,24 @@ export function useRetailerOrdersQuery(retailerId: string) {
     queryKey: retailerKeys.orders(retailerId),
     queryFn: () => getRetailerOrders(retailerId),
     enabled: Boolean(retailerId),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Mutation hooks
+// ---------------------------------------------------------------------------
+
+/** Update retailer fields and invalidate the detail cache to refetch. */
+export function useUpdateRetailerMutation(retailerId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: Partial<UpdateRetailerPayload>) =>
+      updateRetailer(retailerId, data),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: retailerKeys.detail(retailerId),
+      });
+    },
   });
 }

@@ -50,3 +50,27 @@ export function getRetailerOrders(
 ): Promise<BackendVendorOrder[]> {
   return api.get<BackendVendorOrder[]>(`admin/vendors/${retailerId}/orders`);
 }
+
+// ---------------------------------------------------------------------------
+// Mutations
+// ---------------------------------------------------------------------------
+
+/** Payload for PATCH /admin/vendors/:id. Uses backend field names. */
+export interface UpdateRetailerPayload {
+  storeName?: string;
+  email?: string;
+  phone?: string;
+  storeUrl?: string;
+  description?: string;
+  isOnline?: boolean;
+  vendorCategory?: string;
+  address?: string;
+}
+
+/** Update a vendor (retailer) by ID (partial update). */
+export function updateRetailer(
+  retailerId: string,
+  data: Partial<UpdateRetailerPayload>,
+): Promise<BackendVendor> {
+  return api.patch<BackendVendor>(`admin/vendors/${retailerId}`, data);
+}

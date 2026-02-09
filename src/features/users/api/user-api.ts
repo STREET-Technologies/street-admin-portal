@@ -62,3 +62,24 @@ export async function getUserDevices(
 ): Promise<BackendUserDevice[]> {
   return api.get<BackendUserDevice[]>(`admin/users/${userId}/devices`);
 }
+
+// ---------------------------------------------------------------------------
+// Mutations
+// ---------------------------------------------------------------------------
+
+/** Payload for PATCH /admin/users/:id. */
+export interface UpdateUserPayload {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  language?: string;
+}
+
+/** Update a user by ID (partial update). */
+export async function updateUser(
+  userId: string,
+  data: Partial<UpdateUserPayload>,
+): Promise<BackendUser> {
+  return api.patch<BackendUser>(`admin/users/${userId}`, data);
+}

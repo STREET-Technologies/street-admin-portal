@@ -1,11 +1,18 @@
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  keepPreviousData,
+} from "@tanstack/react-query";
 import {
   getUsers,
   getUser,
   getUserAddresses,
   getUserOrders,
   getUserDevices,
+  updateUser,
   type GetUsersParams,
+  type UpdateUserPayload,
 } from "./user-api";
 import { toUserViewModel } from "../types";
 
@@ -75,5 +82,23 @@ export function useUserDevicesQuery(userId: string) {
     queryKey: userKeys.devices(userId),
     queryFn: () => getUserDevices(userId),
     enabled: !!userId,
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Mutation hooks
+// ---------------------------------------------------------------------------
+
+/** Update user fields and invalidate the detail cache to refetch. */
+export function useUpdateUserMutation(userId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: Partial<UpdateUserPayload>) => updateUser(userId, data),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: userKeys.detail(userId),
+      });
+    },
   });
 }
