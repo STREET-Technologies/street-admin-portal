@@ -44,16 +44,16 @@ Green-field rebuild of the STREET Admin Portal from an AI-generated (Lovable) pr
 **Research**: Unlikely (standard CRUD using Phase 1 patterns)
 **Plans**: TBD
 
-### Phase 3: Couriers, Orders & Search
-**Goal**: Complete entity coverage with courier and order pages plus unified global search
+### Phase 3: Orders & Search
+**Goal**: Order list + detail pages plus unified global search. Couriers descoped (no backend entity — Stuart third-party only).
 **Depends on**: Phase 2
-**Requirements**: LIST-03, LIST-04, DETL-03, DETL-04, SRCH-01, SRCH-02, SRCH-03
+**Requirements**: LIST-04, DETL-04, SRCH-01, SRCH-02, SRCH-03 (LIST-03, DETL-03 descoped)
 **Success Criteria** (what must be TRUE):
-  1. Admin can view courier list and click through to courier detail page
-  2. Admin can view order list and click through to full order detail (items, payment, delivery, customer, retailer, courier)
-  3. Admin can search across all entity types from a single search bar and see grouped type-ahead results
-**Research**: Unlikely (same patterns as Phase 2, search uses existing cmdk component)
-**Plans**: TBD
+  1. Admin can view order list (scoped by vendor) and click through to full order detail
+  2. Order detail shows items, payment, delivery/courier info, customer, retailer, address, pricing
+  3. Admin can search across users and retailers from a single search bar with grouped type-ahead results
+**Research**: Done during planning — no global orders endpoint, no courier entity
+**Plans**: 03-01 (order list), 03-02 (order detail), 03-03 (global search), 03-04 (verification)
 
 ### Phase 4: Notes, Referrals & Settings
 **Goal**: Cross-cutting features that work across all entity types
@@ -84,6 +84,6 @@ Green-field rebuild of the STREET Admin Portal from an AI-generated (Lovable) pr
 |-------|----------------|--------|-----------|
 | 1. Foundation | 4/4 | Complete | 2026-02-09 |
 | 2. Users & Retailers | 4/4 | Complete | 2026-02-09 |
-| 3. Couriers, Orders & Search | 0/TBD | Not started | - |
+| 3. Orders & Search | 0/4 | Planned | - |
 | 4. Notes, Referrals & Settings | 0/TBD | Not started | - |
 | 5. Power Features | 0/TBD | Not started | - |

@@ -140,9 +140,9 @@ Which phases cover which requirements. Updated by create-roadmap.
 | DETL-02 | Phase 2 | Complete |
 | DETL-05 | Phase 2 | Complete |
 | DETL-06 | Phase 2 | Complete |
-| LIST-03 | Phase 3 | Pending |
+| LIST-03 | Descoped | Descoped (no backend courier entity) |
 | LIST-04 | Phase 3 | Pending |
-| DETL-03 | Phase 3 | Pending |
+| DETL-03 | Descoped | Descoped (no backend courier entity) |
 | DETL-04 | Phase 3 | Pending |
 | SRCH-01 | Phase 3 | Pending |
 | SRCH-02 | Phase 3 | Pending |

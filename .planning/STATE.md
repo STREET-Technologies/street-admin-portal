@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-09)
 
 **Core value:** Fast, intuitive customer support workflows — find any user or order in seconds and resolve issues without friction.
-**Current focus:** Phase 2 complete — ready for Phase 3
+**Current focus:** Phase 3 planned — ready to execute
 
 ## Current Position
 
-Phase: 2 of 5 (Users & Retailers) — COMPLETE
-Next: Phase 3 (Couriers, Orders & Search)
-Status: Phase 2 complete, Phase 3 not yet planned
-Last activity: 2026-02-09 — Completed Phase 2 (all 4 plans + gap fixes)
+Phase: 3 of 5 (Couriers, Orders & Search) — PLANNED
+Next: Execute Phase 3
+Status: Phase 3 plans written (4 plans in 3 waves), ready for execution
+Last activity: 2026-02-09 — Phase 3 planning complete
 
-Progress: ██████████ 100% (Phase 2)
+Progress: ░░░░░░░░░░ 0% (Phase 3)
 
 ## Performance Metrics
 
@@ -68,6 +68,9 @@ Recent decisions affecting current work:
 - Client-side status filtering within page (backend lacks filter params) (02-04)
 - Dev bypass 401 skip in api-client (fake token causes 401 on all API calls) (02-04)
 - Button forwardRef for Radix asChild compatibility (02-04)
+- Couriers descoped from Phase 3: no backend entity exists (Stuart third-party only) (03-planning)
+- No global admin orders endpoint: order list scoped by vendor (03-planning)
+- Global search aggregates user + vendor search endpoints in parallel (03-planning)
 
 ### Pending Todos
 
@@ -78,9 +81,11 @@ None.
 - Backend has no user status field -- all users show as "active" (cosmetic, not blocking)
 - Backend has no sorting/filtering params -- client-side sort/filter is page-only
 - Google OAuth redirect URI propagation may take time for local dev
+- No `GET /admin/orders` endpoint -- order list must be scoped by vendor
+- No courier entity in backend -- couriers page stays as placeholder
 
 ## Session Continuity
 
 Last session: 2026-02-09
-Stopped at: Phase 2 complete
+Stopped at: Phase 3 planned, ready for execution
 Resume file: None
