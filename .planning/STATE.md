@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-09)
 
 **Core value:** Fast, intuitive customer support workflows — find any user or order in seconds and resolve issues without friction.
-**Current focus:** Phase 3 complete — ready for Phase 4
+**Current focus:** Phase 4 in progress — 04-02 complete
 
 ## Current Position
 
-Phase: 4 of 5 (Notes, Referrals & Settings) — PLANNED
-Next: Execute Phase 4
-Status: Phase 4 planned (2 plans, 1 wave), ready for execution
-Last activity: 2026-02-09 — Planned Phase 4
+Phase: 4 of 5 (Notes, Referrals & Settings)
+Plan: 2 of 2
+Status: 04-02 complete (04-01 may still be in progress)
+Last activity: 2026-02-09 — Completed 04-02-PLAN.md
 
-Progress: ░░░░░░░░░░ 0% (Phase 4)
+Progress: █████████░ 50% (Phase 4: 1/2 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 12
+- Total plans completed: 13
 - Average duration: ~4 min
-- Total execution time: ~50 min
+- Total execution time: ~51 min
 
 **By Phase:**
 
@@ -30,6 +30,7 @@ Progress: ░░░░░░░░░░ 0% (Phase 4)
 | 1. Foundation | 4/4 | ~20 min | ~5 min |
 | 2. Users & Retailers | 4/4 | ~15 min | ~3.7 min |
 | 3. Orders & Search | 4/4 | ~15 min | ~3.7 min |
+| 4. Notes, Referrals & Settings | 1/2 | ~1 min | ~1 min |
 
 ## Accumulated Context
 
@@ -74,8 +75,10 @@ Recent decisions affecting current work:
 - cmdk command palette with Cmd+K keyboard shortcut (03-03)
 - Google OAuth not working in production — needs investigation (ongoing)
 - REFL-01/REFL-02 descoped from Phase 4: no admin referral endpoints in backend (04-planning)
-- BackendUserDevice type mismatch with FcmToken entity — fixing in 04-02 (04-planning)
+- BackendUserDevice type mismatch with FcmToken entity — FIXED in 04-02
 - Referral settings (INFR-07 partial) deferred to Phase 5 settings page (04-planning)
+- BackendUserDevice aligned to FcmToken entity fields (04-02)
+- Referrals page uses structured Card with endpoint list instead of generic EmptyState (04-02)
 
 ### Pending Todos
 
@@ -93,5 +96,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-09
-Stopped at: Phase 4 planned, ready for execution
+Stopped at: Completed 04-02-PLAN.md
 Resume file: None
