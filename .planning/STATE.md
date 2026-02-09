@@ -10,29 +10,29 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 ## Current Position
 
 Phase: 2 of 5 (Users & Retailers) — IN PROGRESS
-Plan: 1 of 4 complete (02-01 Shared Data Table & Entity Detail Components)
+Plan: 2 of 4 complete (02-02 User Feature)
 Status: In progress
-Last activity: 2026-02-09 — Completed 02-01-PLAN.md
+Last activity: 2026-02-09 — Completed 02-02-PLAN.md
 
-Progress: ██░░░░░░░░ 25% (Phase 2)
+Progress: █████░░░░░ 50% (Phase 2)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
-- Average duration: ~5 min
-- Total execution time: ~24 min
+- Total plans completed: 6
+- Average duration: ~4 min
+- Total execution time: ~27 min
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1. Foundation | 4/4 | ~20 min | ~5 min |
-| 2. Users & Retailers | 1/4 | ~4 min | ~4 min |
+| 2. Users & Retailers | 2/4 | ~7 min | ~3.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-02 (2m), 01-03 (2m), 01-04 (15m incl. checkpoint), 02-01 (4m)
-- Trend: Steady
+- Last 5 plans: 01-03 (2m), 01-04 (15m incl. checkpoint), 02-01 (4m), 02-02 (3m)
+- Trend: Steady, accelerating
 
 ## Accumulated Context
 
@@ -59,6 +59,9 @@ Recent decisions affecting current work:
 - useSearch({ strict: false }) for reusable table params hook (02-01)
 - Three-state sort cycle: unsorted -> asc -> desc -> unsorted (02-01)
 - Page size options: 10/20/50, default 20 (02-01)
+- api.getRaw for paginated responses that need both data and meta (02-02)
+- Client-side sorting within page data when backend lacks sort params (02-02)
+- Each detail tab as separate component file for maintainability (02-02)
 
 ### Pending Todos
 
@@ -66,10 +69,11 @@ None.
 
 ### Blockers/Concerns
 
-None.
+- Backend has no user status field -- all users show as "active" (cosmetic, not blocking)
+- Backend has no sorting params for /admin/users -- client-side sort is page-only
 
 ## Session Continuity
 
 Last session: 2026-02-09
-Stopped at: Completed 02-01-PLAN.md
+Stopped at: Completed 02-02-PLAN.md
 Resume file: None
