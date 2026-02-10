@@ -76,9 +76,9 @@
   --popover: 0 0% 100%;
   --popover-foreground: 0 0% 0%;
 
-  /* STREET Lime Green Primary - #c6ff00 */
-  --primary: 73 100% 50%;
-  --primary-foreground: 0 0% 0%;
+  /* Stripe-style dark primary (readable on white) */
+  --primary: 0 0% 9%;
+  --primary-foreground: 0 0% 100%;
 
   /* STREET Black Secondary */
   --secondary: 0 0% 0%;
@@ -88,16 +88,16 @@
   --muted: 0 0% 96%;
   --muted-foreground: 0 0% 64%;
 
-  /* STREET Accent - #c6ff00 */
-  --accent: 73 100% 50%;
-  --accent-foreground: 0 0% 0%;
+  /* Neutral hover accent */
+  --accent: 0 0% 96%;
+  --accent-foreground: 0 0% 9%;
 
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
 
   --border: 0 0% 90%;
   --input: 0 0% 95%;
-  --ring: 73 100% 50%;
+  --ring: 0 0% 64%;
 
   --radius: 0.5rem;
 
@@ -205,11 +205,11 @@
 
   /* STREET Brand Gradients */
   .street-gradient {
-    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.8) 100%);
+    background: linear-gradient(135deg, hsl(73 100% 50%) 0%, hsl(73 100% 50% / 0.8) 100%);
   }
 
   .street-glow {
-    box-shadow: 0 0 30px hsl(var(--primary) / 0.3);
+    box-shadow: 0 0 30px hsl(73 100% 50% / 0.3);
   }
 
   /* STREET Animations */

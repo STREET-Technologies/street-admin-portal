@@ -152,7 +152,7 @@ export function EditableField({
           <button
             type="button"
             onClick={startEditing}
-            className="inline-flex size-6 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-foreground group-hover/field:opacity-100"
+            className="inline-flex size-6 items-center justify-center rounded-md text-muted-foreground opacity-40 transition-opacity hover:bg-accent hover:text-foreground group-hover/field:opacity-100"
             aria-label={`Edit ${label.toLowerCase()}`}
           >
             <Pencil className="size-3" />

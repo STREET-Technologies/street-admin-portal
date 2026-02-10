@@ -27,15 +27,13 @@ export function AppSidebar() {
 
   return (
     <Sidebar>
-      <SidebarHeader className="p-4">
+      <SidebarHeader className="border-b border-sidebar-border p-4">
         <Link to="/users" className="block">
           <span className="street-logo text-xl text-secondary dark:text-foreground">
             STREET
           </span>
         </Link>
       </SidebarHeader>
-
-      <SidebarSeparator />
 
       <SidebarContent>
         {navGroups.map((group) => (

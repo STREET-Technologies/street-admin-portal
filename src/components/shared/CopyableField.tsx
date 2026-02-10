@@ -36,7 +36,7 @@ export function CopyableField({
         >
           {value}
         </span>
-        <span className="opacity-0 transition-opacity group-hover/field:opacity-100">
+        <span className="opacity-40 transition-opacity group-hover/field:opacity-100">
           <CopyButton value={value} label={`Copy ${label.toLowerCase()}`} />
         </span>
       </div>

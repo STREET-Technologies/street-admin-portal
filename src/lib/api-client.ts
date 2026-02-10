@@ -57,11 +57,6 @@ const kyInstance = ky.create({
     afterResponse: [
       (_request, _options, response) => {
         if (response.status === 401) {
-          const token = localStorage.getItem("access_token");
-          // Dev bypass uses a fake token that will always 401.
-          // Let error states handle it instead of bouncing to login.
-          if (token === "dev-bypass-token") return;
-
           // Don't redirect if already on login page (e.g., failed login attempt)
           if (window.location.pathname === "/login") return;
 

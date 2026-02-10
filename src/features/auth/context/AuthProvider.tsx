@@ -10,12 +10,8 @@ import { authApi } from "../api/auth-api";
 import type { AuthState, AuthUser } from "../types";
 
 export interface AuthContextValue extends AuthState {
-  /** Store tokens and validate via /auth/me. Pass user to skip validation (dev bypass). */
-  login: (
-    accessToken: string,
-    refreshToken?: string,
-    devUser?: AuthUser,
-  ) => void;
+  /** Store tokens and validate via /auth/me. */
+  login: (accessToken: string, refreshToken?: string) => void;
   /** Call API logout THEN clear local state (fixes existing logout bug) */
   logout: () => Promise<void>;
 }
@@ -64,16 +60,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    * Login: store tokens, validate, set user.
    */
   const login = useCallback(
-    (accessToken: string, refreshToken?: string, devUser?: AuthUser) => {
+    (accessToken: string, refreshToken?: string) => {
       localStorage.setItem("access_token", accessToken);
       if (refreshToken) {
         localStorage.setItem("refresh_token", refreshToken);
       }
-      if (devUser) {
-        setUser(devUser);
-      } else {
-        void validateToken();
-      }
+      void validateToken();
     },
     [validateToken],
   );

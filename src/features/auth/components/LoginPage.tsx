@@ -12,10 +12,9 @@ import {
 } from "@/components/ui/card";
 import { toast } from "sonner";
 import { ApiError } from "@/lib/api-client";
+import { ThemeToggle } from "@/app/layout/ThemeToggle";
 import { useAuth } from "../hooks/useAuth";
 import { authApi } from "../api/auth-api";
-
-const DEV_BYPASS_AUTH = import.meta.env.VITE_DEV_BYPASS_AUTH === "true";
 
 export function LoginPage() {
   const { login, isAuthenticated } = useAuth();
@@ -62,27 +61,20 @@ export function LoginPage() {
     }
   }
 
-  function handleDevBypass() {
-    login("dev-bypass-token", "dev-bypass-refresh-token", {
-      email: "dev@street.london",
-      name: "Dev User",
-    });
-    toast.warning(
-      "Dev bypass mode active -- this should NEVER be enabled in production!",
-    );
-  }
-
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-muted p-4">
+    <div className="relative flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-muted p-4">
+      <div className="absolute right-4 top-4">
+        <ThemeToggle />
+      </div>
       <div className="w-full max-w-md">
         {/* STREET Logo */}
         <div className="mb-8 text-center">
-          <h1 className="street-logo mb-2 text-6xl text-secondary">STREET</h1>
+          <h1 className="street-logo mb-2 text-6xl text-foreground">STREET</h1>
           <div className="street-gradient mx-auto mb-4 h-1 w-16" />
           <p className="text-lg text-muted-foreground">Admin Portal</p>
         </div>
 
-        <Card className="border-0 bg-white/95 shadow-2xl backdrop-blur-sm">
+        <Card className="border-0 bg-card/95 shadow-2xl backdrop-blur-sm">
           <CardHeader className="space-y-1 text-center">
             <CardTitle className="street-title text-2xl">
               Welcome Back
@@ -128,34 +120,6 @@ export function LoginPage() {
                 {isSubmitting ? "Signing in..." : "Sign in"}
               </Button>
             </form>
-
-            {/* Dev Bypass (only when env var enabled) */}
-            {DEV_BYPASS_AUTH && (
-              <>
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t border-gray-300" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-white px-2 text-muted-foreground">
-                      Dev Only
-                    </span>
-                  </div>
-                </div>
-
-                <Button
-                  onClick={handleDevBypass}
-                  variant="outline"
-                  className="h-12 w-full border-orange-300 bg-orange-50 font-semibold text-orange-700 transition-all duration-200 hover:bg-orange-100"
-                >
-                  Dev Bypass Login
-                </Button>
-
-                <p className="text-center text-xs font-medium text-orange-600">
-                  Development bypass mode enabled
-                </p>
-              </>
-            )}
 
             {/* Footer note */}
             <div className="pt-4 text-center">
