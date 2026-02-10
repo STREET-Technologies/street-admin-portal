@@ -119,6 +119,34 @@ export async function getRetailerStaff(
 }
 
 // ---------------------------------------------------------------------------
+// Staff creation
+// ---------------------------------------------------------------------------
+
+export interface CreateStaffPayload {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+}
+
+export interface CreateStaffResult {
+  userId: string;
+  tempPassword: string;
+  email: string;
+}
+
+/** Create a new staff account for a vendor (retailer). */
+export function createRetailerStaff(
+  retailerId: string,
+  data: CreateStaffPayload,
+): Promise<CreateStaffResult> {
+  return api.post<CreateStaffResult>(
+    `admin/vendors/${retailerId}/staff`,
+    data,
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Mutations
 // ---------------------------------------------------------------------------
 

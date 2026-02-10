@@ -10,7 +10,9 @@ import {
   getRetailerOrders,
   getRetailerStaff,
   updateRetailer,
+  createRetailerStaff,
   type UpdateRetailerPayload,
+  type CreateStaffPayload,
 } from "./retailer-api";
 import { toRetailerViewModel } from "../types";
 import type { RetailerListParams } from "../types";
@@ -93,6 +95,21 @@ export function useRetailerStaffQuery(retailerId: string) {
 // ---------------------------------------------------------------------------
 // Mutation hooks
 // ---------------------------------------------------------------------------
+
+/** Create a staff account for a retailer. Invalidates the staff list on success. */
+export function useCreateRetailerStaffMutation(retailerId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: CreateStaffPayload) =>
+      createRetailerStaff(retailerId, data),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: retailerKeys.staff(retailerId),
+      });
+    },
+  });
+}
 
 /** Update retailer fields and invalidate the detail cache to refetch. */
 export function useUpdateRetailerMutation(retailerId: string) {
