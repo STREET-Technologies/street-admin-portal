@@ -108,6 +108,22 @@ export async function getUserDevices(
 }
 
 // ---------------------------------------------------------------------------
+// User stats
+// ---------------------------------------------------------------------------
+
+export interface UserStats {
+  totalOrders: number;
+  totalSpent: string;
+  firstOrderDate: string | null;
+  lastOrderDate: string | null;
+}
+
+/** Fetch order stats for a user. */
+export async function getUserStats(userId: string): Promise<UserStats> {
+  return api.get<UserStats>(`admin/users/${userId}/stats`);
+}
+
+// ---------------------------------------------------------------------------
 // Mutations
 // ---------------------------------------------------------------------------
 

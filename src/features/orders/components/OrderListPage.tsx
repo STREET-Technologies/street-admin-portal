@@ -16,11 +16,9 @@ import { DataTableColumnHeader } from "@/components/shared/DataTableColumnHeader
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { CopyButton } from "@/components/shared/CopyButton";
 import { ErrorState } from "@/components/shared/ErrorState";
-import { EmptyState } from "@/components/shared/EmptyState";
 import { useTableParams } from "@/hooks/use-table-params";
 import { useDebounce } from "@/hooks/use-debounce";
-import { useRetailersQuery } from "@/features/retailers/api/retailer-queries";
-import { useVendorOrdersQuery } from "../api/order-queries";
+import { useOrdersQuery } from "../api/order-queries";
 import type { OrderViewModel } from "../types";
 
 // ---------------------------------------------------------------------------
@@ -29,13 +27,13 @@ import type { OrderViewModel } from "../types";
 
 const ORDER_STATUS_OPTIONS = [
   { value: "all", label: "All statuses" },
-  { value: "pending", label: "Pending" },
-  { value: "confirmed", label: "Confirmed" },
-  { value: "preparing", label: "Preparing" },
-  { value: "ready", label: "Ready" },
-  { value: "in_delivery", label: "In Delivery" },
-  { value: "delivered", label: "Delivered" },
-  { value: "cancelled", label: "Cancelled" },
+  { value: "PENDING", label: "Pending" },
+  { value: "CONFIRMED", label: "Confirmed" },
+  { value: "PREPARING", label: "Preparing" },
+  { value: "READY", label: "Ready" },
+  { value: "IN_DELIVERY", label: "In Delivery" },
+  { value: "DELIVERED", label: "Delivered" },
+  { value: "CANCELLED", label: "Cancelled" },
 ] as const;
 
 // ---------------------------------------------------------------------------
@@ -58,7 +56,7 @@ function createColumns(
             <button
               type="button"
               className="font-mono text-xs font-medium hover:underline"
-              onClick={() => onRowClick(order.id)}
+              onClick={() => onRowClick(order.orderId)}
             >
               {order.orderId}
             </button>
@@ -168,83 +166,25 @@ export function OrderListPage() {
   // Filter state
   const [searchValue, setSearchValue] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [selectedVendorId, setSelectedVendorId] = useState<string>("");
   const debouncedSearch = useDebounce(searchValue, 300);
 
-  // Fetch all vendors for the vendor selector
-  const { data: vendorData, isLoading: vendorsLoading } = useRetailersQuery({
-    limit: 100,
-  });
-  const vendors = vendorData?.data ?? [];
-
-  // Auto-select first vendor once loaded
-  const activeVendorId = selectedVendorId || (vendors.length > 0 ? vendors[0].id : "");
-
-  // Fetch orders for the selected vendor
+  // Fetch orders from global endpoint with server-side search/filter/pagination
   const {
     data: orderData,
-    isLoading: ordersLoading,
+    isLoading,
     isError,
     refetch,
-  } = useVendorOrdersQuery(activeVendorId, {
+  } = useOrdersQuery({
+    search: debouncedSearch || undefined,
+    status: statusFilter !== "all" ? statusFilter : undefined,
     page: searchParams.page,
     limit: searchParams.limit,
   });
 
-  // Enrich orders with the selected vendor's name (backend doesn't include
-  // the vendor relation when querying by vendor ID).
-  const activeVendor = vendors.find((v) => v.id === activeVendorId);
-  const orders = useMemo(() => {
-    const raw = orderData?.data ?? [];
-    if (!activeVendor) return raw;
-    return raw.map((o) => ({
-      ...o,
-      retailerName: o.retailerName ?? activeVendor.name,
-      retailerId: o.retailerId ?? activeVendor.id,
-    }));
-  }, [orderData, activeVendor]);
+  const orders = orderData?.data ?? [];
   const totalPages = orderData?.meta
     ? Math.ceil(orderData.meta.total / orderData.meta.limit)
     : 0;
-
-  // Client-side search filter (order ID or customer name)
-  const searchFiltered = useMemo(() => {
-    if (!debouncedSearch) return orders;
-    const lower = debouncedSearch.toLowerCase();
-    return orders.filter(
-      (o) =>
-        o.orderId.toLowerCase().includes(lower) ||
-        o.customerName.toLowerCase().includes(lower),
-    );
-  }, [orders, debouncedSearch]);
-
-  // Client-side status filter
-  const statusFiltered = useMemo(() => {
-    if (statusFilter === "all") return searchFiltered;
-    return searchFiltered.filter((o) => o.status === statusFilter);
-  }, [searchFiltered, statusFilter]);
-
-  // Client-side sort (backend may not support sort params)
-  const sortedOrders = useMemo(() => {
-    if (sorting.length === 0) return statusFiltered;
-    const [sort] = sorting;
-    const key = sort.id as keyof OrderViewModel;
-    return [...statusFiltered].sort((a, b) => {
-      // Use raw amount for totalAmount sorting
-      if (key === "totalAmount") {
-        const aVal = a.totalAmountRaw ?? 0;
-        const bVal = b.totalAmountRaw ?? 0;
-        return sort.desc ? bVal - aVal : aVal - bVal;
-      }
-      const aVal = a[key];
-      const bVal = b[key];
-      if (aVal == null && bVal == null) return 0;
-      if (aVal == null) return 1;
-      if (bVal == null) return -1;
-      const cmp = String(aVal).localeCompare(String(bVal));
-      return sort.desc ? -cmp : cmp;
-    });
-  }, [statusFiltered, sorting]);
 
   const columns = useMemo(
     () =>
@@ -253,8 +193,6 @@ export function OrderListPage() {
       }),
     [navigate],
   );
-
-  const isLoading = vendorsLoading || ordersLoading;
 
   if (isError) {
     return (
@@ -269,19 +207,6 @@ export function OrderListPage() {
     );
   }
 
-  if (!vendorsLoading && vendors.length === 0) {
-    return (
-      <div className="space-y-6">
-        <PageHeader title="Orders" description="Track and manage orders" />
-        <EmptyState
-          icon={ShoppingCart}
-          title="No retailers found"
-          description="Orders are grouped by retailer. Add a retailer to see their orders."
-        />
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       <PageHeader title="Orders" description="Track and manage orders" />
@@ -291,29 +216,12 @@ export function OrderListPage() {
         <div className="relative max-w-sm flex-1">
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search by order ID or customer..."
+            placeholder="Search by order ID, customer name, or email..."
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
             className="pl-9"
           />
         </div>
-
-        {/* Vendor selector */}
-        <Select
-          value={activeVendorId}
-          onValueChange={setSelectedVendorId}
-        >
-          <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Select retailer" />
-          </SelectTrigger>
-          <SelectContent>
-            {vendors.map((vendor) => (
-              <SelectItem key={vendor.id} value={vendor.id}>
-                {vendor.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
 
         {/* Status filter */}
         <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -333,7 +241,7 @@ export function OrderListPage() {
       {/* Data table */}
       <DataTable
         columns={columns}
-        data={sortedOrders}
+        data={orders}
         pageCount={totalPages}
         pageIndex={pagination.pageIndex}
         pageSize={pagination.pageSize}
@@ -344,7 +252,7 @@ export function OrderListPage() {
         emptyMessage="No orders found"
         emptyIcon={ShoppingCart}
         onRowClick={(order) => {
-          void navigate({ to: "/orders/$orderId", params: { orderId: order.id } });
+          void navigate({ to: "/orders/$orderId", params: { orderId: order.orderId } });
         }}
       />
     </div>

@@ -4,7 +4,7 @@ import type { OrderStatus } from "@/types";
 // Backend shapes (what the API returns)
 // ---------------------------------------------------------------------------
 
-/** Order entity as returned by GET /admin/vendors/:id/orders. */
+/** Order entity as returned by admin endpoints. */
 export interface BackendOrder {
   id: string;
   orderId: string; // ST-XXXXX display ID
@@ -17,7 +17,7 @@ export interface BackendOrder {
   createdAt: string;
   updatedAt?: string;
   orderItems: BackendOrderItem[];
-  // Fields from findOrderByOrderIdWithRelations
+  // Fields from findOrderByOrderIdWithRelations (detail endpoint)
   user?: {
     id: string;
     firstName: string;
@@ -30,6 +30,9 @@ export interface BackendOrder {
     storeName: string;
     logo?: string;
   } | null;
+  // Flat fields from global orders list endpoint (raw query)
+  vendorId?: string;
+  vendorName?: string;
   deliveryDetails?: Record<string, unknown> | null;
   shippingAddress?: Record<string, unknown> | null;
   paymentStatus?: string | null;
@@ -187,8 +190,8 @@ export function toOrderViewModel(backend: BackendOrder): OrderViewModel {
     totalAmountRaw: typeof backend.totalAmount === "string" ? parseFloat(backend.totalAmount) : backend.totalAmount,
     itemCount: backend.orderItems?.length ?? 0,
     createdAt: backend.createdAt,
-    retailerName: backend.vendor?.storeName,
-    retailerId: backend.vendor?.id,
+    retailerName: backend.vendor?.storeName ?? backend.vendorName,
+    retailerId: backend.vendor?.id ?? backend.vendorId,
     userId: backend.user?.id ?? backend.customerId ?? undefined,
     paymentStatus: backend.paymentStatus?.toLowerCase(),
   };

@@ -5,6 +5,13 @@ import type { BackendOrder } from "../types";
 // Request params
 // ---------------------------------------------------------------------------
 
+export interface GetOrdersParams {
+  search?: string;
+  status?: string;
+  page?: number;
+  limit?: number;
+}
+
 export interface GetOrdersByVendorParams {
   vendorId: string;
   page?: number;
@@ -18,8 +25,15 @@ export interface GetOrdersByUserParams {
 }
 
 // ---------------------------------------------------------------------------
-// Response shape
+// Response shapes
 // ---------------------------------------------------------------------------
+
+/** Raw response from GET /admin/orders (global orders list). */
+export interface OrdersListRawResponse {
+  message: string;
+  data: BackendOrder[];
+  meta: { total: number; limit: number; page: number };
+}
 
 /**
  * The vendor orders endpoint wraps results in a nested data envelope:
@@ -43,6 +57,28 @@ export interface VendorOrdersRawResponse {
 // ---------------------------------------------------------------------------
 // API functions
 // ---------------------------------------------------------------------------
+
+/** Fetch global orders list with search, status filter, and pagination. */
+export async function getOrders(
+  params: GetOrdersParams = {},
+): Promise<OrdersListRawResponse> {
+  const searchParams = new URLSearchParams();
+  if (params.search) searchParams.set("search", params.search);
+  if (params.status) searchParams.set("status", params.status);
+  if (params.page) searchParams.set("page", String(params.page));
+  if (params.limit) searchParams.set("limit", String(params.limit));
+  const query = searchParams.toString();
+  const endpoint = `admin/orders${query ? `?${query}` : ""}`;
+
+  return api.getRaw<OrdersListRawResponse>(endpoint);
+}
+
+/** Fetch a single order by its display ID (ST-XXXXX). */
+export async function getOrderByOrderId(
+  orderId: string,
+): Promise<BackendOrder> {
+  return api.get<BackendOrder>(`admin/orders/${orderId}`);
+}
 
 /** Fetch orders for a specific vendor (admin endpoint). */
 export async function getOrdersByVendor(

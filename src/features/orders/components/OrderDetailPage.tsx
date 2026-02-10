@@ -32,7 +32,7 @@ import { StatusBadge } from "@/components/shared/StatusBadge";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { useVendorOrdersQuery } from "../api/order-queries";
+import { useOrderDetailQuery } from "../api/order-queries";
 import { toOrderDetailViewModel } from "../types";
 import type { OrderDetailViewModel, OrderItemViewModel } from "../types";
 
@@ -41,81 +41,19 @@ interface OrderDetailPageProps {
 }
 
 // ---------------------------------------------------------------------------
-// Helper: find order from vendor query cache
-// ---------------------------------------------------------------------------
-
-/**
- * Since there is no dedicated GET /admin/orders/:id endpoint, the detail page
- * works by receiving the orderId (UUID) as a URL param.  We re-fetch the
- * vendor orders list (which should be cached from the list page) and pluck the
- * matching order.  If the admin deep-links without a warm cache this won't
- * find the order — that's an acceptable limitation given the backend
- * constraints (no global order lookup).
- */
-
-function useOrderDetailFromVendorQuery(
-  orderId: string,
-  vendorId: string | null,
-) {
-  const query = useVendorOrdersQuery(vendorId ?? "", { limit: 100 });
-
-  // Find order in the flat array of OrderViewModels — but we need the
-  // *raw* BackendOrder for the detail transform.  Unfortunately the query
-  // `select` already transforms.  So we also search the *raw* query data.
-  const rawOrders = query.data
-    ? // The underlying data before select is not easily accessible, so
-      // let's just match from the transformed list and use what we have.
-      undefined
-    : undefined;
-
-  // We can't get BackendOrder from the transformed hook.  Instead let's
-  // match on the transformed list and indicate "found" to the caller.
-  const order = query.data?.data.find((o) => o.id === orderId);
-
-  return {
-    order,
-    isLoading: query.isLoading,
-    isError: query.isError,
-    error: query.error,
-    refetch: query.refetch,
-    rawOrders,
-  };
-}
-
-// ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
 export function OrderDetailPage({ orderId }: OrderDetailPageProps) {
   const navigate = useNavigate();
-
-  // Since we can't fetch a single order by ID from the admin API, we need
-  // to get the full detail from the vendor orders cache.  However this only
-  // works if the admin navigated from the orders list (cache is warm).
-  //
-  // For a more robust approach, we directly fetch vendor orders for the
-  // order's vendor.  But we don't know the vendorId from just orderId.
-  //
-  // PRACTICAL SOLUTION: Use the query client cache to scan all cached
-  // vendor order lists.  This is lightweight and works in the common flow.
-
-  return <OrderDetailContent orderId={orderId} />;
-}
-
-function OrderDetailContent({ orderId }: { orderId: string }) {
-  const navigate = useNavigate();
-
-  // Try to find the order in any cached vendor orders query
-  // We use a simple approach: the order detail page looks for the order
-  // in the raw vendor orders response using queryClient
-  const { data: orderDetail, isLoading, isError, notFound } =
-    useOrderFromCache(orderId);
+  const { data: backendOrder, isLoading, isError, refetch } =
+    useOrderDetailQuery(orderId);
 
   if (isLoading) {
     return <LoadingState variant="page" />;
   }
 
-  if (isError || notFound || !orderDetail) {
+  if (isError || !backendOrder) {
     return (
       <div className="space-y-6">
         <Button
@@ -129,12 +67,14 @@ function OrderDetailContent({ orderId }: { orderId: string }) {
         </Button>
         <ErrorState
           title="Order not found"
-          message="This order could not be loaded. Navigate from the orders list to view order details."
-          onRetry={() => void navigate({ to: "/orders" })}
+          message="This order could not be loaded. Please check the order ID and try again."
+          onRetry={() => void refetch()}
         />
       </div>
     );
   }
+
+  const orderDetail = toOrderDetailViewModel(backendOrder);
 
   return (
     <div className="space-y-6">
@@ -212,41 +152,6 @@ function OrderDetailContent({ orderId }: { orderId: string }) {
       </div>
     </div>
   );
-}
-
-// ---------------------------------------------------------------------------
-// Cache-based order lookup hook
-// ---------------------------------------------------------------------------
-
-import { useQueryClient } from "@tanstack/react-query";
-import { orderKeys } from "../api/order-queries";
-import type { VendorOrdersRawResponse } from "../api/order-api";
-
-function useOrderFromCache(orderId: string) {
-  const queryClient = useQueryClient();
-
-  // Scan all cached vendor order queries for the matching order
-  const queries = queryClient.getQueriesData<VendorOrdersRawResponse>({
-    queryKey: orderKeys.lists(),
-  });
-
-  let found: OrderDetailViewModel | null = null;
-
-  for (const [, data] of queries) {
-    if (!data?.data?.orders) continue;
-    const match = data.data.orders.find((o) => o.id === orderId);
-    if (match) {
-      found = toOrderDetailViewModel(match);
-      break;
-    }
-  }
-
-  return {
-    data: found,
-    isLoading: false,
-    isError: false,
-    notFound: !found,
-  };
 }
 
 // ---------------------------------------------------------------------------

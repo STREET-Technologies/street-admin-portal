@@ -10,6 +10,7 @@ import {
   getUserAddresses,
   getUserOrders,
   getUserDevices,
+  getUserStats,
   updateUser,
   type GetUsersParams,
   type UpdateUserPayload,
@@ -29,6 +30,7 @@ export const userKeys = {
   addresses: (id: string) => [...userKeys.detail(id), "addresses"] as const,
   orders: (id: string) => [...userKeys.detail(id), "orders"] as const,
   devices: (id: string) => [...userKeys.detail(id), "devices"] as const,
+  stats: (id: string) => [...userKeys.all, "stats", id] as const,
 };
 
 // ---------------------------------------------------------------------------
@@ -81,6 +83,15 @@ export function useUserDevicesQuery(userId: string) {
   return useQuery({
     queryKey: userKeys.devices(userId),
     queryFn: () => getUserDevices(userId),
+    enabled: !!userId,
+  });
+}
+
+/** User order stats (total orders, total spent, etc.). */
+export function useUserStatsQuery(userId: string) {
+  return useQuery({
+    queryKey: userKeys.stats(userId),
+    queryFn: () => getUserStats(userId),
     enabled: !!userId,
   });
 }

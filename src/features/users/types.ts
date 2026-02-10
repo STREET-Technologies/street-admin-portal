@@ -17,6 +17,8 @@ export interface BackendUser {
   ssoProvider: string | null;
   isTestAccount: boolean;
   isAnonymized: boolean;
+  lockedUntil: string | null;
+  failedLoginAttempts: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -98,6 +100,14 @@ function buildDisplayName(
   return parts.length > 0 ? parts.join(" ") : "Unknown";
 }
 
+/** Derive user status from backend fields. */
+function deriveUserStatus(user: BackendUser): EntityStatus {
+  if (user.isAnonymized) return "blocked";
+  if (user.lockedUntil && new Date(user.lockedUntil) > new Date())
+    return "suspended";
+  return "active";
+}
+
 /** Transform a BackendUser into a UserViewModel for UI consumption. */
 export function toUserViewModel(backend: BackendUser): UserViewModel {
   return {
@@ -105,7 +115,7 @@ export function toUserViewModel(backend: BackendUser): UserViewModel {
     name: buildDisplayName(backend.firstName, backend.lastName),
     email: backend.email ?? "No email",
     phone: backend.phone ?? "No phone",
-    status: "active" as EntityStatus, // Backend has no status field
+    status: deriveUserStatus(backend),
     avatarUrl: backend.profileImage,
     role: backend.role,
     ssoProvider: backend.ssoProvider,
