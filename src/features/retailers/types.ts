@@ -40,7 +40,6 @@ export interface RetailerViewModel {
   phone: string;
   status: EntityStatus;
   category: string;
-  logoUrl: string | null;
   commissionPercentage: number | null;
   storeUrl: string | null;
   address: string;
@@ -77,7 +76,6 @@ export function toRetailerViewModel(vendor: BackendVendor): RetailerViewModel {
     phone: vendor.phone ?? "",
     status: deriveStatus(vendor.isActive, vendor.isOnline),
     category: vendor.vendorCategory ?? "Uncategorized",
-    logoUrl: vendor.logo,
     commissionPercentage: vendor.commissionPercentage,
     storeUrl: vendor.storeUrl,
     address: vendor.address ?? "",

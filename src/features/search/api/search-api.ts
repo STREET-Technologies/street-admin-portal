@@ -92,7 +92,7 @@ export async function globalSearch(query: string): Promise<SearchResults> {
             type: "retailer" as const,
             title: vm.name,
             subtitle: vm.category,
-            avatarUrl: vm.logoUrl ?? undefined,
+            avatarUrl: undefined,
             status: vm.status,
             href: `/retailers/${vm.id}`,
           };

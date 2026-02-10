@@ -54,7 +54,6 @@ export function RetailerDetailPage({ retailerId }: RetailerDetailPageProps) {
         title={retailer.name}
         subtitle={retailer.email || undefined}
         status={retailer.status}
-        avatarUrl={retailer.logoUrl ?? undefined}
         avatarFallback={retailer.name.charAt(0).toUpperCase()}
       />
 

@@ -10,7 +10,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DataTable } from "@/components/shared/DataTable";
 import { DataTableColumnHeader } from "@/components/shared/DataTableColumnHeader";
 import { StatusBadge } from "@/components/shared/StatusBadge";
@@ -38,15 +37,9 @@ const columns: ColumnDef<RetailerViewModel, unknown>[] = [
         <Link
           to="/retailers/$retailerId"
           params={{ retailerId: retailer.id }}
-          className="flex items-center gap-3 font-medium hover:underline"
+          className="font-medium hover:underline"
         >
-          <Avatar size="sm">
-            {retailer.logoUrl && (
-              <AvatarImage src={retailer.logoUrl} alt={retailer.name} />
-            )}
-            <AvatarFallback>{retailer.name.charAt(0).toUpperCase()}</AvatarFallback>
-          </Avatar>
-          <span>{retailer.name}</span>
+          {retailer.name}
         </Link>
       );
     },
