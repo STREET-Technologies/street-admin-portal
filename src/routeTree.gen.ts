@@ -21,6 +21,7 @@ import { Route as AuthenticatedCouriersIndexRouteImport } from './app/routes/_au
 import { Route as AuthenticatedAdminUsersIndexRouteImport } from './app/routes/_authenticated/admin-users/index'
 import { Route as AuthenticatedUsersUserIdRouteImport } from './app/routes/_authenticated/users/$userId'
 import { Route as AuthenticatedRetailersRetailerIdRouteImport } from './app/routes/_authenticated/retailers/$retailerId'
+import { Route as AuthenticatedReferralsReferralIdRouteImport } from './app/routes/_authenticated/referrals/$referralId'
 import { Route as AuthenticatedOrdersOrderIdRouteImport } from './app/routes/_authenticated/orders/$orderId'
 
 const LoginRoute = LoginRouteImport.update({
@@ -90,6 +91,12 @@ const AuthenticatedRetailersRetailerIdRoute =
     path: '/retailers/$retailerId',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedReferralsReferralIdRoute =
+  AuthenticatedReferralsReferralIdRouteImport.update({
+    id: '/referrals/$referralId',
+    path: '/referrals/$referralId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedOrdersOrderIdRoute =
   AuthenticatedOrdersOrderIdRouteImport.update({
     id: '/orders/$orderId',
@@ -101,6 +108,7 @@ export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/login': typeof LoginRoute
   '/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
+  '/referrals/$referralId': typeof AuthenticatedReferralsReferralIdRoute
   '/retailers/$retailerId': typeof AuthenticatedRetailersRetailerIdRoute
   '/users/$userId': typeof AuthenticatedUsersUserIdRoute
   '/admin-users/': typeof AuthenticatedAdminUsersIndexRoute
@@ -115,6 +123,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/': typeof AuthenticatedIndexRoute
   '/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
+  '/referrals/$referralId': typeof AuthenticatedReferralsReferralIdRoute
   '/retailers/$retailerId': typeof AuthenticatedRetailersRetailerIdRoute
   '/users/$userId': typeof AuthenticatedUsersUserIdRoute
   '/admin-users': typeof AuthenticatedAdminUsersIndexRoute
@@ -131,6 +140,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
+  '/_authenticated/referrals/$referralId': typeof AuthenticatedReferralsReferralIdRoute
   '/_authenticated/retailers/$retailerId': typeof AuthenticatedRetailersRetailerIdRoute
   '/_authenticated/users/$userId': typeof AuthenticatedUsersUserIdRoute
   '/_authenticated/admin-users/': typeof AuthenticatedAdminUsersIndexRoute
@@ -147,6 +157,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/orders/$orderId'
+    | '/referrals/$referralId'
     | '/retailers/$retailerId'
     | '/users/$userId'
     | '/admin-users/'
@@ -161,6 +172,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/'
     | '/orders/$orderId'
+    | '/referrals/$referralId'
     | '/retailers/$retailerId'
     | '/users/$userId'
     | '/admin-users'
@@ -176,6 +188,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/_authenticated/'
     | '/_authenticated/orders/$orderId'
+    | '/_authenticated/referrals/$referralId'
     | '/_authenticated/retailers/$retailerId'
     | '/_authenticated/users/$userId'
     | '/_authenticated/admin-users/'
@@ -278,6 +291,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRetailersRetailerIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/referrals/$referralId': {
+      id: '/_authenticated/referrals/$referralId'
+      path: '/referrals/$referralId'
+      fullPath: '/referrals/$referralId'
+      preLoaderRoute: typeof AuthenticatedReferralsReferralIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/orders/$orderId': {
       id: '/_authenticated/orders/$orderId'
       path: '/orders/$orderId'
@@ -291,6 +311,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteChildren {
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedOrdersOrderIdRoute: typeof AuthenticatedOrdersOrderIdRoute
+  AuthenticatedReferralsReferralIdRoute: typeof AuthenticatedReferralsReferralIdRoute
   AuthenticatedRetailersRetailerIdRoute: typeof AuthenticatedRetailersRetailerIdRoute
   AuthenticatedUsersUserIdRoute: typeof AuthenticatedUsersUserIdRoute
   AuthenticatedAdminUsersIndexRoute: typeof AuthenticatedAdminUsersIndexRoute
@@ -305,6 +326,7 @@ interface AuthenticatedRouteChildren {
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedOrdersOrderIdRoute: AuthenticatedOrdersOrderIdRoute,
+  AuthenticatedReferralsReferralIdRoute: AuthenticatedReferralsReferralIdRoute,
   AuthenticatedRetailersRetailerIdRoute: AuthenticatedRetailersRetailerIdRoute,
   AuthenticatedUsersUserIdRoute: AuthenticatedUsersUserIdRoute,
   AuthenticatedAdminUsersIndexRoute: AuthenticatedAdminUsersIndexRoute,

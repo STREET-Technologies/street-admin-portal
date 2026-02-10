@@ -18,6 +18,7 @@ import { UserAddressesTab } from "./UserAddressesTab";
 import { UserDevicesTab } from "./UserDevicesTab";
 import { UserNotesTab } from "./UserNotesTab";
 import { UserActivityTab } from "./UserActivityTab";
+import { UserReferralTab } from "./UserReferralTab";
 
 interface UserDetailPageProps {
   userId: string;
@@ -79,6 +80,7 @@ export function UserDetailPage({ userId }: UserDetailPageProps) {
           <TabsTrigger value="orders">Orders</TabsTrigger>
           <TabsTrigger value="addresses">Addresses</TabsTrigger>
           <TabsTrigger value="devices">Devices</TabsTrigger>
+          <TabsTrigger value="referral">Referral</TabsTrigger>
           <TabsTrigger value="notes">Notes</TabsTrigger>
           <TabsTrigger value="activity">Activity</TabsTrigger>
         </TabsList>
@@ -97,6 +99,10 @@ export function UserDetailPage({ userId }: UserDetailPageProps) {
 
         <TabsContent value="devices" className="mt-6">
           <UserDevicesTab userId={userId} />
+        </TabsContent>
+
+        <TabsContent value="referral" className="mt-6">
+          <UserReferralTab userId={userId} userName={user.name} />
         </TabsContent>
 
         <TabsContent value="notes" className="mt-6">
