@@ -78,7 +78,7 @@ export function RetailerOrdersTab({ retailerId }: RetailerOrdersTabProps) {
                 if (target.closest("button") || target.closest("a")) return;
                 void navigate({
                   to: "/orders/$orderId",
-                  params: { orderId: order.id },
+                  params: { orderId: order.orderNumber ?? order.id },
                 });
               }}
             >
@@ -86,7 +86,7 @@ export function RetailerOrdersTab({ retailerId }: RetailerOrdersTabProps) {
                 <div className="group/id flex items-center gap-1">
                   <Link
                     to="/orders/$orderId"
-                    params={{ orderId: order.id }}
+                    params={{ orderId: order.orderNumber ?? order.id }}
                     className="font-mono text-xs font-medium text-primary hover:underline"
                     onClick={(e) => e.stopPropagation()}
                   >

@@ -46,7 +46,7 @@ const columns: ColumnDef<BackendUserOrder, unknown>[] = [
       <div className="group/id flex items-center gap-1">
         <Link
           to="/orders/$orderId"
-          params={{ orderId: row.original.id }}
+          params={{ orderId: row.original.orderNumber ?? row.original.id }}
           className="font-mono text-xs font-medium text-primary hover:underline"
         >
           {row.original.orderNumber ?? row.original.id.slice(0, 8)}
