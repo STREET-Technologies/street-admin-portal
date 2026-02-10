@@ -10,8 +10,19 @@ import type { BackendVendor, RetailerListParams } from "../types";
  * query hooks (via TanStack Query `select`), not here.
  */
 
-/** Fetch a paginated list of vendors (retailers). */
-export function getRetailers(
+/**
+ * Backend envelope for GET /admin/vendors (after ResponseInterceptor).
+ * Shape: { statusCode, message, data: { data: [...], meta: {...} } }
+ */
+interface VendorsRawResponse {
+  data: {
+    data: BackendVendor[];
+    meta: { total: number; page: number; limit: number; totalPages: number };
+  };
+}
+
+/** Fetch a paginated list of vendors (retailers). Normalizes to PaginatedResponse. */
+export async function getRetailers(
   params: RetailerListParams = {},
 ): Promise<PaginatedResponse<BackendVendor>> {
   const searchParams = new URLSearchParams();
@@ -24,7 +35,11 @@ export function getRetailers(
   const query = searchParams.toString();
   const endpoint = query ? `admin/vendors?${query}` : "admin/vendors";
 
-  return api.getRaw<PaginatedResponse<BackendVendor>>(endpoint);
+  const raw = await api.getRaw<VendorsRawResponse>(endpoint);
+  return {
+    data: raw.data.data,
+    meta: raw.data.meta,
+  };
 }
 
 /** Fetch a single vendor (retailer) by ID. */
@@ -32,7 +47,7 @@ export function getRetailer(retailerId: string): Promise<BackendVendor> {
   return api.get<BackendVendor>(`admin/vendors/${retailerId}`);
 }
 
-/** Order shape returned by /admin/vendors/:id/orders. */
+/** Order shape returned by /admin/vendors/:id/orders (after transform). */
 export interface BackendVendorOrder {
   id: string;
   orderNumber: string | null;
@@ -44,11 +59,39 @@ export interface BackendVendorOrder {
   updatedAt: string;
 }
 
-/** Fetch orders belonging to a specific vendor (retailer). */
-export function getRetailerOrders(
+/** Raw order shape from backend (nested user relation, string amounts). */
+interface RawVendorOrder {
+  id: string;
+  orderId: string;
+  status: string;
+  totalAmount: string | number | null;
+  customerName?: string | null;
+  customerEmail?: string | null;
+  user?: { id: string; firstName?: string; lastName?: string; email?: string };
+  createdAt: string;
+  updatedAt: string;
+  [key: string]: unknown;
+}
+
+/** Fetch orders belonging to a specific vendor (retailer). Flattens user relation. */
+export async function getRetailerOrders(
   retailerId: string,
 ): Promise<BackendVendorOrder[]> {
-  return api.get<BackendVendorOrder[]>(`admin/vendors/${retailerId}/orders`);
+  const data = await api.get<{ orders: RawVendorOrder[] }>(
+    `admin/vendors/${retailerId}/orders`,
+  );
+  return data.orders.map((raw) => ({
+    id: raw.id,
+    orderNumber: raw.orderId ?? null,
+    status: raw.status,
+    totalAmount: raw.totalAmount != null ? Number(raw.totalAmount) : null,
+    customerName:
+      raw.customerName ??
+      ([raw.user?.firstName, raw.user?.lastName].filter(Boolean).join(" ") || null),
+    customerEmail: raw.customerEmail ?? raw.user?.email ?? null,
+    createdAt: raw.createdAt,
+    updatedAt: raw.updatedAt,
+  }));
 }
 
 // ---------------------------------------------------------------------------

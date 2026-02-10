@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Search, ShoppingCart } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -92,11 +92,21 @@ function createColumns(
       accessorKey: "retailerName",
       header: "Retailer",
       enableSorting: false,
-      cell: ({ row }) => (
-        <span className="text-sm text-muted-foreground">
-          {row.original.retailerName ?? "--"}
-        </span>
-      ),
+      cell: ({ row }) =>
+        row.original.retailerId ? (
+          <Link
+            to="/retailers/$retailerId"
+            params={{ retailerId: row.original.retailerId }}
+            className="text-sm font-medium hover:underline"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {row.original.retailerName ?? "--"}
+          </Link>
+        ) : (
+          <span className="text-sm text-muted-foreground">
+            {row.original.retailerName ?? "--"}
+          </span>
+        ),
     },
     {
       accessorKey: "status",
@@ -181,7 +191,18 @@ export function OrderListPage() {
     limit: searchParams.limit,
   });
 
-  const orders = orderData?.data ?? [];
+  // Enrich orders with the selected vendor's name (backend doesn't include
+  // the vendor relation when querying by vendor ID).
+  const activeVendor = vendors.find((v) => v.id === activeVendorId);
+  const orders = useMemo(() => {
+    const raw = orderData?.data ?? [];
+    if (!activeVendor) return raw;
+    return raw.map((o) => ({
+      ...o,
+      retailerName: o.retailerName ?? activeVendor.name,
+      retailerId: o.retailerId ?? activeVendor.id,
+    }));
+  }, [orderData, activeVendor]);
   const totalPages = orderData?.meta
     ? Math.ceil(orderData.meta.total / orderData.meta.limit)
     : 0;

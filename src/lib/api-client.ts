@@ -62,6 +62,9 @@ const kyInstance = ky.create({
           // Let error states handle it instead of bouncing to login.
           if (token === "dev-bypass-token") return;
 
+          // Don't redirect if already on login page (e.g., failed login attempt)
+          if (window.location.pathname === "/login") return;
+
           localStorage.removeItem("access_token");
           localStorage.removeItem("refresh_token");
           window.location.href = "/login";

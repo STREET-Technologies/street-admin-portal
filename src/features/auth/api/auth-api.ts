@@ -1,9 +1,6 @@
 import { api } from "@/lib/api-client";
 import type { AuthUser } from "../types";
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:8080/v1";
-
 /**
  * Backend shape returned by GET /auth/me.
  * We transform this to AuthUser at the call site.
@@ -15,7 +12,23 @@ interface MeResponse {
   name?: string;
 }
 
+interface LoginResponse {
+  accessToken: string;
+  refreshToken: string;
+}
+
 export const authApi = {
+  /**
+   * Admin email/password login.
+   * POST /auth/admin/login -> { data: { accessToken, refreshToken } }
+   */
+  login: async (
+    email: string,
+    password: string,
+  ): Promise<LoginResponse> => {
+    return api.post<LoginResponse>("auth/admin/login", { email, password });
+  },
+
   /**
    * Validate the current token and get user info.
    * GET /auth/me -> { data: { email, ... } }
@@ -42,12 +55,5 @@ export const authApi = {
       // Logout should succeed even if the API call fails
       // (e.g., token already expired on the server)
     }
-  },
-
-  /**
-   * Get the URL to redirect the user to for Google OAuth login.
-   */
-  getGoogleLoginUrl: (): string => {
-    return `${API_BASE_URL}/auth/admin/google`;
   },
 };

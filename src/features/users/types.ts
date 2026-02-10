@@ -25,8 +25,8 @@ export interface BackendUser {
 export interface BackendUserAddress {
   id: string;
   label: string | null;
-  addressLine1: string;
-  addressLine2: string | null;
+  line1: string;
+  line2: string | null;
   city: string;
   postcode: string;
   country: string;

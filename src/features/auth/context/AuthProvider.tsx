@@ -6,13 +6,16 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { toast } from "sonner";
 import { authApi } from "../api/auth-api";
 import type { AuthState, AuthUser } from "../types";
 
 export interface AuthContextValue extends AuthState {
-  /** Store token and validate via /auth/me. Pass user to skip validation (dev bypass). */
-  login: (token: string, user?: AuthUser) => void;
+  /** Store tokens and validate via /auth/me. Pass user to skip validation (dev bypass). */
+  login: (
+    accessToken: string,
+    refreshToken?: string,
+    devUser?: AuthUser,
+  ) => void;
   /** Call API logout THEN clear local state (fixes existing logout bug) */
   logout: () => Promise<void>;
 }
@@ -43,57 +46,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   /**
-   * Handle OAuth callback: parse tokens from URL hash.
-   * Returns true if tokens were found and processing started.
-   */
-  const handleOAuthCallback = useCallback(async (): Promise<boolean> => {
-    const hash = window.location.hash.substring(1);
-    if (!hash) return false;
-
-    const params = new URLSearchParams(hash);
-    const accessToken = params.get("access_token");
-    const refreshToken = params.get("refresh_token");
-    const error = params.get("error");
-
-    // Clear hash from URL regardless
-    window.history.replaceState({}, "", window.location.pathname);
-
-    if (error) {
-      toast.error(decodeURIComponent(error));
-      return true; // We handled it (even though it was an error)
-    }
-
-    if (accessToken) {
-      localStorage.setItem("access_token", accessToken);
-      if (refreshToken) {
-        localStorage.setItem("refresh_token", refreshToken);
-      }
-      const valid = await validateToken();
-      if (valid) {
-        toast.success("Successfully logged in!");
-      }
-      return true;
-    }
-
-    return false;
-  }, [validateToken]);
-
-  /**
-   * On mount:
-   * 1. Check URL hash for OAuth callback tokens
-   * 2. If no callback, check localStorage for existing token
-   * 3. If token found, validate via /auth/me
+   * On mount: check localStorage for existing token and validate.
    */
   useEffect(() => {
     async function init() {
-      // First, check for OAuth callback
-      const wasCallback = await handleOAuthCallback();
-      if (wasCallback) {
-        setIsLoading(false);
-        return;
-      }
-
-      // Otherwise, check for existing token
       const token = localStorage.getItem("access_token");
       if (token) {
         await validateToken();
@@ -102,14 +58,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     void init();
-  }, [handleOAuthCallback, validateToken]);
+  }, [validateToken]);
 
   /**
-   * Login: store token, validate, set user.
+   * Login: store tokens, validate, set user.
    */
   const login = useCallback(
-    (token: string, devUser?: AuthUser) => {
-      localStorage.setItem("access_token", token);
+    (accessToken: string, refreshToken?: string, devUser?: AuthUser) => {
+      localStorage.setItem("access_token", accessToken);
+      if (refreshToken) {
+        localStorage.setItem("refresh_token", refreshToken);
+      }
       if (devUser) {
         setUser(devUser);
       } else {

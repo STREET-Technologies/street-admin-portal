@@ -18,8 +18,8 @@ interface UserAddressesTabProps {
 
 function formatAddress(address: BackendUserAddress): string {
   const parts = [
-    address.addressLine1,
-    address.addressLine2,
+    address.line1,
+    address.line2,
     address.city,
     address.postcode,
     address.country,
@@ -89,7 +89,7 @@ export function UserAddressesTab({ userId }: UserAddressesTabProps) {
                   Coordinates
                 </p>
                 <p className="font-mono text-xs text-muted-foreground">
-                  {address.latitude.toFixed(6)}, {address.longitude.toFixed(6)}
+                  {Number(address.latitude).toFixed(6)}, {Number(address.longitude).toFixed(6)}
                 </p>
               </div>
             )}

@@ -21,7 +21,15 @@ export interface GetUsersParams {
 // API functions
 // ---------------------------------------------------------------------------
 
-/** Fetch a paginated list of users. Uses getRaw to preserve meta. */
+/**
+ * Backend envelope for GET /admin/users (after ResponseInterceptor).
+ * Shape: { statusCode, message, data: { users, total, page, limit } }
+ */
+interface UsersRawResponse {
+  data: { users: BackendUser[]; total: number; page: number; limit: number };
+}
+
+/** Fetch a paginated list of users. Normalizes to PaginatedResponse. */
 export async function getUsers(
   params: GetUsersParams = {},
 ): Promise<PaginatedResponse<BackendUser>> {
@@ -34,7 +42,17 @@ export async function getUsers(
   const query = searchParams.toString();
   const endpoint = query ? `admin/users?${query}` : "admin/users";
 
-  return api.getRaw<PaginatedResponse<BackendUser>>(endpoint);
+  const raw = await api.getRaw<UsersRawResponse>(endpoint);
+  const { users, total, page, limit } = raw.data;
+  return {
+    data: users,
+    meta: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
 }
 
 /** Fetch a single user by ID. */
@@ -49,11 +67,37 @@ export async function getUserAddresses(
   return api.get<BackendUserAddress[]>(`admin/users/${userId}/addresses`);
 }
 
-/** Fetch orders for a user. */
+/** Raw order shape from backend (nested vendor relation, string amounts). */
+interface RawUserOrder {
+  id: string;
+  orderId: string;
+  status: string;
+  totalAmount: string | number | null;
+  vendorId?: string;
+  vendor?: { id: string; storeName?: string };
+  createdAt: string;
+  updatedAt: string;
+  [key: string]: unknown;
+}
+
+/** Fetch orders for a user. Backend returns { orders, meta }. Flattens vendor relation. */
 export async function getUserOrders(
   userId: string,
 ): Promise<BackendUserOrder[]> {
-  return api.get<BackendUserOrder[]>(`admin/users/${userId}/orders`);
+  const data = await api.get<{ orders: RawUserOrder[] }>(
+    `admin/users/${userId}/orders`,
+  );
+  return data.orders.map((raw) => ({
+    id: raw.id,
+    orderNumber: raw.orderId ?? null,
+    status: raw.status,
+    totalAmount: raw.totalAmount != null ? Number(raw.totalAmount) : null,
+    currency: null,
+    retailerId: raw.vendor?.id ?? raw.vendorId ?? null,
+    retailerName: raw.vendor?.storeName ?? null,
+    createdAt: raw.createdAt,
+    updatedAt: raw.updatedAt,
+  }));
 }
 
 /** Fetch devices for a user. */

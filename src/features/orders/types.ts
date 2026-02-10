@@ -12,11 +12,11 @@ export interface BackendOrder {
   customerName: string | null;
   customerEmail?: string | null;
   status: string;
-  totalAmount: number | null;
-  subtotal?: number | null;
+  totalAmount: string | number | null;
+  subtotal?: string | number | null;
   createdAt: string;
   updatedAt?: string;
-  items: BackendOrderItem[];
+  orderItems: BackendOrderItem[];
   // Fields from findOrderByOrderIdWithRelations
   user?: {
     id: string;
@@ -45,8 +45,8 @@ export interface BackendOrderItem {
   productId: string;
   variantId: string;
   quantity: number;
-  price: number;
-  totalPrice: number;
+  price: string | number;
+  totalPrice: string | number;
   metadata?: Record<string, unknown> | null;
 }
 
@@ -155,13 +155,15 @@ export interface OrderItemViewModel {
 // Transform: BackendOrder -> OrderViewModel
 // ---------------------------------------------------------------------------
 
-/** Format an amount in pence as GBP currency string. */
-function formatGBP(amountPence: number | null | undefined): string {
-  if (amountPence == null) return "--";
+/** Format a GBP amount (in pounds) as a currency string. */
+function formatGBP(amount: string | number | null | undefined): string {
+  if (amount == null) return "--";
+  const num = typeof amount === "string" ? parseFloat(amount) : amount;
+  if (Number.isNaN(num)) return "--";
   return new Intl.NumberFormat("en-GB", {
     style: "currency",
     currency: "GBP",
-  }).format(amountPence / 100);
+  }).format(num);
 }
 
 /** Transform a BackendOrder into an OrderViewModel for UI consumption. */
@@ -182,8 +184,8 @@ export function toOrderViewModel(backend: BackendOrder): OrderViewModel {
     customerEmail: email,
     status: backend.status?.toLowerCase() ?? "unknown",
     totalAmount: formatGBP(backend.totalAmount),
-    totalAmountRaw: backend.totalAmount,
-    itemCount: backend.items?.length ?? 0,
+    totalAmountRaw: typeof backend.totalAmount === "string" ? parseFloat(backend.totalAmount) : backend.totalAmount,
+    itemCount: backend.orderItems?.length ?? 0,
     createdAt: backend.createdAt,
     retailerName: backend.vendor?.storeName,
     retailerId: backend.vendor?.id,
@@ -206,16 +208,24 @@ function str(obj: Record<string, unknown> | null | undefined, key: string): stri
 /** Transform a BackendOrderItem into an OrderItemViewModel. */
 function toItemViewModel(item: BackendOrderItem, index: number): OrderItemViewModel {
   const meta = item.metadata as Record<string, unknown> | null | undefined;
+
+  // Extract first image from images array: [{src, ...}, ...]
+  const images = meta?.images as Array<{ src?: string }> | undefined;
+  const imageUrl = images?.[0]?.src ?? null;
+
+  // Packing status lives in packingState.status
+  const packingState = meta?.packingState as Record<string, unknown> | undefined;
+
   return {
     id: item.id ?? `item-${index}`,
-    productName: (meta?.productName as string) ?? (meta?.title as string) ?? `Product ${item.productId.slice(0, 8)}`,
-    variant: (meta?.variantTitle as string) ?? (meta?.variant as string) ?? "--",
+    productName: (meta?.productName as string) ?? `Product ${item.productId.slice(0, 8)}`,
+    variant: (meta?.title as string) ?? "--",
     sku: (meta?.sku as string) ?? "--",
     quantity: item.quantity,
     unitPrice: formatGBP(item.price),
     totalPrice: formatGBP(item.totalPrice),
-    imageUrl: (meta?.imageUrl as string) ?? (meta?.image as string) ?? null,
-    packingStatus: (meta?.packingStatus as string) ?? null,
+    imageUrl,
+    packingStatus: (packingState?.status as string) ?? null,
   };
 }
 
@@ -241,7 +251,7 @@ export function toOrderDetailViewModel(backend: BackendOrder): OrderDetailViewMo
     : null;
 
   // Items
-  const items = (backend.items ?? []).map(toItemViewModel);
+  const items = (backend.orderItems ?? []).map(toItemViewModel);
 
   // Payment (prefer payments array, fall back to top-level fields)
   const primaryPayment = backend.payments?.[0];
@@ -268,7 +278,7 @@ export function toOrderDetailViewModel(backend: BackendOrder): OrderDetailViewMo
   const courier = dd?.courier as Record<string, unknown> | null | undefined;
   const delivery = dd
     ? {
-        status: (str(dd, "status") ?? "unknown").toLowerCase(),
+        status: (str(dd, "deliveryStatus") ?? str(dd, "status") ?? "unknown").toLowerCase(),
         courierName: courier ? str(courier, "name") : null,
         courierPhone: courier ? str(courier, "phone") : null,
         courierPhoto: courier ? (str(courier, "pictureUrl") ?? str(courier, "photoUrl")) : null,

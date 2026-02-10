@@ -19,11 +19,11 @@ interface RetailerOrdersTabProps {
   retailerId: string;
 }
 
-function formatCurrency(amountPence: number): string {
+function formatCurrency(amount: number): string {
   return new Intl.NumberFormat("en-GB", {
     style: "currency",
     currency: "GBP",
-  }).format(amountPence / 100);
+  }).format(amount);
 }
 
 export function RetailerOrdersTab({ retailerId }: RetailerOrdersTabProps) {
