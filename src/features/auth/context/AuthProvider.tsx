@@ -35,7 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return true;
     } catch {
       localStorage.removeItem("access_token");
-      localStorage.removeItem("refresh_token");
+      localStorage.removeItem("refresh_token"); // Legacy cleanup
       setUser(null);
       return false;
     }
@@ -60,11 +60,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    * Login: store tokens, validate, set user.
    */
   const login = useCallback(
-    (accessToken: string, refreshToken?: string) => {
+    (accessToken: string, _refreshToken?: string) => {
       localStorage.setItem("access_token", accessToken);
-      if (refreshToken) {
-        localStorage.setItem("refresh_token", refreshToken);
-      }
+      // Refresh token intentionally not stored — not used by admin portal.
+      // Reduces attack surface if XSS occurs.
       void validateToken();
     },
     [validateToken],
@@ -81,7 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Step 2: NOW clear localStorage
     localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("refresh_token"); // Legacy cleanup
 
     // Step 3: Clear state
     setUser(null);
