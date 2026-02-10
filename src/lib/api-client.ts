@@ -38,30 +38,60 @@ function unwrapEnvelope<T>(body: unknown): T {
  * Pre-configured ky instance with auth header injection,
  * 401 redirect, and sensible defaults.
  */
+/** Flag to prevent concurrent refresh attempts */
+let isRefreshing = false;
+
+/**
+ * Attempt a silent token refresh via the httpOnly refresh_token cookie.
+ * Returns true if refresh succeeded, false otherwise.
+ */
+async function silentRefresh(): Promise<boolean> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/auth/refresh`, {
+      method: "POST",
+      credentials: "include",
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Pre-configured ky instance with cookie-based auth,
+ * silent token refresh on 401, and sensible defaults.
+ */
 const kyInstance = ky.create({
   prefixUrl: API_BASE_URL,
   timeout: 30_000,
+  credentials: "include",
   retry: {
     limit: 2,
     methods: ["get"],
   },
   hooks: {
-    beforeRequest: [
-      (request) => {
-        const token = localStorage.getItem("access_token");
-        if (token) {
-          request.headers.set("Authorization", `Bearer ${token}`);
-        }
-      },
-    ],
     afterResponse: [
-      (_request, _options, response) => {
+      async (request, options, response) => {
         if (response.status === 401) {
-          // Don't redirect if already on login page (e.g., failed login attempt)
+          // Don't attempt refresh on login page
           if (window.location.pathname === "/login") return;
 
-          localStorage.removeItem("access_token");
-          localStorage.removeItem("refresh_token");
+          // Prevent infinite refresh loops
+          if (isRefreshing) {
+            window.location.href = "/login";
+            return;
+          }
+
+          isRefreshing = true;
+          const refreshed = await silentRefresh();
+          isRefreshing = false;
+
+          if (refreshed) {
+            // Retry the original request with fresh cookies
+            return kyInstance(request, options);
+          }
+
+          // Refresh failed — redirect to login
           window.location.href = "/login";
         }
       },

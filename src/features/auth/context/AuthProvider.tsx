@@ -10,9 +10,9 @@ import { authApi } from "../api/auth-api";
 import type { AuthState, AuthUser } from "../types";
 
 export interface AuthContextValue extends AuthState {
-  /** Store tokens and validate via /auth/me. */
-  login: (accessToken: string, refreshToken?: string) => void;
-  /** Call API logout THEN clear local state (fixes existing logout bug) */
+  /** Call API login, server sets httpOnly cookies, then validate via /auth/me. */
+  login: () => void;
+  /** Call API logout (clears server-side cookies), then clear local state. */
   logout: () => Promise<void>;
 }
 
@@ -25,8 +25,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isAuthenticated = user !== null;
 
   /**
-   * Validate a token by calling /auth/me.
-   * On success sets user state; on failure clears tokens.
+   * Validate the session by calling /auth/me (cookie-based).
+   * On success sets user state; on failure clears state.
    */
   const validateToken = useCallback(async (): Promise<boolean> => {
     try {
@@ -34,22 +34,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(currentUser);
       return true;
     } catch {
-      localStorage.removeItem("access_token");
-      localStorage.removeItem("refresh_token"); // Legacy cleanup
       setUser(null);
       return false;
     }
   }, []);
 
   /**
-   * On mount: check localStorage for existing token and validate.
+   * On mount: always attempt to validate via cookie.
+   * If the httpOnly cookie is valid, user is authenticated.
    */
   useEffect(() => {
     async function init() {
-      const token = localStorage.getItem("access_token");
-      if (token) {
-        await validateToken();
-      }
+      await validateToken();
       setIsLoading(false);
     }
 
@@ -57,32 +53,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [validateToken]);
 
   /**
-   * Login: store tokens, validate, set user.
+   * Login: server already set httpOnly cookies on the login response.
+   * Just validate the session to populate user state.
    */
-  const login = useCallback(
-    (accessToken: string, _refreshToken?: string) => {
-      localStorage.setItem("access_token", accessToken);
-      // Refresh token intentionally not stored — not used by admin portal.
-      // Reduces attack surface if XSS occurs.
-      void validateToken();
-    },
-    [validateToken],
-  );
+  const login = useCallback(() => {
+    void validateToken();
+  }, [validateToken]);
 
   /**
-   * Logout: call API FIRST (while token still in localStorage),
-   * THEN clear tokens and state.
-   * This fixes the existing bug where token was cleared before API call.
+   * Logout: call API (which clears server-side cookies), then clear state.
    */
   const logout = useCallback(async () => {
-    // Step 1: Call API with token still in localStorage
     await authApi.logout();
-
-    // Step 2: NOW clear localStorage
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token"); // Legacy cleanup
-
-    // Step 3: Clear state
     setUser(null);
   }, []);
 

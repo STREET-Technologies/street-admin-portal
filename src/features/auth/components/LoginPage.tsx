@@ -33,11 +33,8 @@ export function LoginPage() {
     setIsSubmitting(true);
 
     try {
-      const { accessToken, refreshToken } = await authApi.login(
-        email,
-        password,
-      );
-      login(accessToken, refreshToken);
+      await authApi.login(email, password);
+      login();
       toast.success("Successfully logged in!");
     } catch (error) {
       if (error instanceof ApiError) {

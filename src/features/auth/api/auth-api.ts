@@ -12,25 +12,18 @@ interface MeResponse {
   name?: string;
 }
 
-interface LoginResponse {
-  accessToken: string;
-  refreshToken: string;
-}
-
 export const authApi = {
   /**
    * Admin email/password login.
-   * POST /auth/admin/login -> { data: { accessToken, refreshToken } }
+   * POST /auth/admin/login -> server sets httpOnly cookies.
+   * Response JSON still contains tokens but we don't use them client-side.
    */
-  login: async (
-    email: string,
-    password: string,
-  ): Promise<LoginResponse> => {
-    return api.post<LoginResponse>("auth/admin/login", { email, password });
+  login: async (email: string, password: string): Promise<void> => {
+    await api.post<unknown>("auth/admin/login", { email, password });
   },
 
   /**
-   * Validate the current token and get user info.
+   * Validate the current session (cookie-based) and get user info.
    * GET /auth/me -> { data: { email, ... } }
    */
   getCurrentUser: async (): Promise<AuthUser> => {
@@ -58,8 +51,7 @@ export const authApi = {
 
   /**
    * Logout the current session.
-   * CRITICAL: This must be called BEFORE clearing localStorage tokens.
-   * The api client's beforeRequest hook attaches the Bearer token from localStorage.
+   * Server clears httpOnly cookies and invalidates refresh token in Redis.
    * POST /auth/logout
    */
   logout: async (): Promise<void> => {
