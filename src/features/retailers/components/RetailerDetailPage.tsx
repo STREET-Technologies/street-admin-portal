@@ -9,6 +9,7 @@ import { ErrorState } from "@/components/shared/ErrorState";
 import { useRetailerQuery } from "../api/retailer-queries";
 import { RetailerOverviewTab } from "./RetailerOverviewTab";
 import { RetailerOrdersTab } from "./RetailerOrdersTab";
+import { RetailerStaffTab } from "./RetailerStaffTab";
 import { RetailerNotesTab } from "./RetailerNotesTab";
 import { RetailerActivityTab } from "./RetailerActivityTab";
 
@@ -64,6 +65,7 @@ export function RetailerDetailPage({ retailerId }: RetailerDetailPageProps) {
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="orders">Orders</TabsTrigger>
+          <TabsTrigger value="staff">Staff</TabsTrigger>
           <TabsTrigger value="notes">Notes</TabsTrigger>
           <TabsTrigger value="activity">Activity</TabsTrigger>
         </TabsList>
@@ -74,6 +76,10 @@ export function RetailerDetailPage({ retailerId }: RetailerDetailPageProps) {
 
         <TabsContent value="orders" className="mt-6">
           <RetailerOrdersTab retailerId={retailerId} />
+        </TabsContent>
+
+        <TabsContent value="staff" className="mt-6">
+          <RetailerStaffTab retailerId={retailerId} />
         </TabsContent>
 
         <TabsContent value="notes" className="mt-6">

@@ -8,6 +8,7 @@ import {
   getRetailers,
   getRetailer,
   getRetailerOrders,
+  getRetailerStaff,
   updateRetailer,
   type UpdateRetailerPayload,
 } from "./retailer-api";
@@ -34,6 +35,8 @@ export const retailerKeys = {
   detail: (id: string) => [...retailerKeys.details(), id] as const,
   orders: (id: string) =>
     [...retailerKeys.detail(id), "orders"] as const,
+  staff: (id: string) =>
+    [...retailerKeys.detail(id), "staff"] as const,
 };
 
 /**
@@ -72,6 +75,17 @@ export function useRetailerOrdersQuery(retailerId: string) {
   return useQuery({
     queryKey: retailerKeys.orders(retailerId),
     queryFn: () => getRetailerOrders(retailerId),
+    enabled: Boolean(retailerId),
+  });
+}
+
+/**
+ * Staff accounts linked to a specific retailer.
+ */
+export function useRetailerStaffQuery(retailerId: string) {
+  return useQuery({
+    queryKey: retailerKeys.staff(retailerId),
+    queryFn: () => getRetailerStaff(retailerId),
     enabled: Boolean(retailerId),
   });
 }

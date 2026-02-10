@@ -18,6 +18,7 @@ import { Route as AuthenticatedRetailersIndexRouteImport } from './app/routes/_a
 import { Route as AuthenticatedReferralsIndexRouteImport } from './app/routes/_authenticated/referrals/index'
 import { Route as AuthenticatedOrdersIndexRouteImport } from './app/routes/_authenticated/orders/index'
 import { Route as AuthenticatedCouriersIndexRouteImport } from './app/routes/_authenticated/couriers/index'
+import { Route as AuthenticatedAdminUsersIndexRouteImport } from './app/routes/_authenticated/admin-users/index'
 import { Route as AuthenticatedUsersUserIdRouteImport } from './app/routes/_authenticated/users/$userId'
 import { Route as AuthenticatedRetailersRetailerIdRouteImport } from './app/routes/_authenticated/retailers/$retailerId'
 import { Route as AuthenticatedOrdersOrderIdRouteImport } from './app/routes/_authenticated/orders/$orderId'
@@ -71,6 +72,12 @@ const AuthenticatedCouriersIndexRoute =
     path: '/couriers/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedAdminUsersIndexRoute =
+  AuthenticatedAdminUsersIndexRouteImport.update({
+    id: '/admin-users/',
+    path: '/admin-users/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedUsersUserIdRoute =
   AuthenticatedUsersUserIdRouteImport.update({
     id: '/users/$userId',
@@ -96,6 +103,7 @@ export interface FileRoutesByFullPath {
   '/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
   '/retailers/$retailerId': typeof AuthenticatedRetailersRetailerIdRoute
   '/users/$userId': typeof AuthenticatedUsersUserIdRoute
+  '/admin-users/': typeof AuthenticatedAdminUsersIndexRoute
   '/couriers/': typeof AuthenticatedCouriersIndexRoute
   '/orders/': typeof AuthenticatedOrdersIndexRoute
   '/referrals/': typeof AuthenticatedReferralsIndexRoute
@@ -109,6 +117,7 @@ export interface FileRoutesByTo {
   '/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
   '/retailers/$retailerId': typeof AuthenticatedRetailersRetailerIdRoute
   '/users/$userId': typeof AuthenticatedUsersUserIdRoute
+  '/admin-users': typeof AuthenticatedAdminUsersIndexRoute
   '/couriers': typeof AuthenticatedCouriersIndexRoute
   '/orders': typeof AuthenticatedOrdersIndexRoute
   '/referrals': typeof AuthenticatedReferralsIndexRoute
@@ -124,6 +133,7 @@ export interface FileRoutesById {
   '/_authenticated/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
   '/_authenticated/retailers/$retailerId': typeof AuthenticatedRetailersRetailerIdRoute
   '/_authenticated/users/$userId': typeof AuthenticatedUsersUserIdRoute
+  '/_authenticated/admin-users/': typeof AuthenticatedAdminUsersIndexRoute
   '/_authenticated/couriers/': typeof AuthenticatedCouriersIndexRoute
   '/_authenticated/orders/': typeof AuthenticatedOrdersIndexRoute
   '/_authenticated/referrals/': typeof AuthenticatedReferralsIndexRoute
@@ -139,6 +149,7 @@ export interface FileRouteTypes {
     | '/orders/$orderId'
     | '/retailers/$retailerId'
     | '/users/$userId'
+    | '/admin-users/'
     | '/couriers/'
     | '/orders/'
     | '/referrals/'
@@ -152,6 +163,7 @@ export interface FileRouteTypes {
     | '/orders/$orderId'
     | '/retailers/$retailerId'
     | '/users/$userId'
+    | '/admin-users'
     | '/couriers'
     | '/orders'
     | '/referrals'
@@ -166,6 +178,7 @@ export interface FileRouteTypes {
     | '/_authenticated/orders/$orderId'
     | '/_authenticated/retailers/$retailerId'
     | '/_authenticated/users/$userId'
+    | '/_authenticated/admin-users/'
     | '/_authenticated/couriers/'
     | '/_authenticated/orders/'
     | '/_authenticated/referrals/'
@@ -244,6 +257,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCouriersIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/admin-users/': {
+      id: '/_authenticated/admin-users/'
+      path: '/admin-users'
+      fullPath: '/admin-users/'
+      preLoaderRoute: typeof AuthenticatedAdminUsersIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/users/$userId': {
       id: '/_authenticated/users/$userId'
       path: '/users/$userId'
@@ -273,6 +293,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedOrdersOrderIdRoute: typeof AuthenticatedOrdersOrderIdRoute
   AuthenticatedRetailersRetailerIdRoute: typeof AuthenticatedRetailersRetailerIdRoute
   AuthenticatedUsersUserIdRoute: typeof AuthenticatedUsersUserIdRoute
+  AuthenticatedAdminUsersIndexRoute: typeof AuthenticatedAdminUsersIndexRoute
   AuthenticatedCouriersIndexRoute: typeof AuthenticatedCouriersIndexRoute
   AuthenticatedOrdersIndexRoute: typeof AuthenticatedOrdersIndexRoute
   AuthenticatedReferralsIndexRoute: typeof AuthenticatedReferralsIndexRoute
@@ -286,6 +307,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedOrdersOrderIdRoute: AuthenticatedOrdersOrderIdRoute,
   AuthenticatedRetailersRetailerIdRoute: AuthenticatedRetailersRetailerIdRoute,
   AuthenticatedUsersUserIdRoute: AuthenticatedUsersUserIdRoute,
+  AuthenticatedAdminUsersIndexRoute: AuthenticatedAdminUsersIndexRoute,
   AuthenticatedCouriersIndexRoute: AuthenticatedCouriersIndexRoute,
   AuthenticatedOrdersIndexRoute: AuthenticatedOrdersIndexRoute,
   AuthenticatedReferralsIndexRoute: AuthenticatedReferralsIndexRoute,

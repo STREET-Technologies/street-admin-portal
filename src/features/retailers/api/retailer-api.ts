@@ -95,6 +95,30 @@ export async function getRetailerOrders(
 }
 
 // ---------------------------------------------------------------------------
+// Staff accounts
+// ---------------------------------------------------------------------------
+
+/** Staff user shape returned by GET /admin/vendors/:id/users. */
+export interface BackendVendorStaff {
+  id: string;
+  firstName: string | null;
+  lastName: string | null;
+  email: string | null;
+  phone: string | null;
+  createdAt: string;
+}
+
+/** Fetch user accounts linked to a vendor (retailer staff). */
+export async function getRetailerStaff(
+  retailerId: string,
+): Promise<BackendVendorStaff[]> {
+  const data = await api.get<{ users: BackendVendorStaff[] }>(
+    `admin/vendors/${retailerId}/users`,
+  );
+  return data.users;
+}
+
+// ---------------------------------------------------------------------------
 // Mutations
 // ---------------------------------------------------------------------------
 
@@ -108,6 +132,11 @@ export interface UpdateRetailerPayload {
   isOnline?: boolean;
   vendorCategory?: string;
   address?: string;
+  postcode?: string;
+  country?: string;
+  latitude?: number;
+  longitude?: number;
+  commissionPercentage?: number;
 }
 
 /** Update a vendor (retailer) by ID (partial update). */

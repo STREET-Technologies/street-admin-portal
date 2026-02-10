@@ -58,10 +58,31 @@ export function RetailerOverviewTab({ retailer }: RetailerOverviewTabProps) {
             }}
           />
           <EditableField
-            label="Address"
+            label="Street Address"
             value={retailer.address || "No address"}
             onSave={async (val) => {
               await updateRetailer.mutateAsync({ address: val });
+            }}
+          />
+          <EditableField
+            label="Postcode"
+            value={retailer.postcode || "No postcode"}
+            onSave={async (val) => {
+              await updateRetailer.mutateAsync({ postcode: val });
+            }}
+          />
+          <EditableField
+            label="Latitude"
+            value={retailer.latitude !== null ? String(retailer.latitude) : ""}
+            onSave={async (val) => {
+              await updateRetailer.mutateAsync({ latitude: parseFloat(val) });
+            }}
+          />
+          <EditableField
+            label="Longitude"
+            value={retailer.longitude !== null ? String(retailer.longitude) : ""}
+            onSave={async (val) => {
+              await updateRetailer.mutateAsync({ longitude: parseFloat(val) });
             }}
           />
         </CardContent>
@@ -78,19 +99,13 @@ export function RetailerOverviewTab({ retailer }: RetailerOverviewTabProps) {
             <p className="text-xs font-medium text-muted-foreground">Category</p>
             <p className="text-sm">{retailer.category}</p>
           </div>
-          {retailer.commissionPercentage !== null && (
-            <div className="space-y-1">
-              <p className="text-xs font-medium text-muted-foreground">Commission</p>
-              <p className="text-sm">{retailer.commissionPercentage}%</p>
-            </div>
-          )}
-          {retailer.stripeAccountId && (
-            <CopyableField
-              label="Stripe Account"
-              value={retailer.stripeAccountId}
-              mono
-            />
-          )}
+          <EditableField
+            label="Commission (%)"
+            value={retailer.commissionPercentage !== null ? String(retailer.commissionPercentage) : ""}
+            onSave={async (val) => {
+              await updateRetailer.mutateAsync({ commissionPercentage: parseFloat(val) });
+            }}
+          />
           <EditableField
             label="Store URL"
             value={retailer.storeUrl || ""}

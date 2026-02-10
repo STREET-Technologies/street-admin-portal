@@ -43,6 +43,20 @@ export const authApi = {
   },
 
   /**
+   * Change the current user's password.
+   * POST /auth/change-password (JwtAuthGuard)
+   */
+  changePassword: async (
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<void> => {
+    await api.post<unknown>("auth/change-password", {
+      currentPassword,
+      newPassword,
+    });
+  },
+
+  /**
    * Logout the current session.
    * CRITICAL: This must be called BEFORE clearing localStorage tokens.
    * The api client's beforeRequest hook attaches the Bearer token from localStorage.

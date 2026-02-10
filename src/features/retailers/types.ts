@@ -14,6 +14,10 @@ export interface BackendVendor {
   email: string | null;
   phone: string | null;
   address: string | null;
+  country: string | null;
+  postcode: string | null;
+  latitude: number | null;
+  longitude: number | null;
   vendorCategory: string | null;
   commissionPercentage: number | null;
   isOnline: boolean;
@@ -40,6 +44,10 @@ export interface RetailerViewModel {
   commissionPercentage: number | null;
   storeUrl: string | null;
   address: string;
+  postcode: string;
+  country: string;
+  latitude: number | null;
+  longitude: number | null;
   description: string;
   stripeAccountId: string | null;
   isOnline: boolean;
@@ -73,6 +81,10 @@ export function toRetailerViewModel(vendor: BackendVendor): RetailerViewModel {
     commissionPercentage: vendor.commissionPercentage,
     storeUrl: vendor.storeUrl,
     address: vendor.address ?? "",
+    postcode: vendor.postcode ?? "",
+    country: vendor.country ?? "",
+    latitude: vendor.latitude,
+    longitude: vendor.longitude,
     description: vendor.description ?? "",
     stripeAccountId: vendor.stripeAccountId,
     isOnline: vendor.isOnline,
