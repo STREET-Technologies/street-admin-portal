@@ -7,6 +7,7 @@ import {
   type ReactNode,
 } from "react";
 import { authApi } from "../api/auth-api";
+import { markLoggingOut, clearLoggingOut } from "@/lib/api-client";
 import type { AuthState, AuthUser } from "../types";
 
 export interface AuthContextValue extends AuthState {
@@ -57,6 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    * Just validate the session to populate user state.
    */
   const login = useCallback(() => {
+    clearLoggingOut();
     void validateToken();
   }, [validateToken]);
 
@@ -64,6 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    * Logout: call API (which clears server-side cookies), then clear state.
    */
   const logout = useCallback(async () => {
+    markLoggingOut();
     await authApi.logout();
     setUser(null);
   }, []);

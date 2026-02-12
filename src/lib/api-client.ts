@@ -41,6 +41,17 @@ function unwrapEnvelope<T>(body: unknown): T {
 /** Flag to prevent concurrent refresh attempts */
 let isRefreshing = false;
 
+/** Flag set during logout to prevent the interceptor from re-authenticating */
+let isLoggingOut = false;
+
+export function markLoggingOut() {
+  isLoggingOut = true;
+}
+
+export function clearLoggingOut() {
+  isLoggingOut = false;
+}
+
 /**
  * Attempt a silent token refresh via the httpOnly refresh_token cookie.
  * Returns true if refresh succeeded, false otherwise.
@@ -73,8 +84,8 @@ const kyInstance = ky.create({
     afterResponse: [
       async (request, options, response) => {
         if (response.status === 401) {
-          // Don't attempt refresh on login page
-          if (window.location.pathname === "/login") return;
+          // Don't attempt refresh on login page or during logout
+          if (window.location.pathname === "/login" || isLoggingOut) return;
 
           // Prevent infinite refresh loops
           if (isRefreshing) {

@@ -1,4 +1,4 @@
-import { Link, useLocation } from "@tanstack/react-router";
+import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { LogOut } from "lucide-react";
 import {
   Sidebar,
@@ -18,11 +18,12 @@ import { navGroups } from "@/constants/navigation";
 
 export function AppSidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { user, logout } = useAuth();
 
   async function handleLogout() {
     await logout();
-    window.location.href = "/login";
+    void navigate({ to: "/login" });
   }
 
   return (
