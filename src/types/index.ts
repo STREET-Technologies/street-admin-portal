@@ -1,156 +1,69 @@
-// Clean type definitions for the STREET admin portal
+/**
+ * Shared base types used across multiple features.
+ *
+ * Feature-specific types (User, Retailer, etc.) belong in their
+ * respective feature folders, not here.
+ */
 
+// ---------------------------------------------------------------------------
+// Status types (string literal unions, not enums)
+// ---------------------------------------------------------------------------
+
+/** General entity status used for users, retailers, couriers. */
+export type EntityStatus =
+  | "active"
+  | "inactive"
+  | "blocked"
+  | "pending"
+  | "suspended";
+
+/** Lifecycle status of an order. */
+export type OrderStatus =
+  | "pending"
+  | "confirmed"
+  | "preparing"
+  | "ready"
+  | "in_delivery"
+  | "delivered"
+  | "cancelled";
+
+/** Payment status for an order or transaction. */
+export type PaymentStatus = "pending" | "paid" | "failed" | "refunded";
+
+/** Priority level for admin notes attached to entities. */
+export type NotePriority = "low" | "medium" | "high" | "urgent";
+
+/** Top-level entity categories in the admin portal. */
+export type EntityType = "user" | "retailer" | "courier" | "order";
+
+// ---------------------------------------------------------------------------
+// API response shapes
+// ---------------------------------------------------------------------------
+
+/** Standard paginated response wrapper returned by the backend. */
+export interface PaginatedResponse<T> {
+  data: T[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}
+
+/** Shape of error responses returned by the backend. */
+export interface ApiErrorResponse {
+  message: string;
+  statusCode: number;
+}
+
+// ---------------------------------------------------------------------------
+// Base entity
+// ---------------------------------------------------------------------------
+
+/** Fields shared by every persisted entity. */
 export interface BaseEntity {
   id: string;
-  name: string;
-  email: string;
-  phone: string;
-  avatar?: string;
-  status: string;
-  joinDate: string;
-  deviceId: string;
-  uid: string;
-}
-
-export interface User extends BaseEntity {
-  totalOrders: number;
-  totalSpent: number;
-  ssoProvider?: string;
-}
-
-export interface Retailer extends BaseEntity {
-  totalOrders: number;
-  totalRevenue: number;
-  address: string;
-  postcode?: string;
-  contact: string;
-  category: string;
-  pocManager?: string;
-  signedUpBy?: string;
-  posSystem?: string;
-  commissionRate?: string;
-  owner?: string;
-}
-
-export interface Courier extends BaseEntity {
-  totalDeliveries: number;
-  averageRating: number;
-}
-
-export interface OrderItem {
-  id: string;
-  productId: string;
-  variantId: string;
-  quantity: number;
-  price: string | number;
-  totalPrice: string | number;
-  metadata?: any;
   createdAt: string;
   updatedAt: string;
-}
-
-export interface Order {
-  id: string;
-  orderId: string;
-  totalAmount: string | number;
-  subtotal: string | number;
-  status: string;
-  shippingAddress?: any;
-  paymentStatus: string;
-  paymentMethod: string;
-  stuartJobId?: string | null;
-  deliveryDetails?: any;
-  createdAt: string;
-  updatedAt: string;
-  vendor?: {
-    id: string;
-    storeName: string;
-    logo?: string;
-  };
-  orderItems?: OrderItem[];
-}
-
-export interface Invoice {
-  id: string;
-  amount: number;
-  paidAmount: number;
-  dateTime: string;
-  status: InvoiceStatus;
-  description: string;
-}
-
-export interface Note {
-  id: string;
-  content: string;
-  author?: {
-    id: string;
-    firstName: string | null;
-    lastName: string | null;
-    email: string | null;
-    profileImage?: string | null;
-  };
-  createdAt: string;
-  priority: NotePriority;
-}
-
-export interface ReferralCode {
-  id: string;
-  code: string;
-  codeType: 'user_generated' | 'promotional';
-  belongsTo?: string; // For promotional codes (e.g., "Students", "VIP")
-  friendRewardValue: number;
-  referrerRewardValue: number;
-  minimumOrderAmount: number;
-  totalUses: number;
-  maxUses?: number;
-  successfulReferrals: number;
-  totalRewardsEarned: number;
-  isActive: boolean;
-  expiresAt?: string;
-  createdAt: string;
-  status: ReferralCodeStatus;
-}
-
-export interface UserAddress {
-  id: string;
-  userId: string;
-  label: string;
-  line1: string;
-  line2?: string;
-  city: string;
-  state: string;
-  postcode: string;
-  country: string;
-  countryCode: string;
-  latitude?: number;
-  longitude?: number;
-  isDefault: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Device {
-  id: string;
-  deviceId: string | null;
-  deviceName: string | null;
-  platform: 'ios' | 'android' | 'web';
-  lastUsedAt: string | null;
-  isActive: boolean;
-  metadata?: Record<string, any>;
-  createdAt: string;
-  updatedAt: string;
-}
-
-// Status types
-export type EntityStatus = "active" | "inactive" | "pending" | "blocked" | "withdrawn" | "onboarding" | "online";
-export type OrderStatus = "delivered" | "completed" | "pending" | "cancelled" | "in-progress";
-export type InvoiceStatus = "paid" | "partial" | "pending" | "overdue";
-export type NotePriority = "low" | "medium" | "high";
-export type ReferralCodeStatus = "active" | "expired" | "disabled" | "maxed";
-export type EntityType = "user" | "retail" | "courier" | "settings";
-
-// Search types
-export interface SearchResult {
-  data?: User | Retailer | Courier | ReferralCode[];
-  type: EntityType;
 }
