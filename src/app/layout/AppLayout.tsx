@@ -18,7 +18,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <header className="flex h-14 items-center gap-2 border-b px-6">
+        <header className="flex h-14 items-center gap-2 border-b pl-3 pr-6">
           <SidebarTrigger />
           <Separator orientation="vertical" className="h-4" />
           <Breadcrumbs />

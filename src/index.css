@@ -33,6 +33,9 @@
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
 
+  --color-brand: hsl(var(--brand));
+  --color-brand-foreground: hsl(var(--brand-foreground));
+
   --color-chart-1: hsl(var(--chart-1));
   --color-chart-2: hsl(var(--chart-2));
   --color-chart-3: hsl(var(--chart-3));
@@ -68,20 +71,20 @@
 :root {
   /* STREET Brand Colors */
   --background: 0 0% 100%;
-  --foreground: 0 0% 0%;
+  --foreground: 220 9% 11%;
 
   --card: 0 0% 100%;
-  --card-foreground: 0 0% 0%;
+  --card-foreground: 220 9% 11%;
 
   --popover: 0 0% 100%;
-  --popover-foreground: 0 0% 0%;
+  --popover-foreground: 220 9% 11%;
 
   /* Stripe-style dark primary (readable on white) */
   --primary: 0 0% 9%;
   --primary-foreground: 0 0% 100%;
 
   /* STREET Black Secondary */
-  --secondary: 0 0% 0%;
+  --secondary: 220 9% 11%;
   --secondary-foreground: 0 0% 100%;
 
   /* STREET Gray Muted */
@@ -97,7 +100,10 @@
 
   --border: 0 0% 90%;
   --input: 0 0% 95%;
-  --ring: 0 0% 64%;
+  --ring: 73 100% 40%;
+
+  --brand: 73 100% 50%;
+  --brand-foreground: 0 0% 8%;
 
   --radius: 0.5rem;
 
@@ -111,8 +117,8 @@
   /* Sidebar */
   --sidebar-background: 0 0% 98%;
   --sidebar-foreground: 240 5.3% 26.1%;
-  --sidebar-primary: 240 5.9% 10%;
-  --sidebar-primary-foreground: 0 0% 98%;
+  --sidebar-primary: 73 100% 50%;
+  --sidebar-primary-foreground: 0 0% 8%;
   --sidebar-accent: 240 4.8% 95.9%;
   --sidebar-accent-foreground: 240 5.9% 10%;
   --sidebar-border: 220 13% 91%;
@@ -125,10 +131,10 @@
   --background: 222.2 84% 4.9%;
   --foreground: 210 40% 98%;
 
-  --card: 222.2 84% 4.9%;
+  --card: 222.2 47% 9%;
   --card-foreground: 210 40% 98%;
 
-  --popover: 222.2 84% 4.9%;
+  --popover: 222.2 47% 9%;
   --popover-foreground: 210 40% 98%;
 
   --primary: 210 40% 98%;
@@ -148,10 +154,13 @@
 
   --border: 217.2 32.6% 17.5%;
   --input: 217.2 32.6% 17.5%;
-  --ring: 212.7 26.8% 83.9%;
+  --brand: 73 100% 50%;
+  --brand-foreground: 0 0% 8%;
+
+  --ring: 73 100% 50%;
 
   /* Charts */
-  --chart-1: 220 70% 50%;
+  --chart-1: 73 100% 50%;
   --chart-2: 160 60% 45%;
   --chart-3: 30 80% 55%;
   --chart-4: 280 65% 60%;
@@ -160,8 +169,8 @@
   /* Sidebar */
   --sidebar-background: 240 5.9% 10%;
   --sidebar-foreground: 240 4.8% 95.9%;
-  --sidebar-primary: 224.3 76.3% 48%;
-  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-primary: 73 100% 50%;
+  --sidebar-primary-foreground: 0 0% 8%;
   --sidebar-accent: 240 3.7% 15.9%;
   --sidebar-accent-foreground: 240 4.8% 95.9%;
   --sidebar-border: 240 3.7% 15.9%;
@@ -188,9 +197,9 @@
   }
 
   .street-title {
-    font-family: 'Hanson', sans-serif;
-    font-weight: 700;
-    letter-spacing: 0.05em;
+    font-family: 'Barlow', sans-serif;
+    font-weight: 900;
+    letter-spacing: 0.02em;
   }
 
   .street-body-title {

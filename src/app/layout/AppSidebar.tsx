@@ -27,12 +27,17 @@ export function AppSidebar() {
   }
 
   return (
-    <Sidebar>
-      <SidebarHeader className="border-b border-sidebar-border p-4">
+    <Sidebar collapsible="icon">
+      <SidebarHeader className="h-14 border-b border-sidebar-border flex items-center justify-center group-data-[collapsible=icon]:px-0">
         <Link to="/users" className="block">
-          <span className="street-logo text-xl text-secondary dark:text-foreground">
+          <span className="street-logo text-xl text-secondary dark:text-foreground group-data-[collapsible=icon]:hidden">
             STREET
           </span>
+          <img
+            src="/img/client-app-icon.png"
+            alt="STREET"
+            className="hidden group-data-[collapsible=icon]:block size-7 rounded"
+          />
         </Link>
       </SidebarHeader>
 
@@ -59,10 +64,9 @@ export function AppSidebar() {
         ))}
       </SidebarContent>
 
-      <SidebarFooter className="p-4">
-        <SidebarSeparator className="mb-4" />
-        <div className="flex items-center justify-between gap-2">
-          <div className="min-w-0">
+      <SidebarFooter className="border-t border-sidebar-border p-4 group-data-[collapsible=icon]:p-2">
+        <div className="flex items-center justify-between gap-2 group-data-[collapsible=icon]:justify-center">
+          <div className="min-w-0 group-data-[collapsible=icon]:hidden">
             <p className="truncate text-sm font-medium">
               {user?.name ?? "Admin"}
             </p>
