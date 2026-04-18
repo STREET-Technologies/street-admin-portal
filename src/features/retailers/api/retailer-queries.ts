@@ -9,6 +9,7 @@ import {
   getRetailer,
   getRetailerOrders,
   getRetailerStaff,
+  getRetailerBilling,
   updateRetailer,
   createRetailerStaff,
   type UpdateRetailerPayload,
@@ -39,6 +40,8 @@ export const retailerKeys = {
     [...retailerKeys.detail(id), "orders"] as const,
   staff: (id: string) =>
     [...retailerKeys.detail(id), "staff"] as const,
+  billing: (id: string) =>
+    [...retailerKeys.detail(id), "billing"] as const,
 };
 
 /**
@@ -88,6 +91,14 @@ export function useRetailerStaffQuery(retailerId: string) {
   return useQuery({
     queryKey: retailerKeys.staff(retailerId),
     queryFn: () => getRetailerStaff(retailerId),
+    enabled: Boolean(retailerId),
+  });
+}
+
+export function useRetailerBillingQuery(retailerId: string) {
+  return useQuery({
+    queryKey: retailerKeys.billing(retailerId),
+    queryFn: () => getRetailerBilling(retailerId),
     enabled: Boolean(retailerId),
   });
 }

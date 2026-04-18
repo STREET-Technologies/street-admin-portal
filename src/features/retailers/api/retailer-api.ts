@@ -174,3 +174,29 @@ export function updateRetailer(
 ): Promise<BackendVendor> {
   return api.patch<BackendVendor>(`admin/vendors/${retailerId}`, data);
 }
+
+// ---------------------------------------------------------------------------
+// Billing health
+// ---------------------------------------------------------------------------
+
+export interface RetailerBillingHealth {
+  shopDomain: string | null;
+  subscription: {
+    status: string | null;
+    cappedAmount: number;
+    billingCurrency: string | null;
+    subscriptionId: string | null;
+  } | null;
+  orders: {
+    pending: number;
+    charged: number;
+    failed: number;
+    skipped: number;
+  };
+}
+
+export function getRetailerBilling(
+  retailerId: string,
+): Promise<RetailerBillingHealth> {
+  return api.get<RetailerBillingHealth>(`admin/vendors/${retailerId}/billing`);
+}
