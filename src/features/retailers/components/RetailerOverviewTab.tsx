@@ -12,6 +12,7 @@ import { EditableField } from "@/components/shared/EditableField";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { formatDate } from "@/lib/format-utils";
 import { useUpdateRetailerMutation } from "../api/retailer-queries";
 import type { RetailerViewModel } from "../types";
 
@@ -169,21 +170,13 @@ export function RetailerOverviewTab({ retailer }: RetailerOverviewTabProps) {
             <div className="space-y-1">
               <p className="text-xs font-medium text-muted-foreground">Created</p>
               <p className="text-sm">
-                {new Date(retailer.createdAt).toLocaleDateString(undefined, {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
+                {formatDate(retailer.createdAt)}
               </p>
             </div>
             <div className="space-y-1">
               <p className="text-xs font-medium text-muted-foreground">Updated</p>
               <p className="text-sm">
-                {new Date(retailer.updatedAt).toLocaleDateString(undefined, {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
+                {formatDate(retailer.updatedAt)}
               </p>
             </div>
           </div>

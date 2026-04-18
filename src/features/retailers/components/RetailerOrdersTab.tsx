@@ -13,17 +13,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { formatDate, formatCurrency } from "@/lib/format-utils";
 import { useRetailerOrdersQuery } from "../api/retailer-queries";
 
 interface RetailerOrdersTabProps {
   retailerId: string;
-}
-
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("en-GB", {
-    style: "currency",
-    currency: "GBP",
-  }).format(amount);
 }
 
 export function RetailerOrdersTab({ retailerId }: RetailerOrdersTabProps) {
@@ -109,7 +103,7 @@ export function RetailerOrdersTab({ retailerId }: RetailerOrdersTabProps) {
                   : "--"}
               </TableCell>
               <TableCell className="text-sm text-muted-foreground">
-                {new Date(order.createdAt).toLocaleDateString()}
+                {formatDate(order.createdAt)}
               </TableCell>
             </TableRow>
           ))}

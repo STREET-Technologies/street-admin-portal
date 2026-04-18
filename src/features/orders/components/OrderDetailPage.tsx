@@ -1,6 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
 import {
-  ArrowLeft,
   ExternalLink,
   MapPin,
   Package,
@@ -9,7 +8,7 @@ import {
   User,
   CreditCard,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { BackButton } from "@/components/shared/BackButton";
 import { Separator } from "@/components/ui/separator";
 import {
   Card,
@@ -32,6 +31,7 @@ import { StatusBadge } from "@/components/shared/StatusBadge";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { formatDateTime } from "@/lib/format-utils";
 import { useOrderDetailQuery } from "../api/order-queries";
 import { toOrderDetailViewModel } from "../types";
 import type { OrderDetailViewModel, OrderItemViewModel } from "../types";
@@ -56,15 +56,7 @@ export function OrderDetailPage({ orderId }: OrderDetailPageProps) {
   if (isError || !backendOrder) {
     return (
       <div className="space-y-6">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="-ml-2 text-muted-foreground"
-          onClick={() => void navigate({ to: "/orders" })}
-        >
-          <ArrowLeft className="mr-1 size-4" />
-          Orders
-        </Button>
+        <BackButton to="/orders" label="Orders" />
         <ErrorState
           title="Order not found"
           message="This order could not be loaded. Please check the order ID and try again."
@@ -79,15 +71,7 @@ export function OrderDetailPage({ orderId }: OrderDetailPageProps) {
   return (
     <div className="space-y-6">
       {/* Back navigation */}
-      <Button
-        variant="ghost"
-        size="sm"
-        className="-ml-2 text-muted-foreground"
-        onClick={() => void navigate({ to: "/orders" })}
-      >
-        <ArrowLeft className="mr-1 size-4" />
-        Orders
-      </Button>
+      <BackButton to="/orders" label="Orders" />
 
       {/* Header */}
       <EntityDetailHeader
@@ -456,12 +440,7 @@ function DeliveryCard({
           <div className="space-y-1">
             <p className="text-xs font-medium text-muted-foreground">ETA</p>
             <p className="text-sm">
-              {new Date(delivery.estimatedDelivery).toLocaleString("en-GB", {
-                day: "numeric",
-                month: "short",
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
+              {formatDateTime(delivery.estimatedDelivery)}
             </p>
           </div>
         )}
@@ -513,13 +492,7 @@ function OrderMetaCard({
         <div className="space-y-1">
           <p className="text-xs font-medium text-muted-foreground">Created</p>
           <p className="text-sm">
-            {new Date(orderDetail.createdAt).toLocaleString("en-GB", {
-              day: "numeric",
-              month: "short",
-              year: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
+            {formatDateTime(orderDetail.createdAt)}
           </p>
         </div>
         <div className="space-y-1">

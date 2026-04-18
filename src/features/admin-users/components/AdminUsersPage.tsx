@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { useAuth } from "@/features/auth/hooks/useAuth";
+import { formatDate } from "@/lib/format-utils";
 import { useAdminUsersQuery } from "../api/admin-users-queries";
 import { ChangePasswordDialog } from "./ChangePasswordDialog";
 
@@ -78,11 +79,7 @@ export function AdminUsersPage() {
               </div>
               <p className="text-xs text-muted-foreground">
                 Added{" "}
-                {new Date(admin.createdAt).toLocaleDateString(undefined, {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
+                {formatDate(admin.createdAt)}
               </p>
             </CardContent>
           </Card>

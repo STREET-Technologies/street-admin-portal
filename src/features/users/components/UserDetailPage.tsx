@@ -1,6 +1,4 @@
-import { useNavigate } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { BackButton } from "@/components/shared/BackButton";
 import { Separator } from "@/components/ui/separator";
 import {
   Tabs,
@@ -25,7 +23,6 @@ interface UserDetailPageProps {
 }
 
 export function UserDetailPage({ userId }: UserDetailPageProps) {
-  const navigate = useNavigate();
   const { data: user, isLoading, isError, error, refetch } = useUserQuery(userId);
 
   if (isLoading) {
@@ -52,15 +49,7 @@ export function UserDetailPage({ userId }: UserDetailPageProps) {
   return (
     <div className="space-y-6">
       {/* Back navigation */}
-      <Button
-        variant="ghost"
-        size="sm"
-        className="-ml-2 text-muted-foreground"
-        onClick={() => void navigate({ to: "/users" })}
-      >
-        <ArrowLeft className="mr-1 size-4" />
-        Users
-      </Button>
+      <BackButton to="/users" label="Users" />
 
       {/* Header */}
       <EntityDetailHeader

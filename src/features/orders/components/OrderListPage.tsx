@@ -18,6 +18,7 @@ import { CopyButton } from "@/components/shared/CopyButton";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { useTableParams } from "@/hooks/use-table-params";
 import { useDebounce } from "@/hooks/use-debounce";
+import { formatDate } from "@/lib/format-utils";
 import { useOrdersQuery } from "../api/order-queries";
 import type { OrderViewModel } from "../types";
 
@@ -143,11 +144,7 @@ function createColumns(
       ),
       cell: ({ row }) => (
         <span className="text-sm text-muted-foreground">
-          {new Date(row.original.createdAt).toLocaleDateString("en-GB", {
-            day: "numeric",
-            month: "short",
-            year: "numeric",
-          })}
+          {formatDate(row.original.createdAt)}
         </span>
       ),
     },

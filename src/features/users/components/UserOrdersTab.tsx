@@ -15,27 +15,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { formatDate, formatCurrency } from "@/lib/format-utils";
 import { useUserOrdersQuery } from "../api/user-queries";
 import type { BackendUserOrder } from "../types";
 
 interface UserOrdersTabProps {
   userId: string;
-}
-
-function formatCurrency(amount: number | null, currency: string | null): string {
-  if (amount == null) return "--";
-  return new Intl.NumberFormat("en-GB", {
-    style: "currency",
-    currency: currency ?? "GBP",
-  }).format(amount);
-}
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
 }
 
 const columns: ColumnDef<BackendUserOrder, unknown>[] = [

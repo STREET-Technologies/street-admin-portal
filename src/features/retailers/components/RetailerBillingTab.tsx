@@ -3,17 +3,11 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { ErrorState } from "@/components/shared/ErrorState";
+import { formatCurrency } from "@/lib/format-utils";
 import { useRetailerBillingQuery } from "../api/retailer-queries";
 
 interface RetailerBillingTabProps {
   retailerId: string;
-}
-
-function formatCurrency(amount: number, currency: string | null): string {
-  return new Intl.NumberFormat("en-GB", {
-    style: "currency",
-    currency: currency ?? "GBP",
-  }).format(amount);
 }
 
 function SubscriptionStatusBadge({ status }: { status: string | null }) {

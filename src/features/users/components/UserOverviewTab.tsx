@@ -8,21 +8,12 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { CopyableField } from "@/components/shared/CopyableField";
 import { EditableField } from "@/components/shared/EditableField";
+import { formatDateTime } from "@/lib/format-utils";
 import { useUpdateUserMutation, useUserStatsQuery } from "../api/user-queries";
 import type { UserViewModel } from "../types";
 
 interface UserOverviewTabProps {
   user: UserViewModel;
-}
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
 }
 
 function formatShortDate(iso: string | null): string {
@@ -129,13 +120,13 @@ export function UserOverviewTab({ user }: UserOverviewTabProps) {
               <p className="text-xs font-medium text-muted-foreground">
                 Created
               </p>
-              <p className="text-sm">{formatDate(user.createdAt)}</p>
+              <p className="text-sm">{formatDateTime(user.createdAt)}</p>
             </div>
             <div className="space-y-1">
               <p className="text-xs font-medium text-muted-foreground">
                 Last Updated
               </p>
-              <p className="text-sm">{formatDate(user.updatedAt)}</p>
+              <p className="text-sm">{formatDateTime(user.updatedAt)}</p>
             </div>
             <div className="flex gap-2">
               {user.isTestAccount && (

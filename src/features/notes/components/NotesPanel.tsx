@@ -19,6 +19,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
+import { formatDateTime } from "@/lib/format-utils";
 import {
   useNotesQuery,
   useCreateNoteMutation,
@@ -46,24 +47,6 @@ function PriorityBadge({ priority }: { priority: NotePriority }) {
 }
 
 // ---------------------------------------------------------------------------
-// Date formatting
-// ---------------------------------------------------------------------------
-
-function formatNoteDate(isoDate: string): string {
-  const date = new Date(isoDate);
-  const day = date.toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-  const time = date.toLocaleTimeString("en-GB", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-  return `${day} at ${time}`;
-}
-
-// ---------------------------------------------------------------------------
 // Note card
 // ---------------------------------------------------------------------------
 
@@ -77,7 +60,7 @@ function NoteCard({ note }: { note: NoteViewModel }) {
           </CardTitle>
           <PriorityBadge priority={note.priority} />
           <span className="ml-auto text-xs text-muted-foreground">
-            {formatNoteDate(note.createdAt)}
+            {formatDateTime(note.createdAt)}
           </span>
         </div>
       </CardHeader>

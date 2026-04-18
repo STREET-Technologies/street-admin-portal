@@ -22,6 +22,7 @@ import { StatusBadge } from "@/components/shared/StatusBadge";
 import { CopyButton } from "@/components/shared/CopyButton";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { ErrorState } from "@/components/shared/ErrorState";
+import { formatDate, formatDateTime } from "@/lib/format-utils";
 import {
   useReferralCodeQuery,
   useReferralUsesQuery,
@@ -31,26 +32,6 @@ import type { BackendReferralUse } from "../types";
 
 interface ReferralDetailPageProps {
   referralId: string;
-}
-
-function formatDate(dateStr: string | null): string {
-  if (!dateStr) return "N/A";
-  return new Date(dateStr).toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-}
-
-function formatDateTime(dateStr: string | null): string {
-  if (!dateStr) return "N/A";
-  return new Date(dateStr).toLocaleString("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
 }
 
 export function ReferralDetailPage({ referralId }: ReferralDetailPageProps) {

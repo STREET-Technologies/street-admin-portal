@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { formatDate } from "@/lib/format-utils";
 import { useRetailerStaffQuery } from "../api/retailer-queries";
 import { AddStaffDialog } from "./AddStaffDialog";
 
@@ -76,11 +77,7 @@ export function RetailerStaffTab({ retailerId }: RetailerStaffTabProps) {
                   )}
                   <p className="text-xs text-muted-foreground">
                     Added{" "}
-                    {new Date(member.createdAt).toLocaleDateString(undefined, {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
+                    {formatDate(member.createdAt)}
                   </p>
                 </CardContent>
               </Card>

@@ -1,6 +1,4 @@
-import { useNavigate } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { BackButton } from "@/components/shared/BackButton";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EntityDetailHeader } from "@/components/shared/EntityDetailHeader";
@@ -19,7 +17,6 @@ interface RetailerDetailPageProps {
 }
 
 export function RetailerDetailPage({ retailerId }: RetailerDetailPageProps) {
-  const navigate = useNavigate();
   const { data: retailer, isLoading, isError, refetch } =
     useRetailerQuery(retailerId);
 
@@ -40,15 +37,7 @@ export function RetailerDetailPage({ retailerId }: RetailerDetailPageProps) {
   return (
     <div className="space-y-6">
       {/* Back navigation */}
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => void navigate({ to: "/retailers" })}
-        className="-ml-2"
-      >
-        <ArrowLeft className="mr-1 size-4" />
-        Back to Retailers
-      </Button>
+      <BackButton to="/retailers" label="Retailers" />
 
       {/* Header */}
       <EntityDetailHeader

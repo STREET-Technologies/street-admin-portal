@@ -20,6 +20,7 @@ import { StatusBadge } from "@/components/shared/StatusBadge";
 import { CopyButton } from "@/components/shared/CopyButton";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { useTableParams } from "@/hooks/use-table-params";
+import { formatDate } from "@/lib/format-utils";
 import {
   useReferralCodesQuery,
   useToggleReferralCodeMutation,
@@ -134,18 +135,11 @@ function createColumns(
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Created" />
       ),
-      cell: ({ row }) => {
-        const date = new Date(row.original.createdAt);
-        return (
-          <span className="text-sm text-muted-foreground">
-            {date.toLocaleDateString("en-GB", {
-              day: "numeric",
-              month: "short",
-              year: "numeric",
-            })}
-          </span>
-        );
-      },
+      cell: ({ row }) => (
+        <span className="text-sm text-muted-foreground">
+          {formatDate(row.original.createdAt)}
+        </span>
+      ),
     },
   ];
 }

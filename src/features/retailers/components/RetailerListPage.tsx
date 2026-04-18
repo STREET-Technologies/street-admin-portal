@@ -18,6 +18,7 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { useTableParams } from "@/hooks/use-table-params";
 import { useDebounce } from "@/hooks/use-debounce";
+import { formatDate } from "@/lib/format-utils";
 import { useRetailersQuery } from "../api/retailer-queries";
 import type { RetailerViewModel } from "../types";
 
@@ -104,7 +105,7 @@ const columns: ColumnDef<RetailerViewModel, unknown>[] = [
     ),
     cell: ({ row }) => (
       <span className="text-sm text-muted-foreground">
-        {new Date(row.original.createdAt).toLocaleDateString()}
+        {formatDate(row.original.createdAt)}
       </span>
     ),
     enableSorting: true,

@@ -9,6 +9,7 @@ import { LoadingState } from "@/components/shared/LoadingState";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { StatusBadge } from "@/components/shared/StatusBadge";
+import { formatDate } from "@/lib/format-utils";
 import { useUserDevicesQuery } from "../api/user-queries";
 
 interface UserDevicesTabProps {
@@ -79,11 +80,7 @@ export function UserDevicesTab({ userId }: UserDevicesTabProps) {
                   Last Used
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  {new Date(device.lastUsedAt).toLocaleDateString("en-GB", {
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric",
-                  })}
+                  {formatDate(device.lastUsedAt)}
                 </p>
               </div>
             )}
@@ -92,11 +89,7 @@ export function UserDevicesTab({ userId }: UserDevicesTabProps) {
                 Registered
               </p>
               <p className="text-sm text-muted-foreground">
-                {new Date(device.createdAt).toLocaleDateString("en-GB", {
-                  day: "numeric",
-                  month: "short",
-                  year: "numeric",
-                })}
+                {formatDate(device.createdAt)}
               </p>
             </div>
             <div className="space-y-1">
