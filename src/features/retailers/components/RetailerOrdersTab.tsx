@@ -1,7 +1,17 @@
+import { useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
+import {
+  useReactTable,
+  getCoreRowModel,
+  getSortedRowModel,
+  flexRender,
+  type ColumnDef,
+  type SortingState,
+} from "@tanstack/react-table";
 import { Package } from "lucide-react";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { CopyButton } from "@/components/shared/CopyButton";
+import { DataTableColumnHeader } from "@/components/shared/DataTableColumnHeader";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
@@ -15,19 +25,89 @@ import {
 } from "@/components/ui/table";
 import { formatDate, formatCurrency } from "@/lib/format-utils";
 import { useRetailerOrdersQuery } from "../api/retailer-queries";
+import type { BackendVendorOrder } from "../api/retailer-api";
 
 interface RetailerOrdersTabProps {
   retailerId: string;
 }
 
-export function RetailerOrdersTab({ retailerId }: RetailerOrdersTabProps) {
-  const navigate = useNavigate();
-  const { data: orders, isLoading, isError, refetch } =
-    useRetailerOrdersQuery(retailerId);
+const columns: ColumnDef<BackendVendorOrder>[] = [
+  {
+    accessorKey: "orderNumber",
+    header: "Order ID",
+    enableSorting: false,
+    cell: ({ row }) => (
+      <div className="group/id flex items-center gap-1">
+        <Link
+          to="/orders/$orderId"
+          params={{ orderId: row.original.orderNumber ?? row.original.id }}
+          className="font-mono text-xs font-medium text-primary hover:underline"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {row.original.orderNumber ?? row.original.id.slice(0, 8)}
+        </Link>
+        <span className="opacity-0 transition-opacity group-hover/id:opacity-100">
+          <CopyButton value={row.original.id} label="Copy order ID" />
+        </span>
+      </div>
+    ),
+  },
+  {
+    accessorKey: "customerName",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Customer" />
+    ),
+    cell: ({ row }) => (
+      <span className="text-sm">{row.original.customerName ?? "Unknown"}</span>
+    ),
+  },
+  {
+    accessorKey: "status",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Status" />
+    ),
+    cell: ({ row }) => <StatusBadge status={row.original.status} size="sm" />,
+  },
+  {
+    accessorKey: "totalAmount",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Total" />
+    ),
+    cell: ({ row }) => (
+      <span className="text-sm font-medium">
+        {formatCurrency(row.original.totalAmount)}
+      </span>
+    ),
+  },
+  {
+    accessorKey: "createdAt",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Date" />
+    ),
+    cell: ({ row }) => (
+      <span className="text-sm text-muted-foreground">
+        {formatDate(row.original.createdAt)}
+      </span>
+    ),
+  },
+];
 
-  if (isLoading) {
-    return <LoadingState variant="table" rows={5} />;
-  }
+export function RetailerOrdersTab({ retailerId }: RetailerOrdersTabProps) {
+  const { data: orders = [], isLoading, isError, refetch } =
+    useRetailerOrdersQuery(retailerId);
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const navigate = useNavigate();
+
+  const table = useReactTable({
+    data: orders,
+    columns,
+    state: { sorting },
+    onSortingChange: setSorting,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+  });
+
+  if (isLoading) return <LoadingState variant="table" rows={5} />;
 
   if (isError) {
     return (
@@ -39,7 +119,7 @@ export function RetailerOrdersTab({ retailerId }: RetailerOrdersTabProps) {
     );
   }
 
-  if (!orders || orders.length === 0) {
+  if (orders.length === 0) {
     return (
       <EmptyState
         icon={Package}
@@ -53,58 +133,42 @@ export function RetailerOrdersTab({ retailerId }: RetailerOrdersTabProps) {
     <div className="rounded-lg border">
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead>Order ID</TableHead>
-            <TableHead>Customer</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Total</TableHead>
-            <TableHead>Date</TableHead>
-          </TableRow>
+          {table.getHeaderGroups().map((headerGroup) => (
+            <TableRow key={headerGroup.id}>
+              {headerGroup.headers.map((header) => (
+                <TableHead key={header.id}>
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(
+                        header.column.columnDef.header,
+                        header.getContext(),
+                      )}
+                </TableHead>
+              ))}
+            </TableRow>
+          ))}
         </TableHeader>
         <TableBody>
-          {orders.map((order) => (
+          {table.getRowModel().rows.map((row) => (
             <TableRow
-              key={order.id}
+              key={row.id}
               className="cursor-pointer"
               onClick={(e) => {
-                // Don't navigate when clicking interactive elements (copy button, links)
                 const target = e.target as HTMLElement;
                 if (target.closest("button") || target.closest("a")) return;
                 void navigate({
                   to: "/orders/$orderId",
-                  params: { orderId: order.orderNumber ?? order.id },
+                  params: {
+                    orderId: row.original.orderNumber ?? row.original.id,
+                  },
                 });
               }}
             >
-              <TableCell>
-                <div className="group/id flex items-center gap-1">
-                  <Link
-                    to="/orders/$orderId"
-                    params={{ orderId: order.orderNumber ?? order.id }}
-                    className="font-mono text-xs font-medium text-primary hover:underline"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    {order.orderNumber ?? order.id.slice(0, 8)}
-                  </Link>
-                  <span className="opacity-0 transition-opacity group-hover/id:opacity-100">
-                    <CopyButton value={order.id} label="Copy order ID" />
-                  </span>
-                </div>
-              </TableCell>
-              <TableCell className="text-sm">
-                {order.customerName ?? "Unknown"}
-              </TableCell>
-              <TableCell>
-                <StatusBadge status={order.status} size="sm" />
-              </TableCell>
-              <TableCell className="text-sm font-medium">
-                {order.totalAmount !== null
-                  ? formatCurrency(order.totalAmount)
-                  : "--"}
-              </TableCell>
-              <TableCell className="text-sm text-muted-foreground">
-                {formatDate(order.createdAt)}
-              </TableCell>
+              {row.getVisibleCells().map((cell) => (
+                <TableCell key={cell.id}>
+                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                </TableCell>
+              ))}
             </TableRow>
           ))}
         </TableBody>
