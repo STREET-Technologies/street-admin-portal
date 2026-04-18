@@ -76,7 +76,7 @@ export function RetailerBillingTab({ retailerId }: RetailerBillingTabProps) {
     data.subscription && data.subscription.cappedAmount > 0
       ? Math.min(
           100,
-          ((data.orders.charged / data.subscription.cappedAmount) * 100),
+          ((data.orders.chargedAmount / data.subscription.cappedAmount) * 100),
         )
       : null;
 
@@ -120,7 +120,7 @@ export function RetailerBillingTab({ retailerId }: RetailerBillingTabProps) {
               {capPercent !== null && (
                 <div className="col-span-2 space-y-1.5">
                   <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>Cap consumed (charged orders / cap)</span>
+                    <span>Cap consumed ({formatCurrency(data.orders.chargedAmount, data.subscription!.billingCurrency)} of {formatCurrency(data.subscription!.cappedAmount, data.subscription!.billingCurrency)})</span>
                     <span>{capPercent.toFixed(1)}%</span>
                   </div>
                   <div className="h-2 w-full overflow-hidden rounded-full bg-muted">

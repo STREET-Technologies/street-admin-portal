@@ -192,6 +192,7 @@ export interface RetailerBillingHealth {
     charged: number;
     failed: number;
     skipped: number;
+    chargedAmount: number;
   };
 }
 
