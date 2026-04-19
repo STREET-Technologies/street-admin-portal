@@ -1,5 +1,5 @@
 import { api } from "@/lib/api-client";
-import type { AuthUser } from "../types";
+import type { AdminRole, AuthUser } from "../types";
 
 /**
  * Backend shape returned by GET /auth/me.
@@ -10,6 +10,7 @@ interface MeResponse {
   firstName?: string;
   lastName?: string;
   name?: string;
+  adminRole?: AdminRole;
 }
 
 export const authApi = {
@@ -32,7 +33,7 @@ export const authApi = {
       data.name ??
       ([data.firstName, data.lastName].filter(Boolean).join(" ") ||
         data.email);
-    return { email: data.email, name };
+    return { email: data.email, name, adminRole: data.adminRole ?? 'admin' };
   },
 
   /**
