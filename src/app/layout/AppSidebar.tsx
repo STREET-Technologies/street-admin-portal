@@ -14,12 +14,21 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/features/auth/hooks/useAuth";
+import { useAdminRole } from "@/features/auth/hooks/useAdminRole";
 import { navGroups } from "@/constants/navigation";
+import type { AdminRole } from "@/features/auth/types";
 
 export function AppSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { role, canManageAdmins } = useAdminRole();
+
+  const ROLE_LABELS: Record<AdminRole, string> = {
+    admin: 'Admin',
+    support: 'Support',
+    viewer: 'Viewer',
+  };
 
   async function handleLogout() {
     await logout();
@@ -46,7 +55,7 @@ export function AppSidebar() {
           <SidebarGroup key={group.label}>
             <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
             <SidebarMenu>
-              {group.items.map((item) => (
+              {group.items.filter((item) => !item.requireAdmin || canManageAdmins).map((item) => (
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton
                     asChild
@@ -73,6 +82,7 @@ export function AppSidebar() {
             <p className="truncate text-xs text-muted-foreground">
               {user?.email ?? ""}
             </p>
+            <span className="text-xs text-muted-foreground capitalize">{ROLE_LABELS[role]}</span>
           </div>
           <Button
             variant="ghost"

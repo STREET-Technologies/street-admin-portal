@@ -13,6 +13,7 @@ export interface NavItem {
   title: string;
   icon: LucideIcon;
   href: string;
+  requireAdmin?: boolean;
 }
 
 export interface NavGroup {
@@ -39,8 +40,8 @@ export const navGroups: NavGroup[] = [
   {
     label: "System",
     items: [
-      { title: "Admin Users", icon: Shield, href: "/admin-users" },
-      { title: "Settings", icon: Settings, href: "/settings" },
+      { title: "Admin Users", icon: Shield, href: "/admin-users", requireAdmin: true },
+      { title: "Settings", icon: Settings, href: "/settings", requireAdmin: true },
     ],
   },
 ];
