@@ -242,13 +242,15 @@ function PricingCard({
           <span>{pricing.subtotal}</span>
         </div>
         <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">Delivery fee</span>
+          <span className="text-muted-foreground">Delivery</span>
           <span>{pricing.deliveryFee}</span>
         </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">Service fee</span>
-          <span>{pricing.serviceFee}</span>
-        </div>
+        {!pricing.isShopifyOrder && (
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">Service fee</span>
+            <span>{pricing.serviceFee}</span>
+          </div>
+        )}
         <Separator />
         <div className="flex justify-between text-sm font-semibold">
           <span>Total</span>
@@ -489,6 +491,9 @@ function OrderMetaCard({
       <CardContent className="space-y-3">
         <CopyableField label="Order ID" value={orderDetail.orderId} mono />
         <CopyableField label="Internal ID" value={orderDetail.id} mono />
+        {orderDetail.shopifyOrderId && (
+          <CopyableField label="Shopify Order ID" value={orderDetail.shopifyOrderId} mono />
+        )}
         <div className="space-y-1">
           <p className="text-xs font-medium text-muted-foreground">Created</p>
           <p className="text-sm">

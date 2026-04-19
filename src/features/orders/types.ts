@@ -40,6 +40,7 @@ export interface BackendOrder {
   pricingBreakdown?: Record<string, unknown> | null;
   payments?: BackendPayment[] | null;
   stuartJobId?: string | null;
+  shopifyOrderId?: string | null;
 }
 
 /** Individual item within an order. */
@@ -92,6 +93,7 @@ export interface OrderViewModel {
 
 /** Extended order view model for the detail page. */
 export interface OrderDetailViewModel extends OrderViewModel {
+  shopifyOrderId: string | null;
   /** Customer info */
   customer: {
     id: string | null;
@@ -138,6 +140,7 @@ export interface OrderDetailViewModel extends OrderViewModel {
     deliveryFee: string;
     serviceFee: string;
     total: string;
+    isShopifyOrder: boolean;
   } | null;
 }
 
@@ -305,17 +308,23 @@ export function toOrderDetailViewModel(backend: BackendOrder): OrderDetailViewMo
 
   // Pricing breakdown from JSONB
   const pb = backend.pricingBreakdown as Record<string, unknown> | null | undefined;
+  const isShopifyOrder =
+    !!backend.shopifyOrderId ||
+    backend.paymentMethod === 'shopify_checkout' ||
+    pb?.shopifyCheckout === true;
   const pricing = pb
     ? {
         subtotal: formatGBP((pb.items as number) ?? backend.subtotal),
         deliveryFee: formatGBP(pb.deliveryFee as number | null),
         serviceFee: formatGBP(pb.serviceFee as number | null),
         total: formatGBP((pb.total as number) ?? backend.totalAmount),
+        isShopifyOrder,
       }
     : null;
 
   return {
     ...base,
+    shopifyOrderId: backend.shopifyOrderId ?? null,
     customer,
     retailer,
     items,
