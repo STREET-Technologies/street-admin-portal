@@ -1,10 +1,15 @@
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { BackButton } from "@/components/shared/BackButton";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { EntityDetailHeader } from "@/components/shared/EntityDetailHeader";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { ErrorState } from "@/components/shared/ErrorState";
-import { useRetailerQuery } from "../api/retailer-queries";
+import { useRetailerQuery, useUpdateRetailerMutation } from "../api/retailer-queries";
 import { RetailerOverviewTab } from "./RetailerOverviewTab";
 import { RetailerOrdersTab } from "./RetailerOrdersTab";
 import { RetailerStaffTab } from "./RetailerStaffTab";
@@ -19,6 +24,20 @@ interface RetailerDetailPageProps {
 export function RetailerDetailPage({ retailerId }: RetailerDetailPageProps) {
   const { data: retailer, isLoading, isError, refetch } =
     useRetailerQuery(retailerId);
+  const updateRetailer = useUpdateRetailerMutation(retailerId);
+  const [isTogglingOnline, setIsTogglingOnline] = useState(false);
+
+  async function handleOnlineToggle(checked: boolean) {
+    setIsTogglingOnline(true);
+    try {
+      await updateRetailer.mutateAsync({ isOnline: checked });
+      toast.success(checked ? "Retailer set to online" : "Retailer set to offline");
+    } catch {
+      toast.error("Failed to update online status");
+    } finally {
+      setIsTogglingOnline(false);
+    }
+  }
 
   if (isLoading) {
     return <LoadingState variant="page" />;
@@ -45,7 +64,26 @@ export function RetailerDetailPage({ retailerId }: RetailerDetailPageProps) {
         subtitle={retailer.email || undefined}
         status={retailer.status}
         avatarFallback={retailer.name.charAt(0).toUpperCase()}
-      />
+      >
+        <div className="flex items-center gap-2 rounded-lg border px-3 py-2">
+          {isTogglingOnline && (
+            <Loader2 className="size-3.5 animate-spin text-muted-foreground" />
+          )}
+          <Switch
+            id="header-online-toggle"
+            checked={retailer.isOnline}
+            onCheckedChange={(checked) => void handleOnlineToggle(checked)}
+            disabled={isTogglingOnline}
+            size="sm"
+          />
+          <Label
+            htmlFor="header-online-toggle"
+            className="cursor-pointer text-sm font-medium"
+          >
+            {retailer.isOnline ? "Online" : "Offline"}
+          </Label>
+        </div>
+      </EntityDetailHeader>
 
       <Separator />
 

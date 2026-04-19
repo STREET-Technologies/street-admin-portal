@@ -1,6 +1,3 @@
-import { useState } from "react";
-import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -9,9 +6,6 @@ import {
 } from "@/components/ui/card";
 import { CopyableField } from "@/components/shared/CopyableField";
 import { EditableField } from "@/components/shared/EditableField";
-import { StatusBadge } from "@/components/shared/StatusBadge";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import { formatDate } from "@/lib/format-utils";
 import { useUpdateRetailerMutation } from "../api/retailer-queries";
 import type { RetailerViewModel } from "../types";
@@ -22,19 +16,6 @@ interface RetailerOverviewTabProps {
 
 export function RetailerOverviewTab({ retailer }: RetailerOverviewTabProps) {
   const updateRetailer = useUpdateRetailerMutation(retailer.id);
-  const [isTogglingOnline, setIsTogglingOnline] = useState(false);
-
-  async function handleOnlineToggle(checked: boolean) {
-    setIsTogglingOnline(true);
-    try {
-      await updateRetailer.mutateAsync({ isOnline: checked });
-      toast.success(checked ? "Retailer set to online" : "Retailer set to offline");
-    } catch {
-      toast.error("Failed to update online status");
-    } finally {
-      setIsTogglingOnline(false);
-    }
-  }
 
   return (
     <div className="grid gap-6 md:grid-cols-2">
@@ -114,33 +95,6 @@ export function RetailerOverviewTab({ retailer }: RetailerOverviewTabProps) {
               await updateRetailer.mutateAsync({ storeUrl: val });
             }}
           />
-          <div className="space-y-1">
-            <p className="text-xs font-medium text-muted-foreground">Online Status</p>
-            <div className="flex items-center gap-3">
-              <StatusBadge
-                status={retailer.isOnline ? "active" : "inactive"}
-                size="sm"
-              />
-              <div className="flex items-center gap-2">
-                {isTogglingOnline && (
-                  <Loader2 className="size-3.5 animate-spin text-muted-foreground" />
-                )}
-                <Switch
-                  id="online-toggle"
-                  checked={retailer.isOnline}
-                  onCheckedChange={(checked) => void handleOnlineToggle(checked)}
-                  disabled={isTogglingOnline}
-                  size="sm"
-                />
-                <Label
-                  htmlFor="online-toggle"
-                  className="text-xs text-muted-foreground cursor-pointer"
-                >
-                  {retailer.isOnline ? "Online" : "Offline"}
-                </Label>
-              </div>
-            </div>
-          </div>
         </CardContent>
       </Card>
 

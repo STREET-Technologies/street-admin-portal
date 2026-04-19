@@ -102,6 +102,7 @@ export function OrderDetailPage({ orderId }: OrderDetailPageProps) {
 
         {/* Right column — 1/3 width */}
         <div className="space-y-6">
+          <OrderMetaCard orderDetail={orderDetail} />
           <CustomerCard
             customer={orderDetail.customer}
             onNavigate={
@@ -131,7 +132,6 @@ export function OrderDetailPage({ orderId }: OrderDetailPageProps) {
           {orderDetail.shippingAddress && (
             <AddressCard address={orderDetail.shippingAddress} />
           )}
-          <OrderMetaCard orderDetail={orderDetail} />
         </div>
       </div>
     </div>
