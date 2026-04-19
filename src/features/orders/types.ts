@@ -41,6 +41,8 @@ export interface BackendOrder {
   payments?: BackendPayment[] | null;
   stuartJobId?: string | null;
   shopifyOrderId?: string | null;
+  // Flat fields from global list raw query (not present on detail endpoint)
+  itemCount?: number | null;
 }
 
 /** Individual item within an order. */
@@ -191,7 +193,7 @@ export function toOrderViewModel(backend: BackendOrder): OrderViewModel {
     status: backend.status?.toLowerCase() ?? "unknown",
     totalAmount: formatGBP(backend.totalAmount),
     totalAmountRaw: typeof backend.totalAmount === "string" ? parseFloat(backend.totalAmount) : backend.totalAmount,
-    itemCount: backend.orderItems?.length ?? 0,
+    itemCount: backend.itemCount ?? backend.orderItems?.length ?? 0,
     createdAt: backend.createdAt,
     retailerName: backend.vendor?.storeName ?? backend.vendorName,
     retailerId: backend.vendor?.id ?? backend.vendorId,

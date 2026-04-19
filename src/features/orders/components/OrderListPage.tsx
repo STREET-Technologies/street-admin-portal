@@ -37,6 +37,12 @@ const ORDER_STATUS_OPTIONS = [
   { value: "CANCELLED", label: "Cancelled" },
 ] as const;
 
+const PAYMENT_METHOD_OPTIONS = [
+  { value: "all", label: "All types" },
+  { value: "shopify_checkout", label: "Shopify Checkout" },
+  { value: "others", label: "Others" },
+] as const;
+
 // ---------------------------------------------------------------------------
 // Column definitions
 // ---------------------------------------------------------------------------
@@ -163,6 +169,7 @@ export function OrderListPage() {
   // Filter state
   const [searchValue, setSearchValue] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [paymentMethodFilter, setPaymentMethodFilter] = useState<string>("all");
   const debouncedSearch = useDebounce(searchValue, 300);
 
   // Fetch orders from global endpoint with server-side search/filter/pagination
@@ -174,6 +181,7 @@ export function OrderListPage() {
   } = useOrdersQuery({
     search: debouncedSearch || undefined,
     status: statusFilter !== "all" ? statusFilter : undefined,
+    paymentMethod: paymentMethodFilter !== "all" ? paymentMethodFilter : undefined,
     page: searchParams.page,
     limit: searchParams.limit,
   });
@@ -227,6 +235,20 @@ export function OrderListPage() {
           </SelectTrigger>
           <SelectContent>
             {ORDER_STATUS_OPTIONS.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>
+                {opt.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Payment method filter */}
+        <Select value={paymentMethodFilter} onValueChange={setPaymentMethodFilter}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Payment type" />
+          </SelectTrigger>
+          <SelectContent>
+            {PAYMENT_METHOD_OPTIONS.map((opt) => (
               <SelectItem key={opt.value} value={opt.value}>
                 {opt.label}
               </SelectItem>

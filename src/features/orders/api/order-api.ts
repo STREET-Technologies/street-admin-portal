@@ -8,6 +8,7 @@ import type { BackendOrder } from "../types";
 export interface GetOrdersParams {
   search?: string;
   status?: string;
+  paymentMethod?: string;
   page?: number;
   limit?: number;
 }
@@ -65,6 +66,7 @@ export async function getOrders(
   const searchParams = new URLSearchParams();
   if (params.search) searchParams.set("search", params.search);
   if (params.status) searchParams.set("status", params.status);
+  if (params.paymentMethod) searchParams.set("paymentMethod", params.paymentMethod);
   if (params.page) searchParams.set("page", String(params.page));
   if (params.limit) searchParams.set("limit", String(params.limit));
   const query = searchParams.toString();
