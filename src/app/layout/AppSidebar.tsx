@@ -55,19 +55,30 @@ export function AppSidebar() {
           <SidebarGroup key={group.label}>
             <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
             <SidebarMenu>
-              {group.items.filter((item) => !item.requireAdmin || canManageAdmins).map((item) => (
-                <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={location.pathname.startsWith(item.href)}
-                  >
-                    <Link to={item.href}>
-                      <item.icon className="size-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {group.items.map((item) => {
+                const disabled = item.requireAdmin && !canManageAdmins;
+                return (
+                  <SidebarMenuItem key={item.href}>
+                    <SidebarMenuButton
+                      asChild={!disabled}
+                      isActive={!disabled && location.pathname.startsWith(item.href)}
+                      className={disabled ? "opacity-40 cursor-not-allowed pointer-events-none" : ""}
+                    >
+                      {disabled ? (
+                        <span>
+                          <item.icon className="size-4" />
+                          <span>{item.title}</span>
+                        </span>
+                      ) : (
+                        <Link to={item.href}>
+                          <item.icon className="size-4" />
+                          <span>{item.title}</span>
+                        </Link>
+                      )}
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroup>
         ))}

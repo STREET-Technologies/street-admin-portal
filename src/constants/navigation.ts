@@ -40,7 +40,7 @@ export const navGroups: NavGroup[] = [
   {
     label: "System",
     items: [
-      { title: "Admin Users", icon: Shield, href: "/admin-users", requireAdmin: true },
+      { title: "Team", icon: Shield, href: "/admin-users", requireAdmin: true },
       { title: "Settings", icon: Settings, href: "/settings", requireAdmin: true },
     ],
   },
