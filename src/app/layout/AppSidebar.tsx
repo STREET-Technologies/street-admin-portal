@@ -65,10 +65,10 @@ export function AppSidebar() {
                       className={disabled ? "opacity-40 cursor-not-allowed pointer-events-none" : ""}
                     >
                       {disabled ? (
-                        <span>
+                        <>
                           <item.icon className="size-4" />
                           <span>{item.title}</span>
-                        </span>
+                        </>
                       ) : (
                         <Link to={item.href}>
                           <item.icon className="size-4" />
