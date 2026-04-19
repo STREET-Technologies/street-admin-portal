@@ -233,7 +233,7 @@ export function OrderListPage() {
           <SelectTrigger className="w-[160px]">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent position="popper">
             {ORDER_STATUS_OPTIONS.map((opt) => (
               <SelectItem key={opt.value} value={opt.value}>
                 {opt.label}
@@ -247,7 +247,7 @@ export function OrderListPage() {
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Payment type" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent position="popper">
             {PAYMENT_METHOD_OPTIONS.map((opt) => (
               <SelectItem key={opt.value} value={opt.value}>
                 {opt.label}

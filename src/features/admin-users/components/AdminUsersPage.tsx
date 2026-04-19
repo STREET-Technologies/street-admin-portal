@@ -101,7 +101,7 @@ export function AdminUsersPage() {
                     <SelectTrigger className="w-24 h-6 text-xs shrink-0">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent position="popper">
                       <SelectItem value="admin">Admin</SelectItem>
                       <SelectItem value="support">Support</SelectItem>
                       <SelectItem value="viewer">Viewer</SelectItem>
