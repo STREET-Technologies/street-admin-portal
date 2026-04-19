@@ -1,4 +1,4 @@
-import { useAuth } from '../context/AuthProvider';
+import { useAuth } from './useAuth';
 import type { AdminRole } from '../types';
 
 export function useAdminRole() {
