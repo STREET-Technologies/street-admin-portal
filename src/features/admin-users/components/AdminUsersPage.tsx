@@ -45,7 +45,7 @@ export function AdminUsersPage() {
       <div className="space-y-6">
         <PageHeader
           title="Team"
-          description="Manage admin accounts"
+          description="Manage user accounts"
         />
         <div className="flex items-center justify-center py-12">
           <Loader2 className="size-6 animate-spin text-muted-foreground" />
@@ -59,7 +59,7 @@ export function AdminUsersPage() {
       <div className="space-y-6">
         <PageHeader
           title="Team"
-          description="Manage admin accounts"
+          description="Manage user accounts"
         />
         <EmptyState
           icon={Shield}
@@ -72,7 +72,7 @@ export function AdminUsersPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Team" description="Manage admin accounts">
+      <PageHeader title="Team" description="Manage user accounts">
         <Button onClick={() => setPasswordDialogOpen(true)} disabled={!canWrite}>
           <KeyRound className="mr-2 size-4" />
           Change My Password
