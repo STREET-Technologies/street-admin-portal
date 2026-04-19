@@ -8,6 +8,7 @@ import { CopyableField } from "@/components/shared/CopyableField";
 import { EditableField } from "@/components/shared/EditableField";
 import { formatDate } from "@/lib/format-utils";
 import { useUpdateRetailerMutation } from "../api/retailer-queries";
+import { useAdminRole } from "@/features/auth/hooks/useAdminRole";
 import type { RetailerViewModel } from "../types";
 
 interface RetailerOverviewTabProps {
@@ -15,6 +16,7 @@ interface RetailerOverviewTabProps {
 }
 
 export function RetailerOverviewTab({ retailer }: RetailerOverviewTabProps) {
+  const { canWrite } = useAdminRole();
   const updateRetailer = useUpdateRetailerMutation(retailer.id);
 
   return (
@@ -31,6 +33,7 @@ export function RetailerOverviewTab({ retailer }: RetailerOverviewTabProps) {
             onSave={async (val) => {
               await updateRetailer.mutateAsync({ email: val });
             }}
+            disabled={!canWrite}
           />
           <EditableField
             label="Phone"
@@ -38,6 +41,7 @@ export function RetailerOverviewTab({ retailer }: RetailerOverviewTabProps) {
             onSave={async (val) => {
               await updateRetailer.mutateAsync({ phone: val });
             }}
+            disabled={!canWrite}
           />
           <EditableField
             label="Street Address"
@@ -45,6 +49,7 @@ export function RetailerOverviewTab({ retailer }: RetailerOverviewTabProps) {
             onSave={async (val) => {
               await updateRetailer.mutateAsync({ address: val });
             }}
+            disabled={!canWrite}
           />
           <EditableField
             label="Postcode"
@@ -52,6 +57,7 @@ export function RetailerOverviewTab({ retailer }: RetailerOverviewTabProps) {
             onSave={async (val) => {
               await updateRetailer.mutateAsync({ postcode: val });
             }}
+            disabled={!canWrite}
           />
           <EditableField
             label="Latitude"
@@ -59,6 +65,7 @@ export function RetailerOverviewTab({ retailer }: RetailerOverviewTabProps) {
             onSave={async (val) => {
               await updateRetailer.mutateAsync({ latitude: parseFloat(val) });
             }}
+            disabled={!canWrite}
           />
           <EditableField
             label="Longitude"
@@ -66,6 +73,7 @@ export function RetailerOverviewTab({ retailer }: RetailerOverviewTabProps) {
             onSave={async (val) => {
               await updateRetailer.mutateAsync({ longitude: parseFloat(val) });
             }}
+            disabled={!canWrite}
           />
         </CardContent>
       </Card>
@@ -87,6 +95,7 @@ export function RetailerOverviewTab({ retailer }: RetailerOverviewTabProps) {
             onSave={async (val) => {
               await updateRetailer.mutateAsync({ commissionPercentage: parseFloat(val) });
             }}
+            disabled={!canWrite}
           />
           <EditableField
             label="Store URL"
@@ -94,6 +103,7 @@ export function RetailerOverviewTab({ retailer }: RetailerOverviewTabProps) {
             onSave={async (val) => {
               await updateRetailer.mutateAsync({ storeUrl: val });
             }}
+            disabled={!canWrite}
           />
         </CardContent>
       </Card>
@@ -110,6 +120,7 @@ export function RetailerOverviewTab({ retailer }: RetailerOverviewTabProps) {
             onSave={async (val) => {
               await updateRetailer.mutateAsync({ description: val });
             }}
+            disabled={!canWrite}
           />
         </CardContent>
       </Card>

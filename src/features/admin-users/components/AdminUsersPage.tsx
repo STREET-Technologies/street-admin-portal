@@ -10,11 +10,13 @@ import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { useAuth } from "@/features/auth/hooks/useAuth";
+import { useAdminRole } from "@/features/auth/hooks/useAdminRole";
 import { formatDate } from "@/lib/format-utils";
 import { useAdminUsersQuery } from "../api/admin-users-queries";
 import { ChangePasswordDialog } from "./ChangePasswordDialog";
 
 export function AdminUsersPage() {
+  const { canWrite } = useAdminRole();
   const { data: adminUsers, isLoading } = useAdminUsersQuery();
   const { user: currentUser } = useAuth();
   const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
@@ -52,7 +54,7 @@ export function AdminUsersPage() {
   return (
     <div className="space-y-6">
       <PageHeader title="Admin Users" description="Manage admin accounts">
-        <Button onClick={() => setPasswordDialogOpen(true)}>
+        <Button onClick={() => setPasswordDialogOpen(true)} disabled={!canWrite}>
           <KeyRound className="mr-2 size-4" />
           Change My Password
         </Button>

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { StickyNote } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { useAdminRole } from "@/features/auth/hooks/useAdminRole";
 import {
   Card,
   CardContent,
@@ -155,6 +156,7 @@ interface NotesPanelProps {
 }
 
 export function NotesPanel({ entityType, entityId }: NotesPanelProps) {
+  const { canWrite } = useAdminRole();
   const { data: notes, isLoading, isError, error, refetch } = useNotesQuery(
     entityType,
     entityId,
@@ -162,8 +164,8 @@ export function NotesPanel({ entityType, entityId }: NotesPanelProps) {
 
   return (
     <div className="space-y-4">
-      {/* Create note form */}
-      <CreateNoteForm entityType={entityType} entityId={entityId} />
+      {/* Create note form — hidden for viewers */}
+      {canWrite && <CreateNoteForm entityType={entityType} entityId={entityId} />}
 
       {/* Notes list */}
       {isLoading && <LoadingState variant="card" rows={3} />}

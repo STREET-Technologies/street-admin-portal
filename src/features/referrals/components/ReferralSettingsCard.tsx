@@ -10,12 +10,14 @@ import {
 import { EditableField } from "@/components/shared/EditableField";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { ErrorState } from "@/components/shared/ErrorState";
+import { useAdminRole } from "@/features/auth/hooks/useAdminRole";
 import {
   useReferralSettingsQuery,
   useUpdateReferralSettingsMutation,
 } from "../api/referral-queries";
 
 export function ReferralSettingsCard() {
+  const { canWrite } = useAdminRole();
   const { data: settings, isLoading, isError, error, refetch } =
     useReferralSettingsQuery();
   const mutation = useUpdateReferralSettingsMutation();
@@ -62,6 +64,7 @@ export function ReferralSettingsCard() {
               onCheckedChange={(checked) =>
                 mutation.mutate({ isActive: checked })
               }
+              disabled={!canWrite}
             />
           </div>
         </div>
@@ -72,16 +75,19 @@ export function ReferralSettingsCard() {
             label="Friend reward (GBP)"
             value={String(settings.defaultFriendRewardValue)}
             onSave={(v) => saveField("defaultFriendRewardValue", v)}
+            disabled={!canWrite}
           />
           <EditableField
             label="Referrer reward (GBP)"
             value={String(settings.defaultReferrerRewardValue)}
             onSave={(v) => saveField("defaultReferrerRewardValue", v)}
+            disabled={!canWrite}
           />
           <EditableField
             label="Min. order amount (GBP)"
             value={String(settings.defaultMinimumOrderAmount)}
             onSave={(v) => saveField("defaultMinimumOrderAmount", v)}
+            disabled={!canWrite}
           />
           <EditableField
             label="Max uses per code"
@@ -97,6 +103,7 @@ export function ReferralSettingsCard() {
               }
               return saveField("maxUsesPerCode", v);
             }}
+            disabled={!canWrite}
           />
           <EditableField
             label="Code expiry (days)"
@@ -111,6 +118,7 @@ export function ReferralSettingsCard() {
               }
               return saveField("codeExpiryDays", v);
             }}
+            disabled={!canWrite}
           />
           <div className="space-y-1">
             <p className="text-xs font-medium text-muted-foreground">

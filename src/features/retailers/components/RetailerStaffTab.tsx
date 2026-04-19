@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { formatDate } from "@/lib/format-utils";
 import { useRetailerStaffQuery } from "../api/retailer-queries";
+import { useAdminRole } from "@/features/auth/hooks/useAdminRole";
 import { AddStaffDialog } from "./AddStaffDialog";
 
 interface RetailerStaffTabProps {
@@ -17,6 +18,7 @@ interface RetailerStaffTabProps {
 }
 
 export function RetailerStaffTab({ retailerId }: RetailerStaffTabProps) {
+  const { canWrite } = useAdminRole();
   const { data: staff, isLoading } = useRetailerStaffQuery(retailerId);
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -36,7 +38,7 @@ export function RetailerStaffTab({ retailerId }: RetailerStaffTabProps) {
             ? `${staff.length} staff account${staff.length === 1 ? "" : "s"}`
             : "No staff accounts"}
         </h3>
-        <Button size="sm" onClick={() => setDialogOpen(true)}>
+        <Button size="sm" onClick={() => setDialogOpen(true)} disabled={!canWrite}>
           <Plus className="mr-1.5 size-4" />
           Add Staff
         </Button>

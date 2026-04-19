@@ -10,6 +10,7 @@ import { CopyableField } from "@/components/shared/CopyableField";
 import { EditableField } from "@/components/shared/EditableField";
 import { formatDateTime } from "@/lib/format-utils";
 import { useUpdateUserMutation, useUserStatsQuery } from "../api/user-queries";
+import { useAdminRole } from "@/features/auth/hooks/useAdminRole";
 import type { UserViewModel } from "../types";
 
 interface UserOverviewTabProps {
@@ -35,6 +36,7 @@ function formatGBP(amount: string): string {
 }
 
 export function UserOverviewTab({ user }: UserOverviewTabProps) {
+  const { canWrite } = useAdminRole();
   const updateUser = useUpdateUserMutation(user.id);
   const { data: stats, isLoading: statsLoading } = useUserStatsQuery(user.id);
 
@@ -77,6 +79,7 @@ export function UserOverviewTab({ user }: UserOverviewTabProps) {
               onSave={async (val) => {
                 await updateUser.mutateAsync({ email: val });
               }}
+              disabled={!canWrite}
             />
             <EditableField
               label="Phone"
@@ -84,6 +87,7 @@ export function UserOverviewTab({ user }: UserOverviewTabProps) {
               onSave={async (val) => {
                 await updateUser.mutateAsync({ phone: val });
               }}
+              disabled={!canWrite}
             />
             {user.language && (
               <EditableField
@@ -92,6 +96,7 @@ export function UserOverviewTab({ user }: UserOverviewTabProps) {
                 onSave={async (val) => {
                   await updateUser.mutateAsync({ language: val });
                 }}
+                disabled={!canWrite}
               />
             )}
           </CardContent>

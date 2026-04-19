@@ -10,6 +10,7 @@ import { EntityDetailHeader } from "@/components/shared/EntityDetailHeader";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { useRetailerQuery, useUpdateRetailerMutation } from "../api/retailer-queries";
+import { useAdminRole } from "@/features/auth/hooks/useAdminRole";
 import { RetailerOverviewTab } from "./RetailerOverviewTab";
 import { RetailerOrdersTab } from "./RetailerOrdersTab";
 import { RetailerStaffTab } from "./RetailerStaffTab";
@@ -22,6 +23,7 @@ interface RetailerDetailPageProps {
 }
 
 export function RetailerDetailPage({ retailerId }: RetailerDetailPageProps) {
+  const { canWrite } = useAdminRole();
   const { data: retailer, isLoading, isError, refetch } =
     useRetailerQuery(retailerId);
   const updateRetailer = useUpdateRetailerMutation(retailerId);
@@ -73,7 +75,7 @@ export function RetailerDetailPage({ retailerId }: RetailerDetailPageProps) {
             id="header-online-toggle"
             checked={retailer.isOnline}
             onCheckedChange={(checked) => void handleOnlineToggle(checked)}
-            disabled={isTogglingOnline}
+            disabled={isTogglingOnline || !canWrite}
             size="sm"
           />
           <Label

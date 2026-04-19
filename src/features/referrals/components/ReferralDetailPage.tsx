@@ -2,6 +2,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, User, Users, Calendar, Hash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { useAdminRole } from "@/features/auth/hooks/useAdminRole";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -36,6 +37,7 @@ interface ReferralDetailPageProps {
 
 export function ReferralDetailPage({ referralId }: ReferralDetailPageProps) {
   const navigate = useNavigate();
+  const { canWrite } = useAdminRole();
   const {
     data: code,
     isLoading,
@@ -93,6 +95,7 @@ export function ReferralDetailPage({ referralId }: ReferralDetailPageProps) {
             onCheckedChange={(checked) =>
               toggleMutation.mutate({ id: code.id, isActive: checked })
             }
+            disabled={!canWrite}
           />
           <StatusBadge status={code.isActive ? "active" : "inactive"} />
         </div>

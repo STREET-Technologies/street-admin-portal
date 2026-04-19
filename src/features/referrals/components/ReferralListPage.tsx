@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { useAdminRole } from "@/features/auth/hooks/useAdminRole";
 import {
   Select,
   SelectContent,
@@ -35,6 +36,7 @@ import { CreatePromotionalCodeDialog } from "./CreatePromotionalCodeDialog";
 function createColumns(
   onRowClick: (id: string) => void,
   onToggleActive: (id: string, isActive: boolean) => void,
+  canWrite: boolean,
 ): ColumnDef<ReferralCodeViewModel, unknown>[] {
   return [
     {
@@ -103,6 +105,7 @@ function createColumns(
               onCheckedChange={(checked) =>
                 onToggleActive(code.id, checked)
               }
+              disabled={!canWrite}
               aria-label={`Toggle ${code.code} active`}
             />
             <StatusBadge
@@ -149,6 +152,7 @@ function createColumns(
 // ---------------------------------------------------------------------------
 
 export function ReferralListPage() {
+  const { canWrite } = useAdminRole();
   const navigate = useNavigate();
   const {
     pagination,
@@ -195,8 +199,9 @@ export function ReferralListPage() {
         (id, isActive) => {
           toggleMutation.mutate({ id, isActive });
         },
+        canWrite,
       ),
-    [navigate, toggleMutation],
+    [navigate, toggleMutation, canWrite],
   );
 
   if (isError) {
@@ -225,7 +230,7 @@ export function ReferralListPage() {
         title="Referral Codes"
         description="Manage referral codes and promotions"
       >
-        <Button onClick={() => setCreateDialogOpen(true)}>
+        <Button onClick={() => setCreateDialogOpen(true)} disabled={!canWrite}>
           <Plus className="mr-1.5 size-4" />
           Create Promotional Code
         </Button>

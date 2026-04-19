@@ -2,9 +2,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { EditableField } from "@/components/shared/EditableField";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { ErrorState } from "@/components/shared/ErrorState";
+import { useAdminRole } from "@/features/auth/hooks/useAdminRole";
 import { usePlatformConfigQuery, useUpdatePlatformConfigMutation } from "../api/platform-config-queries";
 
 export function PlatformConfigCard() {
+  const { canWrite } = useAdminRole();
   const { data: config, isLoading, isError, refetch } = usePlatformConfigQuery();
   const mutation = useUpdatePlatformConfigMutation();
 
@@ -39,11 +41,13 @@ export function PlatformConfigCard() {
           label="Delivery Fee (£)"
           value={String(config.deliveryFeeGbp)}
           onSave={(val) => saveField("deliveryFeeGbp", val)}
+          disabled={!canWrite}
         />
         <EditableField
           label="Service Fee (£)"
           value={String(config.serviceFeeGbp)}
           onSave={(val) => saveField("serviceFeeGbp", val)}
+          disabled={!canWrite}
         />
       </CardContent>
     </Card>
