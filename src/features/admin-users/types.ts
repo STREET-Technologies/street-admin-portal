@@ -1,3 +1,5 @@
+import type { AdminRole } from "../auth/types";
+
 /** Shape returned by GET /admin/admin-users (backend user entity). */
 export interface BackendAdminUser {
   id: string;
@@ -5,6 +7,7 @@ export interface BackendAdminUser {
   lastName: string | null;
   email: string;
   createdAt: string;
+  adminRole: AdminRole;
 }
 
 /** Frontend view model for admin users. */
@@ -13,6 +16,7 @@ export interface AdminUserViewModel {
   name: string;
   email: string;
   createdAt: string;
+  adminRole: AdminRole;
 }
 
 export function toAdminUserViewModel(
@@ -25,5 +29,6 @@ export function toAdminUserViewModel(
     name,
     email: user.email,
     createdAt: user.createdAt,
+    adminRole: user.adminRole,
   };
 }

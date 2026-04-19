@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { KeyRound, Loader2, Mail, Shield } from "lucide-react";
+import { toast } from "sonner";
 import {
   Card,
   CardContent,
@@ -7,19 +8,37 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { useAdminRole } from "@/features/auth/hooks/useAdminRole";
+import type { AdminRole } from "@/features/auth/types";
 import { formatDate } from "@/lib/format-utils";
 import { useAdminUsersQuery } from "../api/admin-users-queries";
+import { updateAdminUserRole } from "../api/admin-users-api";
 import { ChangePasswordDialog } from "./ChangePasswordDialog";
 
 export function AdminUsersPage() {
-  const { canWrite } = useAdminRole();
-  const { data: adminUsers, isLoading } = useAdminUsersQuery();
+  const { canWrite, isAdmin } = useAdminRole();
+  const { data: adminUsers, isLoading, refetch } = useAdminUsersQuery();
   const { user: currentUser } = useAuth();
   const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
+
+  async function handleRoleChange(userId: string, newRole: AdminRole) {
+    try {
+      await updateAdminUserRole(userId, newRole);
+      await refetch();
+    } catch {
+      toast.error("Failed to update role");
+    }
+  }
 
   if (isLoading) {
     return (
@@ -83,6 +102,27 @@ export function AdminUsersPage() {
                 Added{" "}
                 {formatDate(admin.createdAt)}
               </p>
+              <div className="flex items-center gap-2 pt-1">
+                {isAdmin && currentUser?.email !== admin.email ? (
+                  <Select
+                    value={admin.adminRole}
+                    onValueChange={(v) => handleRoleChange(admin.id, v as AdminRole)}
+                  >
+                    <SelectTrigger className="w-28 h-7 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="support">Support</SelectItem>
+                      <SelectItem value="viewer">Viewer</SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground capitalize">
+                    {admin.adminRole ?? "admin"}
+                  </span>
+                )}
+              </div>
             </CardContent>
           </Card>
         ))}
