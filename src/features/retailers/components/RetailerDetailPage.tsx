@@ -67,7 +67,7 @@ export function RetailerDetailPage({ retailerId }: RetailerDetailPageProps) {
         status={retailer.status}
         avatarFallback={retailer.name.charAt(0).toUpperCase()}
       >
-        <div className="flex items-center gap-2 rounded-lg border px-3 py-2">
+        <div className={`flex items-center gap-2 rounded-lg border px-3 py-2 transition-colors ${retailer.isOnline ? "border-foreground bg-[#CDFF00]/5 dark:border-[#CDFF00]/50" : "border-border"}`}>
           {isTogglingOnline && (
             <Loader2 className="size-3.5 animate-spin text-muted-foreground" />
           )}
@@ -77,10 +77,11 @@ export function RetailerDetailPage({ retailerId }: RetailerDetailPageProps) {
             onCheckedChange={(checked) => void handleOnlineToggle(checked)}
             disabled={isTogglingOnline || !canWrite}
             size="sm"
+            className="data-[state=checked]:bg-[#CDFF00] dark:data-[state=checked]:bg-[#CDFF00]"
           />
           <Label
             htmlFor="header-online-toggle"
-            className="cursor-pointer text-sm font-medium"
+            className={`cursor-pointer text-sm font-medium transition-colors ${retailer.isOnline ? "text-foreground" : "text-muted-foreground"}`}
           >
             {retailer.isOnline ? "Online" : "Offline"}
           </Label>
