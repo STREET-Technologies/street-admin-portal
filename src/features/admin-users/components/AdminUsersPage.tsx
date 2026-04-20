@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { KeyRound, Loader2, Mail, Shield, UserCheck, UserPlus, UserX, X } from "lucide-react";
+import { KeyRound, Loader2, Mail, Shield, UserPlus, X } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import {
@@ -130,50 +130,32 @@ export function AdminUsersPage() {
                     </span>
                   )}
                   {admin.isAdminDisabled && (
-                    <Badge variant="secondary" className="shrink-0 text-xs">
+                    <Badge variant="outline" className="shrink-0 text-xs text-muted-foreground">
                       Suspended
                     </Badge>
                   )}
                 </CardTitle>
-                <div className="flex items-center gap-1 shrink-0">
-                  {isAdmin && currentUser?.email !== admin.email ? (
-                    <>
-                      {!admin.isAdminDisabled && (
-                        <Select
-                          value={admin.adminRole}
-                          onValueChange={(v) => handleRoleChange(admin.id, v as AdminRole)}
-                        >
-                          <SelectTrigger className="w-24 h-6 text-xs">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent position="popper">
-                            <SelectItem value="admin">Admin</SelectItem>
-                            <SelectItem value="support">Support</SelectItem>
-                            <SelectItem value="viewer">Viewer</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      )}
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className={`size-6 ${admin.isAdminDisabled ? "text-muted-foreground hover:text-foreground" : "text-muted-foreground hover:text-destructive"}`}
-                        onClick={() => void handleToggleDisabled(admin.id, admin.isAdminDisabled)}
-                        disabled={disableMutation.isPending || enableMutation.isPending}
-                        aria-label={admin.isAdminDisabled ? "Re-enable account" : "Suspend account"}
-                        title={admin.isAdminDisabled ? "Re-enable account" : "Suspend account"}
-                      >
-                        {admin.isAdminDisabled
-                          ? <UserCheck className="size-3.5" />
-                          : <UserX className="size-3.5" />
-                        }
-                      </Button>
-                    </>
-                  ) : (
+                {isAdmin && currentUser?.email !== admin.email && !admin.isAdminDisabled ? (
+                  <Select
+                    value={admin.adminRole}
+                    onValueChange={(v) => handleRoleChange(admin.id, v as AdminRole)}
+                  >
+                    <SelectTrigger className="w-24 h-6 text-xs shrink-0">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent position="popper">
+                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="support">Support</SelectItem>
+                      <SelectItem value="viewer">Viewer</SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  !isAdmin || currentUser?.email === admin.email ? (
                     <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground capitalize shrink-0">
                       {admin.adminRole ?? "admin"}
                     </span>
-                  )}
-                </div>
+                  ) : null
+                )}
               </div>
             </CardHeader>
             <CardContent className="space-y-1 text-sm">
@@ -184,6 +166,17 @@ export function AdminUsersPage() {
               <p className="text-xs text-muted-foreground">
                 Added {formatDate(admin.createdAt)}
               </p>
+              {isAdmin && currentUser?.email !== admin.email && (
+                <div className="pt-2 border-t mt-2">
+                  <button
+                    onClick={() => void handleToggleDisabled(admin.id, admin.isAdminDisabled)}
+                    disabled={disableMutation.isPending || enableMutation.isPending}
+                    className={`text-xs transition-colors disabled:opacity-50 ${admin.isAdminDisabled ? "text-muted-foreground hover:text-foreground" : "text-muted-foreground hover:text-destructive dark:hover:text-red-400"}`}
+                  >
+                    {admin.isAdminDisabled ? "Re-enable access" : "Suspend access"}
+                  </button>
+                </div>
+              )}
             </CardContent>
           </Card>
         ))}
