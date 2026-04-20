@@ -3,6 +3,9 @@ import {
   ActivityTimeline,
   type TimelineEvent,
 } from "@/components/shared/ActivityTimeline";
+import { ErrorState } from "@/components/shared/ErrorState";
+import { useUserActivityQuery } from "@/features/audit/api/audit-queries";
+import { AuditTimeline } from "@/features/audit/components/AuditTimeline";
 import { useNotesQuery } from "@/features/notes/api/notes-queries";
 import type { UserViewModel } from "../types";
 
@@ -13,6 +16,7 @@ interface UserActivityTabProps {
 
 export function UserActivityTab({ userId, user }: UserActivityTabProps) {
   const { data: notes, isLoading } = useNotesQuery("user", userId);
+  const auditQuery = useUserActivityQuery(userId);
 
   const events = useMemo<TimelineEvent[]>(() => {
     const items: TimelineEvent[] = [];
@@ -64,10 +68,22 @@ export function UserActivityTab({ userId, user }: UserActivityTabProps) {
   }, [notes, user.createdAt, user.updatedAt]);
 
   return (
-    <ActivityTimeline
-      events={events}
-      isLoading={isLoading}
-      emptyMessage="No activity recorded for this user"
-    />
+    <div>
+      <ActivityTimeline
+        events={events}
+        isLoading={isLoading}
+        emptyMessage="No activity recorded for this user"
+      />
+      <div className="mt-8">
+        <h3 className="mb-4 text-sm font-medium text-muted-foreground">Field Changes</h3>
+        <AuditTimeline
+          entries={auditQuery.data?.data ?? []}
+          isLoading={auditQuery.isLoading}
+        />
+        {auditQuery.isError && (
+          <ErrorState message="Failed to load audit history" />
+        )}
+      </div>
+    </div>
   );
 }
