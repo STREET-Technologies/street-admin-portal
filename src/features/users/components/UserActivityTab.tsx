@@ -62,7 +62,6 @@ export function UserActivityTab({ userId, user }: UserActivityTabProps) {
         </>
       )}
       <div className="mt-8">
-        <h3 className="mb-4 text-sm font-medium text-muted-foreground">Field Changes</h3>
         <AuditTimeline
           entries={auditQuery.data?.data ?? []}
           isLoading={auditQuery.isLoading}
