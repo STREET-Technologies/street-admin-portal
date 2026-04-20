@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { KeyRound, Loader2, Mail, Shield } from "lucide-react";
+import { KeyRound, Loader2, Mail, Shield, UserPlus, X } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import {
   Card,
@@ -24,12 +25,20 @@ import { formatDate } from "@/lib/format-utils";
 import { useAdminUsersQuery } from "../api/admin-users-queries";
 import { updateAdminUserRole } from "../api/admin-users-api";
 import { ChangePasswordDialog } from "./ChangePasswordDialog";
+import { InviteAdminDialog } from "./InviteAdminDialog";
+import {
+  usePendingInvitesQuery,
+  useRevokeInviteMutation,
+} from "../api/invites-queries";
 
 export function AdminUsersPage() {
   const { canWrite, isAdmin } = useAdminRole();
   const { data: adminUsers, isLoading, refetch } = useAdminUsersQuery();
   const { user: currentUser } = useAuth();
   const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const { data: pendingInvites = [] } = usePendingInvitesQuery();
+  const revokeMutation = useRevokeInviteMutation();
 
   async function handleRoleChange(userId: string, newRole: AdminRole) {
     try {
@@ -73,6 +82,12 @@ export function AdminUsersPage() {
   return (
     <div className="space-y-6">
       <PageHeader title="Team" description="Manage user accounts">
+        {isAdmin && (
+          <Button onClick={() => setInviteOpen(true)} size="sm">
+            <UserPlus className="mr-2 size-4" />
+            Invite
+          </Button>
+        )}
         <Button onClick={() => setPasswordDialogOpen(true)} disabled={!canWrite}>
           <KeyRound className="mr-2 size-4" />
           Change My Password
@@ -127,10 +142,47 @@ export function AdminUsersPage() {
         ))}
       </div>
 
+      {isAdmin && pendingInvites.length > 0 && (
+        <div className="mt-8">
+          <h2 className="text-sm font-medium text-muted-foreground mb-3">
+            Pending Invites ({pendingInvites.length})
+          </h2>
+          <div className="divide-y rounded-lg border">
+            {pendingInvites.map((invite) => (
+              <div
+                key={invite.id}
+                className="flex items-center justify-between px-4 py-3"
+              >
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium">{invite.email}</p>
+                  <p className="text-xs text-muted-foreground capitalize">
+                    {invite.adminRole} · expires{" "}
+                    {formatDistanceToNow(new Date(invite.expiresAt), {
+                      addSuffix: true,
+                    })}
+                  </p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="shrink-0 text-muted-foreground hover:text-destructive"
+                  onClick={() => revokeMutation.mutate(invite.id)}
+                  disabled={revokeMutation.isPending}
+                  aria-label="Revoke invite"
+                >
+                  <X className="size-4" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <ChangePasswordDialog
         open={passwordDialogOpen}
         onOpenChange={setPasswordDialogOpen}
       />
+      <InviteAdminDialog open={inviteOpen} onOpenChange={setInviteOpen} />
     </div>
   );
 }
