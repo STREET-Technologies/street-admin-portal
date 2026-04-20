@@ -52,11 +52,16 @@ export function RetailerActivityTab({ retailerId, retailer }: RetailerActivityTa
 
   return (
     <div>
-      <ActivityTimeline
-        events={events}
-        isLoading={isLoading}
-        emptyMessage="No activity recorded for this retailer"
-      />
+      {(isLoading || events.length > 0) && (
+        <>
+          <h3 className="mb-4 text-sm font-medium text-muted-foreground">Notes</h3>
+          <ActivityTimeline
+            events={events}
+            isLoading={isLoading}
+            emptyMessage="No notes recorded"
+          />
+        </>
+      )}
       <div className="mt-8">
         <h3 className="mb-4 text-sm font-medium text-muted-foreground">Field Changes</h3>
         <AuditTimeline
