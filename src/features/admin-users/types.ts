@@ -32,3 +32,17 @@ export function toAdminUserViewModel(
     adminRole: user.adminRole,
   };
 }
+
+export interface BackendAdminInvite {
+  id: string;
+  email: string;
+  adminRole: AdminRole;
+  invitedById: string | null;
+  expiresAt: string;
+  createdAt: string;
+}
+
+export interface SendInvitePayload {
+  email: string;
+  adminRole: AdminRole;
+}
