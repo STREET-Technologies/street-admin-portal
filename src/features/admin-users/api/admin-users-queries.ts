@@ -19,7 +19,7 @@ export function useDisableAdminUserMutation() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (userId: string) => disableAdminUser(userId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: adminUserKeys.all }),
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: adminUserKeys.list() }),
   });
 }
 
@@ -27,6 +27,6 @@ export function useEnableAdminUserMutation() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (userId: string) => enableAdminUser(userId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: adminUserKeys.all }),
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: adminUserKeys.list() }),
   });
 }
