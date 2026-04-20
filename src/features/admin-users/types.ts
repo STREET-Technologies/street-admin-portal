@@ -8,6 +8,7 @@ export interface BackendAdminUser {
   email: string;
   createdAt: string;
   adminRole: AdminRole;
+  isAdminDisabled: boolean;
 }
 
 /** Frontend view model for admin users. */
@@ -17,6 +18,7 @@ export interface AdminUserViewModel {
   email: string;
   createdAt: string;
   adminRole: AdminRole;
+  isAdminDisabled: boolean;
 }
 
 export function toAdminUserViewModel(
@@ -30,6 +32,7 @@ export function toAdminUserViewModel(
     email: user.email,
     createdAt: user.createdAt,
     adminRole: user.adminRole,
+    isAdminDisabled: user.isAdminDisabled,
   };
 }
 
