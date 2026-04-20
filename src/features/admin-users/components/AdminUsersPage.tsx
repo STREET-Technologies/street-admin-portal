@@ -50,7 +50,7 @@ export function AdminUsersPage() {
         toast.success("Account re-enabled");
       } else {
         await disableMutation.mutateAsync(userId);
-        toast.success("Account suspended — active sessions invalidated");
+        toast.success("Access disabled — active sessions invalidated");
       }
     } catch {
       toast.error("Failed to update account status");
@@ -131,7 +131,7 @@ export function AdminUsersPage() {
                   )}
                   {admin.isAdminDisabled && (
                     <Badge variant="outline" className="shrink-0 text-xs text-muted-foreground">
-                      Suspended
+                      Disabled
                     </Badge>
                   )}
                 </CardTitle>
@@ -173,7 +173,7 @@ export function AdminUsersPage() {
                     disabled={disableMutation.isPending || enableMutation.isPending}
                     className={`text-xs transition-colors disabled:opacity-50 ${admin.isAdminDisabled ? "text-muted-foreground hover:text-foreground" : "text-muted-foreground hover:text-destructive dark:hover:text-red-400"}`}
                   >
-                    {admin.isAdminDisabled ? "Re-enable access" : "Suspend access"}
+                    {admin.isAdminDisabled ? "Re-enable access" : "Disable access"}
                   </button>
                 </div>
               )}
