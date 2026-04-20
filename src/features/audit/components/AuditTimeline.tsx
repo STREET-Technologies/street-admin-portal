@@ -24,14 +24,25 @@ function toTimelineEvent(entry: AuditEntry): TimelineEvent {
 interface AuditTimelineProps {
   entries: AuditEntry[];
   isLoading?: boolean;
+  entityCreatedAt?: string;
 }
 
-export function AuditTimeline({ entries, isLoading }: AuditTimelineProps) {
+export function AuditTimeline({ entries, isLoading, entityCreatedAt }: AuditTimelineProps) {
+  const events: TimelineEvent[] = entries.map(toTimelineEvent);
+
+  if (entityCreatedAt) {
+    events.push({
+      type: "created",
+      title: "Account created",
+      timestamp: entityCreatedAt,
+    });
+  }
+
   return (
     <ActivityTimeline
-      events={entries.map(toTimelineEvent)}
+      events={events}
       isLoading={isLoading}
-      emptyMessage="No field changes recorded yet"
+      emptyMessage="No activity recorded yet"
     />
   );
 }

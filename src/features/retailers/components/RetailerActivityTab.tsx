@@ -41,24 +41,6 @@ export function RetailerActivityTab({ retailerId, retailer }: RetailerActivityTa
       }
     }
 
-    // Account updated (only if different from createdAt)
-    if (retailer.updatedAt && retailer.updatedAt !== retailer.createdAt) {
-      items.push({
-        type: "updated",
-        title: "Account updated",
-        timestamp: retailer.updatedAt,
-      });
-    }
-
-    // Account created
-    if (retailer.createdAt) {
-      items.push({
-        type: "created",
-        title: "Account created",
-        timestamp: retailer.createdAt,
-      });
-    }
-
     // Sort newest first
     items.sort(
       (a, b) =>
@@ -66,7 +48,7 @@ export function RetailerActivityTab({ retailerId, retailer }: RetailerActivityTa
     );
 
     return items;
-  }, [notes, retailer.createdAt, retailer.updatedAt]);
+  }, [notes]);
 
   return (
     <div>
@@ -80,6 +62,7 @@ export function RetailerActivityTab({ retailerId, retailer }: RetailerActivityTa
         <AuditTimeline
           entries={auditQuery.data?.data ?? []}
           isLoading={auditQuery.isLoading}
+          entityCreatedAt={retailer.createdAt}
         />
         {auditQuery.isError && (
           <ErrorState message="Failed to load audit history" />

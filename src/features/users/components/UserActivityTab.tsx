@@ -40,24 +40,6 @@ export function UserActivityTab({ userId, user }: UserActivityTabProps) {
       }
     }
 
-    // Account updated (only if different from createdAt)
-    if (user.updatedAt && user.updatedAt !== user.createdAt) {
-      items.push({
-        type: "updated",
-        title: "Account updated",
-        timestamp: user.updatedAt,
-      });
-    }
-
-    // Account created
-    if (user.createdAt) {
-      items.push({
-        type: "created",
-        title: "Account created",
-        timestamp: user.createdAt,
-      });
-    }
-
     // Sort newest first
     items.sort(
       (a, b) =>
@@ -65,7 +47,7 @@ export function UserActivityTab({ userId, user }: UserActivityTabProps) {
     );
 
     return items;
-  }, [notes, user.createdAt, user.updatedAt]);
+  }, [notes]);
 
   return (
     <div>
@@ -79,6 +61,7 @@ export function UserActivityTab({ userId, user }: UserActivityTabProps) {
         <AuditTimeline
           entries={auditQuery.data?.data ?? []}
           isLoading={auditQuery.isLoading}
+          entityCreatedAt={user.createdAt}
         />
         {auditQuery.isError && (
           <ErrorState message="Failed to load audit history" />
