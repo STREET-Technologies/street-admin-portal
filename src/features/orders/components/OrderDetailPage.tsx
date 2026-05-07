@@ -35,6 +35,7 @@ import { formatDateTime } from "@/lib/format-utils";
 import { useOrderDetailQuery } from "../api/order-queries";
 import { toOrderDetailViewModel } from "../types";
 import type { OrderDetailViewModel, OrderItemViewModel } from "../types";
+import { StuckDeliveryControl } from "./StuckDeliveryControl";
 
 interface OrderDetailPageProps {
   orderId: string;
@@ -129,6 +130,11 @@ export function OrderDetailPage({ orderId }: OrderDetailPageProps) {
           {orderDetail.delivery && (
             <DeliveryCard delivery={orderDetail.delivery} />
           )}
+          <StuckDeliveryControl
+            orderUuid={orderDetail.id}
+            orderDisplayId={orderDetail.orderId}
+            orderStatus={orderDetail.status}
+          />
           {orderDetail.shippingAddress && (
             <AddressCard address={orderDetail.shippingAddress} />
           )}
