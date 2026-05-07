@@ -120,6 +120,33 @@ function createColumns(
       cell: ({ row }) => <StatusBadge status={row.original.status} size="sm" />,
     },
     {
+      accessorKey: "reconciliationAttempts",
+      header: "Delivery",
+      enableSorting: false,
+      cell: ({ row }) => {
+        // TT-166 — "stuck delivery" indicator. Hidden for healthy orders.
+        const attempts = row.original.reconciliationAttempts;
+        if (attempts === 0) return <span className="text-xs text-muted-foreground">—</span>;
+        const isStuck = attempts >= 12;
+        return (
+          <span
+            className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${
+              isStuck
+                ? "border-red-300 bg-red-100 text-red-800"
+                : "border-amber-300 bg-amber-100 text-amber-900"
+            }`}
+            title={
+              isStuck
+                ? `Reconciliation cron gave up (${attempts}/12 attempts) — manual resolve required`
+                : `Reconciliation cron is attempting to recover this delivery (${attempts}/12 attempts)`
+            }
+          >
+            {isStuck ? `STUCK ${attempts}/12` : `Reconciling ${attempts}/12`}
+          </span>
+        );
+      },
+    },
+    {
       accessorKey: "totalAmount",
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Total" />

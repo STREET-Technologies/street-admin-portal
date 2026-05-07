@@ -43,6 +43,12 @@ export interface BackendOrder {
   shopifyOrderId?: string | null;
   // Flat fields from global list raw query (not present on detail endpoint)
   itemCount?: number | null;
+  /**
+   * Reconciliation attempts from delivery_state (TT-166). 0 for orders that
+   * never had a Stuart delivery or whose webhooks arrived normally. >0 means
+   * the cron is/was attempting to recover the delivery; >=12 means it gave up.
+   */
+  reconciliationAttempts?: number | null;
 }
 
 /** Individual item within an order. */
@@ -82,6 +88,8 @@ export interface OrderViewModel {
   totalAmountRaw: number | null; // Raw for sorting
   itemCount: number;
   createdAt: string;
+  /** Reconciliation attempts (TT-166) — drives the "stuck delivery" badge in the list view. */
+  reconciliationAttempts: number;
   // Enriched fields for detail view
   retailerName?: string;
   retailerId?: string;
@@ -195,6 +203,7 @@ export function toOrderViewModel(backend: BackendOrder): OrderViewModel {
     totalAmountRaw: typeof backend.totalAmount === "string" ? parseFloat(backend.totalAmount) : backend.totalAmount,
     itemCount: backend.itemCount ?? backend.orderItems?.length ?? 0,
     createdAt: backend.createdAt,
+    reconciliationAttempts: backend.reconciliationAttempts ?? 0,
     retailerName: backend.vendor?.storeName ?? backend.vendorName,
     retailerId: backend.vendor?.id ?? backend.vendorId,
     userId: backend.user?.id ?? backend.customerId ?? undefined,
