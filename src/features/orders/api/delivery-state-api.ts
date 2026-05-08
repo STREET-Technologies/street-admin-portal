@@ -4,6 +4,16 @@ import { api } from "@/lib/api-client";
 // Backend response shape — mirrors DeliveryStateAdminController.getDeliveryState
 // ---------------------------------------------------------------------------
 
+/** The most recent manual admin resolution against this order, if any. */
+export interface ManualResolution {
+  resolvedAt: string;
+  adminUserId: string | null;
+  /** 'delivered' | 'cancelled' (stop_polling does not produce an audit event). */
+  resolution: string;
+  reason: string | null;
+  previousTopic: string | null;
+}
+
 export interface DeliveryStateInfo {
   orderId: string;
   provider: string;
@@ -12,6 +22,8 @@ export interface DeliveryStateInfo {
   reconciliationAttempts: number;
   rtdbClearedAt: string | null;
   updatedAt: string;
+  /** TT-166 — populated when an admin has manually resolved this order's stuck delivery. */
+  latestManualResolution: ManualResolution | null;
 }
 
 export type StuckResolution = "delivered" | "cancelled" | "stop_polling";
