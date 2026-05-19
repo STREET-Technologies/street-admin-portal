@@ -40,39 +40,45 @@ export function UserOverviewTab({ user }: UserOverviewTabProps) {
   const updateUser = useUpdateUserMutation(user.id);
   const { data: stats, isLoading: statsLoading } = useUserStatsQuery(user.id);
 
+  const showBadges = user.isTestAccount || user.isAnonymized;
+
   return (
     <div className="space-y-6">
       {/* Stats row */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
-          label="Total Orders"
+          label="Total orders"
           value={statsLoading ? undefined : String(stats?.totalOrders ?? 0)}
           isLoading={statsLoading}
         />
         <StatCard
-          label="Total Spent"
+          label="Total spent"
           value={statsLoading ? undefined : formatGBP(stats?.totalSpent ?? "0")}
           isLoading={statsLoading}
         />
         <StatCard
-          label="First Order"
-          value={statsLoading ? undefined : formatShortDate(stats?.firstOrderDate ?? null)}
+          label="First order"
+          value={
+            statsLoading ? undefined : formatShortDate(stats?.firstOrderDate ?? null)
+          }
           isLoading={statsLoading}
         />
         <StatCard
-          label="Last Order"
-          value={statsLoading ? undefined : formatShortDate(stats?.lastOrderDate ?? null)}
+          label="Last order"
+          value={
+            statsLoading ? undefined : formatShortDate(stats?.lastOrderDate ?? null)
+          }
           isLoading={statsLoading}
         />
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Contact Info */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Contact Information</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+      {/* Customer info — single card consolidating contact + account fields */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Customer info</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-4">
             <EditableField
               label="Email"
               value={user.email}
@@ -89,65 +95,61 @@ export function UserOverviewTab({ user }: UserOverviewTabProps) {
               }}
               disabled={!canWrite}
             />
-            {user.language && (
-              <EditableField
-                label="Language"
-                value={user.language}
-                onSave={async (val) => {
-                  await updateUser.mutateAsync({ language: val });
-                }}
-                disabled={!canWrite}
-              />
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Account Details */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Account Details</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
             <CopyableField label="User ID" value={user.id} mono />
             <div className="space-y-1">
-              <p className="text-xs font-medium text-muted-foreground">Role</p>
+              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                Role
+              </p>
               <p className="text-sm capitalize">{user.role}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                Created
+              </p>
+              <p className="text-sm tabular-nums">
+                {formatDateTime(user.createdAt)}
+              </p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                Last updated
+              </p>
+              <p className="text-sm tabular-nums">
+                {formatDateTime(user.updatedAt)}
+              </p>
             </div>
             {user.ssoProvider && (
               <div className="space-y-1">
-                <p className="text-xs font-medium text-muted-foreground">
-                  SSO Provider
+                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  SSO provider
                 </p>
                 <p className="text-sm capitalize">{user.ssoProvider}</p>
               </div>
             )}
-            <div className="space-y-1">
-              <p className="text-xs font-medium text-muted-foreground">
-                Created
-              </p>
-              <p className="text-sm">{formatDateTime(user.createdAt)}</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs font-medium text-muted-foreground">
-                Last Updated
-              </p>
-              <p className="text-sm">{formatDateTime(user.updatedAt)}</p>
-            </div>
-            <div className="flex gap-2">
+          </div>
+
+          {showBadges && (
+            <div className="flex gap-2 pt-1">
               {user.isTestAccount && (
-                <Badge variant="outline" className="text-amber-700 border-amber-300 dark:text-amber-400 dark:border-amber-700">
-                  Test Account
+                <Badge
+                  variant="outline"
+                  className="border-amber-300 text-amber-700"
+                >
+                  Test account
                 </Badge>
               )}
               {user.isAnonymized && (
-                <Badge variant="outline" className="text-gray-500 border-gray-300 dark:text-gray-400 dark:border-gray-600">
+                <Badge
+                  variant="outline"
+                  className="border-gray-300 text-gray-500"
+                >
                   Anonymized
                 </Badge>
               )}
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
@@ -164,11 +166,13 @@ function StatCard({
   return (
     <Card>
       <CardContent className="pt-6">
-        <p className="text-xs font-medium text-muted-foreground">{label}</p>
+        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          {label}
+        </p>
         {isLoading ? (
           <Skeleton className="mt-1 h-6 w-20" />
         ) : (
-          <p className="mt-1 text-lg font-semibold">{value}</p>
+          <p className="mt-1 text-lg font-semibold tabular-nums">{value}</p>
         )}
       </CardContent>
     </Card>
