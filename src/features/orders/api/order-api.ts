@@ -7,8 +7,17 @@ import type { BackendOrder } from "../types";
 
 export interface GetOrdersParams {
   search?: string;
+  /**
+   * Single status (e.g. "DELIVERED") or comma-separated list
+   * (e.g. "CONFIRMED,IN_PACKING,IN_DELIVERY") for multi-status tab buckets.
+   */
   status?: string;
   paymentMethod?: string;
+  /** When true, only orders whose reconciliation cron gave up (powers the Stuck tab). */
+  stuck?: boolean;
+  /** Backend allowlist: orderId | customerName | totalAmount | createdAt */
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
   page?: number;
   limit?: number;
 }
@@ -67,6 +76,9 @@ export async function getOrders(
   if (params.search) searchParams.set("search", params.search);
   if (params.status) searchParams.set("status", params.status);
   if (params.paymentMethod) searchParams.set("paymentMethod", params.paymentMethod);
+  if (params.stuck) searchParams.set("stuck", "true");
+  if (params.sortBy) searchParams.set("sortBy", params.sortBy);
+  if (params.sortOrder) searchParams.set("sortOrder", params.sortOrder);
   if (params.page) searchParams.set("page", String(params.page));
   if (params.limit) searchParams.set("limit", String(params.limit));
   const query = searchParams.toString();

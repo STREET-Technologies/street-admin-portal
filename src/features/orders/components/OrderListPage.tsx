@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { DataTable } from "@/components/shared/DataTable";
 import { DataTableColumnHeader } from "@/components/shared/DataTableColumnHeader";
@@ -23,19 +24,52 @@ import { useOrdersQuery } from "../api/order-queries";
 import type { OrderViewModel } from "../types";
 
 // ---------------------------------------------------------------------------
-// Order status options for filter dropdown
+// Canonical status buckets — map each tab to the backend statuses it covers.
+// Backend supports comma-separated `status` and a `stuck` boolean (v5.2.12+).
 // ---------------------------------------------------------------------------
 
-const ORDER_STATUS_OPTIONS = [
-  { value: "all", label: "All statuses" },
-  { value: "PENDING", label: "Pending" },
-  { value: "CONFIRMED", label: "Confirmed" },
-  { value: "PREPARING", label: "Preparing" },
-  { value: "READY", label: "Ready" },
-  { value: "IN_DELIVERY", label: "In Delivery" },
-  { value: "DELIVERED", label: "Delivered" },
-  { value: "CANCELLED", label: "Cancelled" },
-] as const;
+type TabKey =
+  | "all"
+  | "new"
+  | "in-progress"
+  | "stuck"
+  | "declined"
+  | "delivered"
+  | "cancelled";
+
+const ORDER_TABS: Array<{ value: TabKey; label: string }> = [
+  { value: "all", label: "All" },
+  { value: "new", label: "New" },
+  { value: "in-progress", label: "In Progress" },
+  { value: "stuck", label: "Stuck" },
+  { value: "declined", label: "Declined" },
+  { value: "delivered", label: "Delivered" },
+  { value: "cancelled", label: "Cancelled" },
+];
+
+function tabToQueryParams(
+  tab: TabKey,
+): { status?: string; stuck?: boolean } {
+  switch (tab) {
+    case "all":
+      return {};
+    case "new":
+      return { status: "PENDING,AWAITING_ACCEPTANCE,PENDING_PAYMENT" };
+    case "in-progress":
+      return {
+        status:
+          "CONFIRMED,IN_PACKING,READY_FOR_DELIVERY,WAITING_FOR_PICKUP,IN_DELIVERY,SHIPPED",
+      };
+    case "stuck":
+      return { stuck: true };
+    case "declined":
+      return { status: "REJECTED,MISSED" };
+    case "delivered":
+      return { status: "DELIVERED,COMPLETED" };
+    case "cancelled":
+      return { status: "CANCELLED,PAYMENT_FAILED" };
+  }
+}
 
 const PAYMENT_METHOD_OPTIONS = [
   { value: "all", label: "All types" },
@@ -130,10 +164,10 @@ function createColumns(
         const isStuck = attempts >= 12;
         return (
           <span
-            className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${
+            className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider tabular-nums ${
               isStuck
-                ? "border-red-300 bg-red-100 text-red-800"
-                : "border-amber-300 bg-amber-100 text-amber-900"
+                ? "bg-[hsl(var(--status-stuck-bg))] text-[hsl(var(--status-stuck-fg))]"
+                : "bg-[hsl(var(--status-pending-bg))] text-[hsl(var(--status-pending-fg))]"
             }`}
             title={
               isStuck
@@ -141,7 +175,7 @@ function createColumns(
                 : `Reconciliation cron is attempting to recover this delivery (${attempts}/12 attempts)`
             }
           >
-            {isStuck ? `STUCK ${attempts}/12` : `Reconciling ${attempts}/12`}
+            {isStuck ? `Stuck ${attempts}/12` : `Reconciling ${attempts}/12`}
           </span>
         );
       },
@@ -152,7 +186,7 @@ function createColumns(
         <DataTableColumnHeader column={column} title="Total" />
       ),
       cell: ({ row }) => (
-        <span className="text-sm font-medium">{row.original.totalAmount}</span>
+        <span className="text-sm font-medium tabular-nums">{row.original.totalAmount}</span>
       ),
       sortingFn: (rowA, rowB) => {
         const a = rowA.original.totalAmountRaw ?? 0;
@@ -195,9 +229,11 @@ export function OrderListPage() {
 
   // Filter state
   const [searchValue, setSearchValue] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [tabFilter, setTabFilter] = useState<TabKey>("all");
   const [paymentMethodFilter, setPaymentMethodFilter] = useState<string>("all");
   const debouncedSearch = useDebounce(searchValue, 300);
+
+  const tabParams = tabToQueryParams(tabFilter);
 
   // Fetch orders from global endpoint with server-side search/filter/pagination
   const {
@@ -207,8 +243,11 @@ export function OrderListPage() {
     refetch,
   } = useOrdersQuery({
     search: debouncedSearch || undefined,
-    status: statusFilter !== "all" ? statusFilter : undefined,
+    status: tabParams.status,
+    stuck: tabParams.stuck,
     paymentMethod: paymentMethodFilter !== "all" ? paymentMethodFilter : undefined,
+    sortBy: searchParams.sortBy,
+    sortOrder: searchParams.sortOrder,
     page: searchParams.page,
     limit: searchParams.limit,
   });
@@ -243,6 +282,24 @@ export function OrderListPage() {
     <div className="space-y-6">
       <PageHeader title="Orders" description="Track and manage orders" />
 
+      {/* Status tabs — bucket orders by canonical state */}
+      <Tabs
+        value={tabFilter}
+        onValueChange={(v) => setTabFilter(v as TabKey)}
+      >
+        <TabsList className="h-auto bg-transparent border-b border-border rounded-none p-0 w-full justify-start gap-1">
+          {ORDER_TABS.map((tab) => (
+            <TabsTrigger
+              key={tab.value}
+              value={tab.value}
+              className="relative rounded-b-none rounded-t-md border-b-2 border-transparent bg-transparent px-3 pb-2 pt-2 -mb-px text-sm font-medium text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground data-[state=active]:border-brand data-[state=active]:bg-brand data-[state=active]:text-brand-foreground data-[state=active]:shadow-none"
+            >
+              {tab.label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
+
       {/* Filters */}
       <div className="flex items-center gap-4">
         <div className="relative max-w-sm flex-1">
@@ -254,20 +311,6 @@ export function OrderListPage() {
             className="pl-9"
           />
         </div>
-
-        {/* Status filter */}
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[160px]">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent position="popper">
-            {ORDER_STATUS_OPTIONS.map((opt) => (
-              <SelectItem key={opt.value} value={opt.value}>
-                {opt.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
 
         {/* Payment method filter */}
         <Select value={paymentMethodFilter} onValueChange={setPaymentMethodFilter}>
