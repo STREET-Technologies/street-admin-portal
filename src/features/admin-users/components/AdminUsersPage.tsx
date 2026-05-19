@@ -1,14 +1,9 @@
 import { useState } from "react";
-import { KeyRound, Loader2, Mail, Shield, UserPlus, X } from "lucide-react";
+import { KeyRound, Loader2, Shield, UserPlus, X } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -111,36 +106,61 @@ export function AdminUsersPage() {
         </Button>
       </PageHeader>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {adminUsers.map((admin) => (
-          <Card
-            key={admin.id}
-            className={admin.isAdminDisabled ? "opacity-60" : undefined}
-          >
-            <CardHeader className="pb-3">
-              <div className="flex items-start justify-between gap-2">
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <Shield className="size-4 shrink-0 text-muted-foreground" />
-                  <span className={`truncate ${admin.isAdminDisabled ? "line-through text-muted-foreground" : ""}`}>
+      {/* Team list — one row per admin user, matching the Pending Invites pattern */}
+      <div className="divide-y rounded-lg border">
+        {adminUsers.map((admin) => {
+          const isYou = currentUser?.email === admin.email;
+          const canManageThisRow = isAdmin && !isYou;
+          return (
+            <div
+              key={admin.id}
+              className={cn(
+                "flex items-center justify-between gap-3 px-4 py-3",
+                admin.isAdminDisabled && "opacity-60",
+              )}
+            >
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <p
+                    className={cn(
+                      "truncate text-sm font-medium",
+                      admin.isAdminDisabled &&
+                        "line-through text-muted-foreground",
+                    )}
+                  >
                     {admin.name}
-                  </span>
-                  {currentUser?.email === admin.email && (
-                    <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary shrink-0">
+                  </p>
+                  {isYou && (
+                    <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
                       You
                     </span>
                   )}
                   {admin.isAdminDisabled && (
-                    <Badge variant="outline" className="shrink-0 text-xs text-muted-foreground">
+                    <Badge
+                      variant="outline"
+                      className="shrink-0 text-xs text-muted-foreground"
+                    >
                       Disabled
                     </Badge>
                   )}
-                </CardTitle>
-                {isAdmin && currentUser?.email !== admin.email && !admin.isAdminDisabled ? (
+                </div>
+                <p className="truncate text-xs text-muted-foreground">
+                  {admin.email}{" "}
+                  <span className="tabular-nums">
+                    · Added {formatDate(admin.createdAt)}
+                  </span>
+                </p>
+              </div>
+
+              <div className="flex shrink-0 items-center gap-3">
+                {canManageThisRow && !admin.isAdminDisabled ? (
                   <Select
                     value={admin.adminRole}
-                    onValueChange={(v) => handleRoleChange(admin.id, v as AdminRole)}
+                    onValueChange={(v) =>
+                      handleRoleChange(admin.id, v as AdminRole)
+                    }
                   >
-                    <SelectTrigger className="w-24 h-6 text-xs shrink-0">
+                    <SelectTrigger className="h-8 w-28 text-xs">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent position="popper">
@@ -150,36 +170,34 @@ export function AdminUsersPage() {
                     </SelectContent>
                   </Select>
                 ) : (
-                  !isAdmin || currentUser?.email === admin.email ? (
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground capitalize shrink-0">
-                      {admin.adminRole ?? "admin"}
-                    </span>
-                  ) : null
+                  <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium capitalize text-muted-foreground">
+                    {admin.adminRole ?? "admin"}
+                  </span>
+                )}
+
+                {canManageThisRow && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      void handleToggleDisabled(admin.id, admin.isAdminDisabled)
+                    }
+                    disabled={
+                      disableMutation.isPending || enableMutation.isPending
+                    }
+                    className={cn(
+                      "text-xs transition-colors disabled:opacity-50",
+                      admin.isAdminDisabled
+                        ? "text-muted-foreground hover:text-foreground"
+                        : "text-muted-foreground hover:text-destructive",
+                    )}
+                  >
+                    {admin.isAdminDisabled ? "Re-enable" : "Disable"}
+                  </button>
                 )}
               </div>
-            </CardHeader>
-            <CardContent className="space-y-1 text-sm">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Mail className="size-3.5 shrink-0" />
-                <span className="truncate">{admin.email}</span>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Added {formatDate(admin.createdAt)}
-              </p>
-              {isAdmin && currentUser?.email !== admin.email && (
-                <div className="pt-2 border-t mt-2">
-                  <button
-                    onClick={() => void handleToggleDisabled(admin.id, admin.isAdminDisabled)}
-                    disabled={disableMutation.isPending || enableMutation.isPending}
-                    className={`text-xs transition-colors disabled:opacity-50 ${admin.isAdminDisabled ? "text-muted-foreground hover:text-foreground" : "text-muted-foreground hover:text-destructive dark:hover:text-red-400"}`}
-                  >
-                    {admin.isAdminDisabled ? "Re-enable access" : "Disable access"}
-                  </button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        ))}
+            </div>
+          );
+        })}
       </div>
 
       {isAdmin && pendingInvites.length > 0 && (

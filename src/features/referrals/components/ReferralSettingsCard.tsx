@@ -1,14 +1,7 @@
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { EditableField } from "@/components/shared/EditableField";
-import { LoadingState } from "@/components/shared/LoadingState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { useAdminRole } from "@/features/auth/hooks/useAdminRole";
 import {
@@ -16,27 +9,22 @@ import {
   useUpdateReferralSettingsMutation,
 } from "../api/referral-queries";
 
+/**
+ * Referral program section.
+ *
+ * Renders as a flat page section (matches PlatformConfigCard).
+ * The Active switch lives on the right of the section header.
+ */
 export function ReferralSettingsCard() {
   const { canWrite } = useAdminRole();
-  const { data: settings, isLoading, isError, error, refetch } =
-    useReferralSettingsQuery();
+  const {
+    data: settings,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useReferralSettingsQuery();
   const mutation = useUpdateReferralSettingsMutation();
-
-  if (isLoading) {
-    return <LoadingState variant="card" />;
-  }
-
-  if (isError || !settings) {
-    return (
-      <ErrorState
-        title="Failed to load referral settings"
-        message={
-          error instanceof Error ? error.message : "Settings not found"
-        }
-        onRetry={() => void refetch()}
-      />
-    );
-  }
 
   async function saveField(field: string, value: string) {
     const numVal = parseFloat(value);
@@ -45,15 +33,15 @@ export function ReferralSettingsCard() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle>Referral Program</CardTitle>
-            <CardDescription>
-              Configure reward amounts and program behaviour
-            </CardDescription>
-          </div>
+    <section className="space-y-4">
+      <header className="flex items-start justify-between gap-4">
+        <div className="space-y-1">
+          <h2 className="text-base font-semibold">Referral program</h2>
+          <p className="text-sm text-muted-foreground">
+            Configure reward amounts and program behaviour.
+          </p>
+        </div>
+        {settings && (
           <div className="flex items-center gap-2">
             <Label htmlFor="referral-active" className="text-sm">
               {settings.isActive ? "Active" : "Inactive"}
@@ -67,10 +55,23 @@ export function ReferralSettingsCard() {
               disabled={!canWrite}
             />
           </div>
+        )}
+      </header>
+
+      {isLoading ? (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <Skeleton className="h-12" />
+          <Skeleton className="h-12" />
+          <Skeleton className="h-12" />
         </div>
-      </CardHeader>
-      <CardContent>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      ) : isError || !settings ? (
+        <ErrorState
+          title="Failed to load referral settings"
+          message={error instanceof Error ? error.message : "Settings not found"}
+          onRetry={() => void refetch()}
+        />
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <EditableField
             label="Friend reward (GBP)"
             value={String(settings.defaultFriendRewardValue)}
@@ -98,7 +99,6 @@ export function ReferralSettingsCard() {
             }
             onSave={(v) => {
               if (v.toLowerCase() === "unlimited") {
-                // Can't unset via PATCH easily; keep as-is
                 return Promise.resolve();
               }
               return saveField("maxUsesPerCode", v);
@@ -121,18 +121,18 @@ export function ReferralSettingsCard() {
             disabled={!canWrite}
           />
           <div className="space-y-1">
-            <p className="text-xs font-medium text-muted-foreground">
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
               Credit cap
             </p>
-            <p className="text-sm">
-              {"\u00A3"}25.00{" "}
+            <p className="text-sm tabular-nums">
+              {"£"}25.00{" "}
               <span className="text-xs text-muted-foreground">
                 (hardcoded in CreditService)
               </span>
             </p>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      )}
+    </section>
   );
 }

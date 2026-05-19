@@ -1,5 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, User, Users, Calendar, Hash } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useAdminRole } from "@/features/auth/hooks/useAdminRole";
@@ -103,20 +103,17 @@ export function ReferralDetailPage({ referralId }: ReferralDetailPageProps) {
 
       <Separator />
 
-      {/* Info cards */}
+      {/* Info cards — compact stat-card pattern, no decorative icons */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+        <Card className="py-3 gap-1">
+          <CardContent className="px-4">
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
               Owner
-            </CardTitle>
-            <User className="size-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
+            </p>
             {code.ownerId ? (
               <button
                 type="button"
-                className="text-sm font-medium hover:underline"
+                className="mt-0.5 text-sm font-medium hover:underline"
                 onClick={() =>
                   void navigate({
                     to: "/users/$userId",
@@ -127,50 +124,45 @@ export function ReferralDetailPage({ referralId }: ReferralDetailPageProps) {
                 {code.ownerName}
               </button>
             ) : (
-              <span className="text-sm text-muted-foreground">
+              <p className="mt-0.5 text-sm text-muted-foreground">
                 {code.belongsTo || "No owner (promotional)"}
-              </span>
+              </p>
             )}
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+        <Card className="py-3 gap-1">
+          <CardContent className="px-4">
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
               Uses
-            </CardTitle>
-            <Users className="size-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{code.totalUses}</p>
-            <p className="text-xs text-muted-foreground">
+            </p>
+            <p className="mt-0.5 text-xl font-semibold tabular-nums">
+              {code.totalUses}
+            </p>
+            <p className="text-xs text-muted-foreground tabular-nums">
               {code.successfulReferrals} successful
               {code.maxUses != null && ` / ${code.maxUses} max`}
             </p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+        <Card className="py-3 gap-1">
+          <CardContent className="px-4">
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
               Created
-            </CardTitle>
-            <Calendar className="size-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm font-medium">{formatDate(code.createdAt)}</p>
+            </p>
+            <p className="mt-0.5 text-sm font-medium tabular-nums">
+              {formatDate(code.createdAt)}
+            </p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+        <Card className="py-3 gap-1">
+          <CardContent className="px-4">
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
               Expires
-            </CardTitle>
-            <Hash className="size-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm font-medium">
+            </p>
+            <p className="mt-0.5 text-sm font-medium tabular-nums">
               {code.expiresAt ? formatDate(code.expiresAt) : "Never"}
             </p>
           </CardContent>

@@ -10,6 +10,7 @@ import { LoadingState } from "@/components/shared/LoadingState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { useUserQuery } from "../api/user-queries";
 import { useTabParam } from "@/hooks/use-tab-param";
+import { formatDate } from "@/lib/format-utils";
 import { UserOverviewTab } from "./UserOverviewTab";
 import { UserOrdersTab } from "./UserOrdersTab";
 import { UserAddressesTab } from "./UserAddressesTab";
@@ -55,11 +56,29 @@ export function UserDetailPage({ userId }: UserDetailPageProps) {
       {/* Header */}
       <EntityDetailHeader
         title={user.name}
-        subtitle={user.email !== "No email" ? user.email : undefined}
         status={user.status}
         avatarUrl={user.avatarUrl ?? undefined}
         avatarFallback={initials}
       />
+
+      {/* Created / updated — small meta row matching the retailer pattern.
+          Email lives in the Customer info card so it's not duplicated here. */}
+      <div className="flex gap-6 text-xs text-muted-foreground">
+        <span className="inline-flex gap-1.5">
+          <span className="font-medium uppercase tracking-wider">Created</span>
+          <span className="tabular-nums text-foreground/80">
+            {formatDate(user.createdAt)}
+          </span>
+        </span>
+        <span className="inline-flex gap-1.5">
+          <span className="font-medium uppercase tracking-wider">
+            Last updated
+          </span>
+          <span className="tabular-nums text-foreground/80">
+            {formatDate(user.updatedAt)}
+          </span>
+        </span>
+      </div>
 
       <Separator />
 

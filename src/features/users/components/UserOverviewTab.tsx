@@ -8,7 +8,6 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { CopyableField } from "@/components/shared/CopyableField";
 import { EditableField } from "@/components/shared/EditableField";
-import { formatDateTime } from "@/lib/format-utils";
 import { useUpdateUserMutation, useUserStatsQuery } from "../api/user-queries";
 import { useAdminRole } from "@/features/auth/hooks/useAdminRole";
 import type { UserViewModel } from "../types";
@@ -102,22 +101,6 @@ export function UserOverviewTab({ user }: UserOverviewTabProps) {
               </p>
               <p className="text-sm capitalize">{user.role}</p>
             </div>
-            <div className="space-y-1">
-              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                Created
-              </p>
-              <p className="text-sm tabular-nums">
-                {formatDateTime(user.createdAt)}
-              </p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                Last updated
-              </p>
-              <p className="text-sm tabular-nums">
-                {formatDateTime(user.updatedAt)}
-              </p>
-            </div>
             {user.ssoProvider && (
               <div className="space-y-1">
                 <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
@@ -164,15 +147,15 @@ function StatCard({
   isLoading: boolean;
 }) {
   return (
-    <Card>
-      <CardContent className="pt-6">
+    <Card className="py-3 gap-1">
+      <CardContent className="px-4">
         <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
           {label}
         </p>
         {isLoading ? (
           <Skeleton className="mt-1 h-6 w-20" />
         ) : (
-          <p className="mt-1 text-lg font-semibold tabular-nums">{value}</p>
+          <p className="mt-0.5 text-xl font-semibold tabular-nums">{value}</p>
         )}
       </CardContent>
     </Card>
