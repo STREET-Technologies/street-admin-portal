@@ -59,7 +59,7 @@ export function OrderDetailPage({ orderId }: OrderDetailPageProps) {
   if (isError || !backendOrder) {
     return (
       <div className="space-y-6">
-        <BackButton to="/orders" label="Orders" />
+        <BackButton to="/orders" label="Orders" useHistory />
         <ErrorState
           title="Order not found"
           message="This order could not be loaded. Please check the order ID and try again."
@@ -89,7 +89,7 @@ export function OrderDetailPage({ orderId }: OrderDetailPageProps) {
 
   return (
     <div className="space-y-6">
-      <BackButton to="/orders" label="Orders" />
+      <BackButton to="/orders" label="Orders" useHistory />
 
       {/* Header carries the order ID, customer name, order + payment status pills */}
       <EntityDetailHeader

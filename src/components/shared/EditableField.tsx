@@ -103,7 +103,7 @@ export function EditableField({
   if (isEditing) {
     return (
       <div className={cn("space-y-1", className)}>
-        <p className="text-xs font-medium text-muted-foreground">{label}</p>
+        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{label}</p>
         <div className="flex items-center gap-1.5">
           <Input
             ref={inputRef}
@@ -143,7 +143,7 @@ export function EditableField({
   // ---------- Read-only mode ----------
   return (
     <div className={cn("group/field space-y-1", className)}>
-      <p className="text-xs font-medium text-muted-foreground">{label}</p>
+      <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{label}</p>
       <div className="flex items-center gap-1.5">
         <span className={cn("text-sm", mono && "font-mono text-xs")}>
           {value}

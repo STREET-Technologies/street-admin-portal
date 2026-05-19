@@ -11,10 +11,13 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { EntityDetailHeader } from "@/components/shared/EntityDetailHeader";
+import { EditableField } from "@/components/shared/EditableField";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { ErrorState } from "@/components/shared/ErrorState";
+import { formatDate } from "@/lib/format-utils";
 import { useRetailerQuery, useUpdateRetailerMutation } from "../api/retailer-queries";
 import { useAdminRole } from "@/features/auth/hooks/useAdminRole";
+import { useTabParam } from "@/hooks/use-tab-param";
 import { RetailerOverviewTab } from "./RetailerOverviewTab";
 import { RetailerOrdersTab } from "./RetailerOrdersTab";
 import { RetailerStaffTab } from "./RetailerStaffTab";
@@ -32,6 +35,7 @@ export function RetailerDetailPage({ retailerId }: RetailerDetailPageProps) {
     useRetailerQuery(retailerId);
   const updateRetailer = useUpdateRetailerMutation(retailerId);
   const [isTogglingOnline, setIsTogglingOnline] = useState(false);
+  const [activeTab, setActiveTab] = useTabParam("overview");
 
   async function handleOnlineToggle(checked: boolean) {
     setIsTogglingOnline(true);
@@ -67,7 +71,6 @@ export function RetailerDetailPage({ retailerId }: RetailerDetailPageProps) {
       {/* Header */}
       <EntityDetailHeader
         title={retailer.name}
-        subtitle={retailer.email || undefined}
         status={retailer.status}
         avatarFallback={retailer.name.charAt(0).toUpperCase()}
       >
@@ -92,10 +95,42 @@ export function RetailerDetailPage({ retailerId }: RetailerDetailPageProps) {
         </div>
       </EntityDetailHeader>
 
+      {/* Identity block — what this retailer is + when they joined / last touched.
+          Lives between the header and the tabs so it reads as part of the entity
+          identity rather than buried under an Overview card. */}
+      <div className="space-y-3">
+        <EditableField
+          label="Description"
+          value={retailer.description || "No description"}
+          onSave={async (val) => {
+            await updateRetailer.mutateAsync({ description: val });
+          }}
+          disabled={!canWrite}
+        />
+        <div className="flex gap-6 text-xs text-muted-foreground">
+          <span className="inline-flex gap-1.5">
+            <span className="font-medium uppercase tracking-wider">
+              Created
+            </span>
+            <span className="tabular-nums text-foreground/80">
+              {formatDate(retailer.createdAt)}
+            </span>
+          </span>
+          <span className="inline-flex gap-1.5">
+            <span className="font-medium uppercase tracking-wider">
+              Updated
+            </span>
+            <span className="tabular-nums text-foreground/80">
+              {formatDate(retailer.updatedAt)}
+            </span>
+          </span>
+        </div>
+      </div>
+
       <Separator />
 
       {/* Tabs */}
-      <Tabs defaultValue="overview">
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
         <UnderlineTabsList>
           <UnderlineTabsTrigger value="overview">Overview</UnderlineTabsTrigger>
           <UnderlineTabsTrigger value="orders">Orders</UnderlineTabsTrigger>

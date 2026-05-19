@@ -9,6 +9,7 @@ import { EntityDetailHeader } from "@/components/shared/EntityDetailHeader";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { useUserQuery } from "../api/user-queries";
+import { useTabParam } from "@/hooks/use-tab-param";
 import { UserOverviewTab } from "./UserOverviewTab";
 import { UserOrdersTab } from "./UserOrdersTab";
 import { UserAddressesTab } from "./UserAddressesTab";
@@ -23,6 +24,7 @@ interface UserDetailPageProps {
 
 export function UserDetailPage({ userId }: UserDetailPageProps) {
   const { data: user, isLoading, isError, error, refetch } = useUserQuery(userId);
+  const [activeTab, setActiveTab] = useTabParam("overview");
 
   if (isLoading) {
     return <LoadingState variant="page" />;
@@ -62,7 +64,7 @@ export function UserDetailPage({ userId }: UserDetailPageProps) {
       <Separator />
 
       {/* Tabs */}
-      <Tabs defaultValue="overview">
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
         <UnderlineTabsList>
           <UnderlineTabsTrigger value="overview">Overview</UnderlineTabsTrigger>
           <UnderlineTabsTrigger value="orders">Orders</UnderlineTabsTrigger>
