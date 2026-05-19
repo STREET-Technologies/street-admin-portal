@@ -99,6 +99,9 @@ export function toRetailerViewModel(vendor: BackendVendor): RetailerViewModel {
 export interface RetailerListParams {
   name?: string;
   vendorCategory?: string;
+  /** Backend allowlist: name | email | createdAt */
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
   page?: number;
   limit?: number;
 }

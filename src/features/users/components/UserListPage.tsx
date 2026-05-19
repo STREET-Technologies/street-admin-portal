@@ -149,6 +149,8 @@ export function UserListPage() {
   // Fetch users
   const { data, isLoading, isError, error, refetch } = useUsersQuery({
     search: debouncedSearch || undefined,
+    sortBy: searchParams.sortBy,
+    sortOrder: searchParams.sortOrder,
     page: searchParams.page,
     limit: searchParams.limit,
   });

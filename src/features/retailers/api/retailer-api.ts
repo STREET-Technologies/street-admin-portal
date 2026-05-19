@@ -29,6 +29,8 @@ export async function getRetailers(
 
   if (params.name) searchParams.set("name", params.name);
   if (params.vendorCategory) searchParams.set("vendorCategory", params.vendorCategory);
+  if (params.sortBy) searchParams.set("sortBy", params.sortBy);
+  if (params.sortOrder) searchParams.set("sortOrder", params.sortOrder);
   if (params.page) searchParams.set("page", String(params.page));
   if (params.limit) searchParams.set("limit", String(params.limit));
 

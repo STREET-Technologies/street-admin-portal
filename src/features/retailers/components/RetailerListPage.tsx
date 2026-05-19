@@ -126,6 +126,8 @@ export function RetailerListPage() {
 
   const { data, isLoading, isError, refetch } = useRetailersQuery({
     name: debouncedSearch || undefined,
+    sortBy: searchParams.sortBy,
+    sortOrder: searchParams.sortOrder,
     page: searchParams.page,
     limit: searchParams.limit,
   });

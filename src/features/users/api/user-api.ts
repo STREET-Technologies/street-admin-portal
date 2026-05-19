@@ -13,6 +13,9 @@ import type {
 
 export interface GetUsersParams {
   search?: string;
+  /** Backend allowlist: name | email | phone | createdAt */
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
   page?: number;
   limit?: number;
 }
@@ -36,6 +39,8 @@ export async function getUsers(
   const searchParams = new URLSearchParams();
 
   if (params.search) searchParams.set("search", params.search);
+  if (params.sortBy) searchParams.set("sortBy", params.sortBy);
+  if (params.sortOrder) searchParams.set("sortOrder", params.sortOrder);
   if (params.page) searchParams.set("page", String(params.page));
   if (params.limit) searchParams.set("limit", String(params.limit));
 
