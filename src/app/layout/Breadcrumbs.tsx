@@ -9,8 +9,10 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import type { UserViewModel } from "@/features/users/types";
-import type { RetailerViewModel } from "@/features/retailers/types";
+import type { BackendUser } from "@/features/users/types";
+import { toUserViewModel } from "@/features/users/types";
+import type { BackendVendor } from "@/features/retailers/types";
+import { toRetailerViewModel } from "@/features/retailers/types";
 import type { BackendOrder } from "@/features/orders/types";
 
 /** Map URL segments to display labels. */
@@ -37,13 +39,30 @@ function useResolvedLabel(segment: string, prevSegment: string | undefined): str
   const queryClient = useQueryClient();
 
   if (prevSegment === "users") {
-    const user = queryClient.getQueryData<UserViewModel>(["users", "detail", segment]);
-    if (user?.name) return user.name;
+    // TanStack Query caches the raw BackendUser (the `select` in useUserQuery
+    // only transforms what components see, not what's stored). Apply the
+    // ViewModel transform here so we get the combined "First Last" name.
+    const userRaw = queryClient.getQueryData<BackendUser>([
+      "users",
+      "detail",
+      segment,
+    ]);
+    if (userRaw) {
+      const view = toUserViewModel(userRaw);
+      if (view.name) return view.name;
+    }
   }
 
   if (prevSegment === "retailers") {
-    const retailer = queryClient.getQueryData<RetailerViewModel>(["retailers", "detail", segment]);
-    if (retailer?.name) return retailer.name;
+    const retailerRaw = queryClient.getQueryData<BackendVendor>([
+      "retailers",
+      "detail",
+      segment,
+    ]);
+    if (retailerRaw) {
+      const view = toRetailerViewModel(retailerRaw);
+      if (view.name) return view.name;
+    }
   }
 
   if (prevSegment === "orders") {
