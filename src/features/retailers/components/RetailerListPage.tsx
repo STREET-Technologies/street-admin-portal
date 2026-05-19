@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Search, Store } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -117,6 +117,7 @@ const columns: ColumnDef<RetailerViewModel, unknown>[] = [
 // ---------------------------------------------------------------------------
 
 export function RetailerListPage() {
+  const navigate = useNavigate();
   const [searchValue, setSearchValue] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const debouncedSearch = useDebounce(searchValue, 300);
@@ -211,6 +212,12 @@ export function RetailerListPage() {
         isLoading={isLoading}
         emptyMessage="No retailers found"
         emptyIcon={Store}
+        onRowClick={(retailer) => {
+          void navigate({
+            to: "/retailers/$retailerId",
+            params: { retailerId: retailer.id },
+          });
+        }}
       />
     </div>
   );

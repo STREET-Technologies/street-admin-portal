@@ -3,7 +3,11 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { BackButton } from "@/components/shared/BackButton";
 import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import {
+  UnderlineTabsList,
+  UnderlineTabsTrigger,
+} from "@/components/shared/UnderlineTabs";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { EntityDetailHeader } from "@/components/shared/EntityDetailHeader";
@@ -92,14 +96,14 @@ export function RetailerDetailPage({ retailerId }: RetailerDetailPageProps) {
 
       {/* Tabs */}
       <Tabs defaultValue="overview">
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="orders">Orders</TabsTrigger>
-          <TabsTrigger value="staff">Staff</TabsTrigger>
-          <TabsTrigger value="notes">Notes</TabsTrigger>
-          <TabsTrigger value="activity">Activity</TabsTrigger>
-          <TabsTrigger value="billing">Billing</TabsTrigger>
-        </TabsList>
+        <UnderlineTabsList>
+          <UnderlineTabsTrigger value="overview">Overview</UnderlineTabsTrigger>
+          <UnderlineTabsTrigger value="orders">Orders</UnderlineTabsTrigger>
+          <UnderlineTabsTrigger value="staff">Staff</UnderlineTabsTrigger>
+          <UnderlineTabsTrigger value="notes">Notes</UnderlineTabsTrigger>
+          <UnderlineTabsTrigger value="activity">Activity</UnderlineTabsTrigger>
+          <UnderlineTabsTrigger value="billing">Billing</UnderlineTabsTrigger>
+        </UnderlineTabsList>
 
         <TabsContent value="overview" className="mt-6">
           <RetailerOverviewTab retailer={retailer} />

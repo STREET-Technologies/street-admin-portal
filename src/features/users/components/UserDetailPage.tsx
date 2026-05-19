@@ -1,11 +1,10 @@
 import { BackButton } from "@/components/shared/BackButton";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+  UnderlineTabsList,
+  UnderlineTabsTrigger,
+} from "@/components/shared/UnderlineTabs";
 import { EntityDetailHeader } from "@/components/shared/EntityDetailHeader";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { ErrorState } from "@/components/shared/ErrorState";
@@ -64,15 +63,15 @@ export function UserDetailPage({ userId }: UserDetailPageProps) {
 
       {/* Tabs */}
       <Tabs defaultValue="overview">
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="orders">Orders</TabsTrigger>
-          <TabsTrigger value="addresses">Addresses</TabsTrigger>
-          <TabsTrigger value="devices">Devices</TabsTrigger>
-          <TabsTrigger value="referral">Referral</TabsTrigger>
-          <TabsTrigger value="notes">Notes</TabsTrigger>
-          <TabsTrigger value="activity">Activity</TabsTrigger>
-        </TabsList>
+        <UnderlineTabsList>
+          <UnderlineTabsTrigger value="overview">Overview</UnderlineTabsTrigger>
+          <UnderlineTabsTrigger value="orders">Orders</UnderlineTabsTrigger>
+          <UnderlineTabsTrigger value="addresses">Addresses</UnderlineTabsTrigger>
+          <UnderlineTabsTrigger value="devices">Devices</UnderlineTabsTrigger>
+          <UnderlineTabsTrigger value="referral">Referral</UnderlineTabsTrigger>
+          <UnderlineTabsTrigger value="notes">Notes</UnderlineTabsTrigger>
+          <UnderlineTabsTrigger value="activity">Activity</UnderlineTabsTrigger>
+        </UnderlineTabsList>
 
         <TabsContent value="overview" className="mt-6">
           <UserOverviewTab user={user} />

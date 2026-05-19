@@ -243,6 +243,9 @@ export function UserListPage() {
         isLoading={isLoading}
         emptyMessage="No users found"
         emptyIcon={Users}
+        onRowClick={(user) => {
+          void navigate({ to: "/users/$userId", params: { userId: user.id } });
+        }}
       />
     </div>
   );

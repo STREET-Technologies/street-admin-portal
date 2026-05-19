@@ -10,7 +10,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs } from "@/components/ui/tabs";
+import {
+  UnderlineTabsList,
+  UnderlineTabsTrigger,
+} from "@/components/shared/UnderlineTabs";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { DataTable } from "@/components/shared/DataTable";
 import { DataTableColumnHeader } from "@/components/shared/DataTableColumnHeader";
@@ -287,17 +291,13 @@ export function OrderListPage() {
         value={tabFilter}
         onValueChange={(v) => setTabFilter(v as TabKey)}
       >
-        <TabsList className="h-auto bg-transparent border-b border-border rounded-none p-0 w-full justify-start gap-1">
+        <UnderlineTabsList>
           {ORDER_TABS.map((tab) => (
-            <TabsTrigger
-              key={tab.value}
-              value={tab.value}
-              className="relative rounded-b-none rounded-t-md border-b-2 border-transparent bg-transparent px-3 pb-2 pt-2 -mb-px text-sm font-medium text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground data-[state=active]:border-brand data-[state=active]:bg-brand data-[state=active]:text-brand-foreground data-[state=active]:shadow-none"
-            >
+            <UnderlineTabsTrigger key={tab.value} value={tab.value}>
               {tab.label}
-            </TabsTrigger>
+            </UnderlineTabsTrigger>
           ))}
-        </TabsList>
+        </UnderlineTabsList>
       </Tabs>
 
       {/* Filters */}
