@@ -6,7 +6,6 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { AppSidebar } from "./AppSidebar";
 import { Breadcrumbs } from "./Breadcrumbs";
-import { ThemeToggle } from "./ThemeToggle";
 import { GlobalSearch } from "@/features/search/components/GlobalSearch";
 
 /**
@@ -24,7 +23,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           <Breadcrumbs />
           <div className="ml-auto flex items-center gap-2">
             <GlobalSearch />
-            <ThemeToggle />
           </div>
         </header>
         <main className="flex-1 overflow-auto p-6">{children}</main>

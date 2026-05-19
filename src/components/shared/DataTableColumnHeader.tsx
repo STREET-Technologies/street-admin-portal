@@ -1,14 +1,13 @@
 import type { Column } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 /**
  * Sortable column header for use with DataTable.
  *
- * Clicking cycles through: unsorted -> ascending -> descending -> unsorted.
- * Displays the appropriate arrow icon for the current sort direction.
- * Non-sortable columns render as plain text.
+ * Renders as a plain clickable span so it sits at the same visual size
+ * as non-sortable headers (which are just strings in the column def).
+ * Clicking cycles: unsorted -> ascending -> descending -> unsorted.
  */
 
 interface DataTableColumnHeaderProps<TData, TValue> {
@@ -39,20 +38,22 @@ export function DataTableColumnHeader<TData, TValue>({
   }
 
   return (
-    <Button
-      variant="ghost"
-      size="sm"
-      className={cn("-ml-3 h-8", className)}
+    <button
+      type="button"
       onClick={handleToggleSort}
+      className={cn(
+        "inline-flex items-center gap-1 hover:text-foreground transition-colors cursor-pointer",
+        className,
+      )}
     >
       {title}
       {sorted === "asc" ? (
-        <ArrowUp className="ml-1 size-3.5" />
+        <ArrowUp className="size-3" />
       ) : sorted === "desc" ? (
-        <ArrowDown className="ml-1 size-3.5" />
+        <ArrowDown className="size-3" />
       ) : (
-        <ArrowUpDown className="ml-1 size-3.5 text-muted-foreground" />
+        <ArrowUpDown className="size-3 opacity-40" />
       )}
-    </Button>
+    </button>
   );
 }

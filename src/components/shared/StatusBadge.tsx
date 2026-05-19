@@ -1,116 +1,103 @@
 import { cn } from "@/lib/utils";
 
 /**
- * Color-coded status badge with a small dot indicator.
+ * Status pill. Uppercase, fill-color hierarchy per DESIGN.md.
  *
- * Handles any status string gracefully -- unknown values render in
- * neutral gray so the UI never breaks on unexpected backend data.
+ * Five canonical statuses (Stuck > New > Pending > Cancelled > Delivered).
+ * Backend statuses are aliased onto these slots — see STATUS_ALIAS below.
+ * Unknown values fall back to the Delivered (peripheral) treatment so the
+ * UI never breaks on unexpected backend data.
  */
 
-type StatusColor = {
-  dot: string;
-  bg: string;
-  text: string;
+type StatusVariant =
+  | "new"
+  | "pending"
+  | "stuck"
+  | "declined"
+  | "delivered"
+  | "cancelled";
+
+// Tailwind class bundles per canonical variant. Tokens defined in src/index.css.
+const VARIANT_CLASSES: Record<StatusVariant, string> = {
+  new: "bg-[hsl(var(--status-new-bg))] text-[hsl(var(--status-new-fg))]",
+  pending:
+    "bg-[hsl(var(--status-pending-bg))] text-[hsl(var(--status-pending-fg))]",
+  stuck: "bg-[hsl(var(--status-stuck-bg))] text-[hsl(var(--status-stuck-fg))]",
+  declined:
+    "bg-[hsl(var(--status-declined-bg))] text-[hsl(var(--status-declined-fg))]",
+  delivered:
+    "bg-[hsl(var(--status-delivered-bg))] text-[hsl(var(--status-delivered-fg))]",
+  cancelled:
+    "bg-[hsl(var(--status-cancelled-bg))] text-[hsl(var(--status-cancelled-fg))] line-through",
 };
 
-const STATUS_COLORS: Record<string, StatusColor> = {
-  // positive
-  active: {
-    dot: "bg-emerald-500",
-    bg: "bg-emerald-50 dark:bg-emerald-950",
-    text: "text-emerald-700 dark:text-emerald-400",
-  },
-  delivered: {
-    dot: "bg-emerald-500",
-    bg: "bg-emerald-50 dark:bg-emerald-950",
-    text: "text-emerald-700 dark:text-emerald-400",
-  },
-  paid: {
-    dot: "bg-emerald-500",
-    bg: "bg-emerald-50 dark:bg-emerald-950",
-    text: "text-emerald-700 dark:text-emerald-400",
-  },
-  confirmed: {
-    dot: "bg-emerald-500",
-    bg: "bg-emerald-50 dark:bg-emerald-950",
-    text: "text-emerald-700 dark:text-emerald-400",
-  },
+// Backend status strings → canonical variant.
+// Order statuses: see street-backend/src/modules/v1/orders/enums/order-status.enum.ts
+const STATUS_ALIAS: Record<string, StatusVariant> = {
+  // ─── New / fresh (needs attention) ───
+  new: "new",
+  pending: "new", // just placed, awaiting retailer / payment
+  pending_payment: "new",
+  awaiting_acceptance: "new",
 
-  // warning / in-progress
-  pending: {
-    dot: "bg-amber-500",
-    bg: "bg-amber-50 dark:bg-amber-950",
-    text: "text-amber-700 dark:text-amber-400",
-  },
-  preparing: {
-    dot: "bg-amber-500",
-    bg: "bg-amber-50 dark:bg-amber-950",
-    text: "text-amber-700 dark:text-amber-400",
-  },
-  ready: {
-    dot: "bg-amber-500",
-    bg: "bg-amber-50 dark:bg-amber-950",
-    text: "text-amber-700 dark:text-amber-400",
-  },
-  in_delivery: {
-    dot: "bg-amber-500",
-    bg: "bg-amber-50 dark:bg-amber-950",
-    text: "text-amber-700 dark:text-amber-400",
-  },
+  // ─── In-progress pipeline (waiting, no immediate action) ───
+  active: "pending",
+  paid: "pending",
+  confirmed: "pending",
+  in_packing: "pending",
+  preparing: "pending",
+  ready: "pending",
+  ready_for_delivery: "pending",
+  waiting_for_pickup: "pending",
+  in_delivery: "pending",
+  shipped: "pending",
 
-  // negative
-  inactive: {
-    dot: "bg-red-500",
-    bg: "bg-red-50 dark:bg-red-950",
-    text: "text-red-700 dark:text-red-400",
-  },
-  cancelled: {
-    dot: "bg-red-500",
-    bg: "bg-red-50 dark:bg-red-950",
-    text: "text-red-700 dark:text-red-400",
-  },
-  failed: {
-    dot: "bg-red-500",
-    bg: "bg-red-50 dark:bg-red-950",
-    text: "text-red-700 dark:text-red-400",
-  },
+  // ─── Urgent — operator action required ───
+  stuck: "stuck",
+  failed: "stuck",
+  blocked: "stuck",
 
-  // neutral
-  blocked: {
-    dot: "bg-gray-400",
-    bg: "bg-gray-100 dark:bg-gray-800",
-    text: "text-gray-700 dark:text-gray-400",
-  },
-  suspended: {
-    dot: "bg-gray-400",
-    bg: "bg-gray-100 dark:bg-gray-800",
-    text: "text-gray-700 dark:text-gray-400",
-  },
-  refunded: {
-    dot: "bg-gray-400",
-    bg: "bg-gray-100 dark:bg-gray-800",
-    text: "text-gray-700 dark:text-gray-400",
-  },
-};
+  // ─── Retailer-side failure (declined or timed out) ───
+  rejected: "declined",
+  declined: "declined",
+  missed: "declined",
 
-const DEFAULT_COLOR: StatusColor = {
-  dot: "bg-gray-400",
-  bg: "bg-gray-100 dark:bg-gray-800",
-  text: "text-gray-700 dark:text-gray-400",
+  // ─── Terminal — done ───
+  delivered: "delivered",
+  refunded: "delivered",
+  completed: "delivered",
+  inactive: "delivered",
+  suspended: "delivered",
+
+  // ─── Terminal — voided / payment lost ───
+  cancelled: "cancelled",
+  canceled: "cancelled",
+  payment_failed: "cancelled",
+  payment_cancelled: "cancelled",
 };
 
 interface StatusBadgeProps {
-  /** Status value to display and color-code. */
+  /** Status value to display and color-code. Case-insensitive. */
   status: string;
-  /** Badge sizing. */
+  /** Pill sizing. */
   size?: "sm" | "default";
   className?: string;
 }
 
+// Display label overrides — backend enum kept untouched, admin sees the
+// friendlier business-domain term (e.g. REJECTED → DECLINED).
+const DISPLAY_LABEL_OVERRIDES: Record<string, string> = {
+  rejected: "Declined",
+};
+
 function formatStatus(status: string): string {
-  return status
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+  const override = DISPLAY_LABEL_OVERRIDES[status.toLowerCase()];
+  if (override) return override.toUpperCase();
+  return status.replace(/_/g, " ").toUpperCase();
+}
+
+function resolveVariant(status: string): StatusVariant {
+  return STATUS_ALIAS[status.toLowerCase()] ?? "delivered";
 }
 
 export function StatusBadge({
@@ -118,26 +105,17 @@ export function StatusBadge({
   size = "default",
   className,
 }: StatusBadgeProps) {
-  const color = STATUS_COLORS[status] ?? DEFAULT_COLOR;
+  const variant = resolveVariant(status);
 
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border border-transparent font-medium",
-        color.bg,
-        color.text,
-        size === "sm" ? "px-2 py-0.5 text-xs" : "px-2.5 py-1 text-xs",
+        "inline-flex items-center rounded-full font-semibold tracking-wider whitespace-nowrap",
+        VARIANT_CLASSES[variant],
+        size === "sm" ? "px-2 py-0.5 text-[10px]" : "px-2.5 py-1 text-[11px]",
         className,
       )}
     >
-      <span
-        className={cn(
-          "shrink-0 rounded-full",
-          color.dot,
-          size === "sm" ? "size-1.5" : "size-2",
-        )}
-        aria-hidden="true"
-      />
       {formatStatus(status)}
     </span>
   );

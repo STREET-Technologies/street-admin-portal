@@ -83,7 +83,7 @@ export function AcceptInvitePage() {
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-sm space-y-8">
         <div className="text-center">
-          <span className="street-logo text-3xl text-secondary dark:text-foreground">
+          <span className="street-logo text-3xl text-secondary">
             STREET
           </span>
           <p className="mt-2 text-sm text-muted-foreground">

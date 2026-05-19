@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/card";
 import { toast } from "sonner";
 import { ApiError } from "@/lib/api-client";
-import { ThemeToggle } from "@/app/layout/ThemeToggle";
 import { useAuth } from "../hooks/useAuth";
 import { authApi } from "../api/auth-api";
 
@@ -59,21 +58,18 @@ export function LoginPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-muted p-4">
-      <div className="absolute right-4 top-4">
-        <ThemeToggle />
-      </div>
+    <div className="relative flex min-h-screen items-center justify-center bg-muted p-4">
       <div className="w-full max-w-md">
         {/* STREET Logo */}
         <div className="mb-8 text-center">
           <h1 className="street-logo mb-2 text-6xl text-foreground">STREET</h1>
-          <div className="street-gradient mx-auto mb-4 h-1 w-16" />
+          <div className="mx-auto mb-4 h-1 w-16 bg-brand" />
           <p className="text-lg text-muted-foreground">Admin Portal</p>
         </div>
 
-        <Card className="border-0 bg-card/95 shadow-2xl backdrop-blur-sm">
+        <Card className="shadow-sm">
           <CardHeader className="space-y-1 text-center">
-            <CardTitle className="street-title text-2xl">
+            <CardTitle className="text-2xl">
               Welcome Back
             </CardTitle>
             <CardDescription>

@@ -39,7 +39,7 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader className="h-14 border-b border-sidebar-border flex items-center justify-center group-data-[collapsible=icon]:px-0">
         <Link to="/users" className="block">
-          <span className="street-logo text-xl text-secondary dark:text-foreground group-data-[collapsible=icon]:hidden">
+          <span className="street-logo text-xl text-secondary group-data-[collapsible=icon]:hidden">
             STREET
           </span>
           <img

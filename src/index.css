@@ -1,8 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
-
 /* ===== Tailwind v4 Theme Tokens ===== */
 @theme inline {
   --color-background: hsl(var(--background));
@@ -51,6 +49,20 @@
   --color-sidebar-border: hsl(var(--sidebar-border));
   --color-sidebar-ring: hsl(var(--sidebar-ring));
 
+  /* Status palette (see DESIGN.md → Colors → Status) */
+  --color-status-new-bg: hsl(var(--status-new-bg));
+  --color-status-new-fg: hsl(var(--status-new-fg));
+  --color-status-pending-bg: hsl(var(--status-pending-bg));
+  --color-status-pending-fg: hsl(var(--status-pending-fg));
+  --color-status-stuck-bg: hsl(var(--status-stuck-bg));
+  --color-status-stuck-fg: hsl(var(--status-stuck-fg));
+  --color-status-declined-bg: hsl(var(--status-declined-bg));
+  --color-status-declined-fg: hsl(var(--status-declined-fg));
+  --color-status-delivered-bg: hsl(var(--status-delivered-bg));
+  --color-status-delivered-fg: hsl(var(--status-delivered-fg));
+  --color-status-cancelled-bg: hsl(var(--status-cancelled-bg));
+  --color-status-cancelled-fg: hsl(var(--status-cancelled-fg));
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -59,7 +71,7 @@
   --font-sans: "Barlow", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
-/* ===== STREET Brand Font ===== */
+/* ===== STREET Brand Font (logo only — see DESIGN.md Hanson-Once Rule) ===== */
 @font-face {
   font-family: 'Hanson';
   src: url('/fonts/Hanson-Bold.ttf') format('truetype');
@@ -67,9 +79,8 @@
   font-style: normal;
 }
 
-/* ===== Light Mode (Default) ===== */
+/* ===== Single light surface (no dark mode — see DESIGN.md Principle #4) ===== */
 :root {
-  /* STREET Brand Colors */
   --background: 0 0% 100%;
   --foreground: 220 9% 11%;
 
@@ -79,19 +90,19 @@
   --popover: 0 0% 100%;
   --popover-foreground: 220 9% 11%;
 
-  /* Stripe-style dark primary (readable on white) */
+  /* Coal primary — readable on white */
   --primary: 0 0% 9%;
   --primary-foreground: 0 0% 100%;
 
-  /* STREET Black Secondary */
+  /* Ink secondary */
   --secondary: 220 9% 11%;
   --secondary-foreground: 0 0% 100%;
 
-  /* STREET Gray Muted */
+  /* Mist muted */
   --muted: 0 0% 96%;
-  --muted-foreground: 0 0% 64%;
+  --muted-foreground: 0 0% 45%;
 
-  /* Neutral hover accent */
+  /* Mist accent */
   --accent: 0 0% 96%;
   --accent-foreground: 0 0% 9%;
 
@@ -114,6 +125,20 @@
   --chart-4: 280 65% 60%;
   --chart-5: 340 75% 55%;
 
+  /* Status palette — hierarchy: Stuck > New > In-Progress > Declined > Cancelled > Delivered */
+  --status-new-bg: 73 100% 50%;
+  --status-new-fg: 0 0% 8%;
+  --status-pending-bg: 38 92% 92%;
+  --status-pending-fg: 28 80% 28%;
+  --status-stuck-bg: 0 84% 60%;
+  --status-stuck-fg: 0 0% 100%;
+  --status-declined-bg: 25 90% 92%;
+  --status-declined-fg: 22 80% 32%;
+  --status-delivered-bg: 0 0% 94%;
+  --status-delivered-fg: 0 0% 45%;
+  --status-cancelled-bg: 0 60% 96%;
+  --status-cancelled-fg: 0 45% 45%;
+
   /* Sidebar */
   --sidebar-background: 0 0% 98%;
   --sidebar-foreground: 240 5.3% 26.1%;
@@ -122,60 +147,8 @@
   --sidebar-accent: 240 4.8% 95.9%;
   --sidebar-accent-foreground: 240 5.9% 10%;
   --sidebar-border: 220 13% 91%;
-  --sidebar-ring: 217.2 91.2% 59.8%;
+  --sidebar-ring: 73 100% 40%;
   --sidebar: hsl(0 0% 98%);
-}
-
-/* ===== Dark Mode ===== */
-.dark {
-  --background: 222.2 84% 4.9%;
-  --foreground: 210 40% 98%;
-
-  --card: 222.2 47% 9%;
-  --card-foreground: 210 40% 98%;
-
-  --popover: 222.2 47% 9%;
-  --popover-foreground: 210 40% 98%;
-
-  --primary: 210 40% 98%;
-  --primary-foreground: 222.2 47.4% 11.2%;
-
-  --secondary: 217.2 32.6% 17.5%;
-  --secondary-foreground: 210 40% 98%;
-
-  --muted: 217.2 32.6% 17.5%;
-  --muted-foreground: 215 20.2% 65.1%;
-
-  --accent: 217.2 32.6% 17.5%;
-  --accent-foreground: 210 40% 98%;
-
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 210 40% 98%;
-
-  --border: 217.2 32.6% 17.5%;
-  --input: 217.2 32.6% 17.5%;
-  --brand: 73 100% 50%;
-  --brand-foreground: 0 0% 8%;
-
-  --ring: 73 100% 50%;
-
-  /* Charts */
-  --chart-1: 73 100% 50%;
-  --chart-2: 160 60% 45%;
-  --chart-3: 30 80% 55%;
-  --chart-4: 280 65% 60%;
-  --chart-5: 340 75% 55%;
-
-  /* Sidebar */
-  --sidebar-background: 240 5.9% 10%;
-  --sidebar-foreground: 240 4.8% 95.9%;
-  --sidebar-primary: 73 100% 50%;
-  --sidebar-primary-foreground: 0 0% 8%;
-  --sidebar-accent: 240 3.7% 15.9%;
-  --sidebar-accent-foreground: 240 4.8% 95.9%;
-  --sidebar-border: 240 3.7% 15.9%;
-  --sidebar-ring: 217.2 91.2% 59.8%;
-  --sidebar: hsl(240 5.9% 10%);
 }
 
 /* ===== Base Styles ===== */
@@ -188,7 +161,7 @@
     @apply bg-background text-foreground;
   }
 
-  /* STREET Brand Typography */
+  /* STREET sidebar logo — the only Hanson appearance in the system. */
   .street-logo {
     font-family: 'Hanson', sans-serif;
     font-weight: 700;
@@ -196,42 +169,74 @@
     text-transform: uppercase;
   }
 
-  .street-title {
-    font-family: 'Barlow', sans-serif;
-    font-weight: 900;
-    letter-spacing: 0.02em;
+  /* ===== Sidebar — DESIGN.md section grouping ===== */
+
+  /* Section labels: pronounced, uppercase, darker than shadcn default. */
+  [data-slot="sidebar-group-label"] {
+    height: auto;
+    padding: 6px 10px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: hsl(0 0% 22%);
   }
 
-  .street-body-title {
-    font-family: 'Barlow', sans-serif;
-    font-weight: 900;
+  /* Section dividers: thin border + breathing room between groups. */
+  [data-slot="sidebar-group"] + [data-slot="sidebar-group"] [data-slot="sidebar-group-label"] {
+    border-top: 1px solid hsl(var(--sidebar-border));
+    margin-top: 6px;
+    padding-top: 12px;
   }
 
-  .street-body {
-    font-family: 'Barlow', sans-serif;
-    font-weight: 400;
+  /* Active item: 6px lime dot prefix — the signature mark of the system. */
+  [data-slot="sidebar-menu-button"][data-active="true"]::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 9999px;
+    background: hsl(var(--brand));
+    flex-shrink: 0;
   }
 
-  /* STREET Brand Gradients */
-  .street-gradient {
-    background: linear-gradient(135deg, hsl(73 100% 50%) 0%, hsl(73 100% 50% / 0.8) 100%);
+  /* Hide the dot when sidebar is collapsed to icon-only. */
+  [data-collapsible="icon"] [data-slot="sidebar-menu-button"][data-active="true"]::before {
+    display: none;
   }
 
-  .street-glow {
-    box-shadow: 0 0 30px hsl(73 100% 50% / 0.3);
+  /* ===== Tables — DESIGN.md uppercase headers ===== */
+  [data-slot="table-head"] {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: hsl(var(--muted-foreground));
   }
 
-  /* STREET Animations */
-  .street-pulse {
-    animation: street-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  /* Header row gets a subtle gray lift to distinguish it from body rows. */
+  [data-slot="table-header"] [data-slot="table-row"],
+  [data-slot="table-header"] [data-slot="table-row"]:hover {
+    background-color: hsl(0 0% 97%);
   }
 
-  @keyframes street-pulse {
-    0%, 100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.8;
-    }
+  /* Sortable headers wrap their label in a button — inherit the style. */
+  [data-slot="table-head"] button {
+    font-size: inherit;
+    font-weight: inherit;
+    text-transform: inherit;
+    letter-spacing: inherit;
+    color: inherit;
+  }
+
+  /* Money / IDs / counts always render in tabular figures. */
+  .tabular-nums,
+  [data-slot="table-cell"] .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Subtle row hover — hint, not a slam. */
+  [data-slot="table-row"]:hover {
+    background-color: hsl(0 0% 99%);
   }
 }
