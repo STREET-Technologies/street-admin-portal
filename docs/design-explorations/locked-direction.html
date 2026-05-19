@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>STREET Admin Portal — Locked Direction</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: hsl(0 0% 100%);
+      --fg: hsl(220 9% 11%);
+      --muted: hsl(0 0% 96%);
+      --muted-fg: hsl(0 0% 45%);
+      --border: hsl(0 0% 90%);
+      --primary: hsl(0 0% 9%);
+      --primary-fg: hsl(0 0% 100%);
+      --brand: hsl(73 100% 50%);
+      --brand-fg: hsl(0 0% 8%);
+      --brand-dim: hsl(73 90% 25%);
+      --destructive: hsl(0 84% 60%);
+      --destructive-dim: hsl(0 84% 40%);
+      --sidebar-bg: hsl(0 0% 98%);
+      --sidebar-border: hsl(220 13% 91%);
+
+      /* Status palette — distinct hues, clear hierarchy */
+      --status-new-bg: hsl(73 100% 50%);
+      --status-new-fg: hsl(0 0% 8%);
+      --status-pending-bg: hsl(38 92% 92%);
+      --status-pending-fg: hsl(28 80% 28%);
+      --status-stuck-bg: hsl(0 84% 60%);
+      --status-stuck-fg: hsl(0 0% 100%);
+      --status-delivered-bg: hsl(0 0% 94%);
+      --status-delivered-fg: hsl(0 0% 45%);
+      --status-cancelled-bg: hsl(0 60% 96%);
+      --status-cancelled-fg: hsl(0 45% 45%);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: hsl(0 0% 98%); }
+    body {
+      font-family: 'Barlow', ui-sans-serif, system-ui, sans-serif;
+      color: var(--fg);
+      min-height: 100vh;
+      padding: 40px 32px 64px;
+    }
+
+    .page-header { max-width: 1400px; margin: 0 auto 24px; }
+    .page-eyebrow { font-size: 11px; color: var(--brand-dim); text-transform: uppercase; letter-spacing: 0.12em; font-weight: 600; margin-bottom: 6px; }
+    .page-title { font-weight: 900; font-size: 26px; margin-bottom: 6px; letter-spacing: -0.01em; }
+    .page-sub { color: var(--muted-fg); font-size: 14px; max-width: 760px; line-height: 1.5; }
+
+    .recipe { max-width: 1400px; margin: 0 auto 32px; padding: 14px 18px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; font-size: 13px; }
+    .recipe b { font-weight: 700; }
+    .recipe .label { font-size: 11px; color: var(--muted-fg); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; margin-right: 8px; }
+
+    .stack { max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+
+    .frame {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+    .frame-header { padding: 12px 18px; background: var(--muted); border-bottom: 1px solid var(--border); display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+    .frame-name { font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; }
+    .frame-tag { font-size: 12px; color: var(--muted-fg); }
+
+    /* =================================== */
+    /* Orders List (Stagehand + grouped sb) */
+    /* =================================== */
+    .orders .app { display: grid; grid-template-columns: 220px 1fr; min-height: 600px; font-size: 13px; }
+    .orders .sb { background: var(--sidebar-bg); border-right: 1px solid var(--sidebar-border); padding: 20px 14px; }
+    .orders .logo {
+      font-weight: 900; letter-spacing: 0.16em; font-size: 14px;
+      padding: 4px 10px 18px; border-bottom: 1px solid var(--sidebar-border); margin-bottom: 14px;
+    }
+    .orders .section-label {
+      font-size: 11px; color: hsl(0 0% 22%);
+      text-transform: uppercase; letter-spacing: 0.12em; font-weight: 700;
+      padding: 8px 10px 8px;
+    }
+    .orders .section-label ~ .section-label {
+      border-top: 1px solid var(--sidebar-border);
+      margin-top: 14px;
+      padding-top: 20px;
+    }
+    .orders .nav-item {
+      padding: 7px 10px; border-radius: 4px; color: var(--fg); font-size: 13px;
+      display: flex; align-items: center; gap: 8px; cursor: pointer;
+      transition: background 150ms ease-out;
+    }
+    .orders .nav-item:hover { background: var(--muted); }
+    .orders .nav-item.active { background: hsl(220 9% 11% / 0.05); font-weight: 500; }
+    .orders .nav-item.active::before {
+      content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--brand);
+    }
+
+    .orders .main { padding: 28px 32px; }
+    .orders .h1 { font-weight: 700; font-size: 22px; margin-bottom: 4px; letter-spacing: -0.005em; }
+    .orders .sub { color: var(--muted-fg); font-size: 13px; margin-bottom: 24px; }
+    .orders .tabs { display: flex; gap: 22px; border-bottom: 1px solid var(--border); margin-bottom: 18px; }
+    .orders .tab { padding: 9px 0; font-size: 13px; color: var(--muted-fg); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color 150ms ease-out; }
+    .orders .tab:hover { color: var(--fg); }
+    .orders .tab.on { color: var(--fg); font-weight: 500; border-bottom-color: var(--fg); }
+    .orders .tab .count { font-size: 11px; color: var(--muted-fg); margin-left: 6px; font-variant-numeric: tabular-nums; }
+
+    .orders table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .orders th { text-align: left; font-weight: 500; color: var(--muted-fg); padding: 10px 12px; border-bottom: 1px solid var(--border); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; }
+    .orders th:first-child { padding-left: 0; }
+    .orders th:last-child { padding-right: 0; }
+    .orders td { padding: 14px 12px; border-bottom: 1px solid var(--border); }
+    .orders td:first-child { padding-left: 0; }
+    .orders td:last-child { padding-right: 0; }
+    .orders tbody tr { cursor: pointer; transition: background 150ms ease-out; }
+    .orders tbody tr:hover { background: hsl(0 0% 99%); }
+    .orders .order-no { font-weight: 500; font-variant-numeric: tabular-nums; }
+    .orders .total { font-variant-numeric: tabular-nums; }
+    .orders .cancelled { color: var(--status-cancelled-fg); text-decoration: line-through; }
+
+    /* Status pills */
+    .pill {
+      display: inline-block; padding: 3px 10px; border-radius: 999px;
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.04em;
+      font-variant-numeric: tabular-nums;
+    }
+    .pill.new { background: var(--status-new-bg); color: var(--status-new-fg); }
+    .pill.pending { background: var(--status-pending-bg); color: var(--status-pending-fg); }
+    .pill.stuck { background: var(--status-stuck-bg); color: var(--status-stuck-fg); }
+    .pill.delivered { background: var(--status-delivered-bg); color: var(--status-delivered-fg); }
+    .pill.cancelled { background: var(--status-cancelled-bg); color: var(--status-cancelled-fg); text-decoration: line-through; }
+
+    /* =================================== */
+    /* Order Detail Card (Refined + tactile new pill) */
+    /* =================================== */
+    .detail-section { padding: 32px; background: hsl(0 0% 99%); display: flex; align-items: flex-start; gap: 28px; }
+    .detail-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+      overflow: hidden;
+      flex: 0 0 380px;
+    }
+    .detail-head {
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: baseline; justify-content: space-between;
+    }
+    .detail-id { font-weight: 700; font-size: 16px; }
+    .detail-body { padding: 18px 22px; }
+    .detail-row { display: flex; justify-content: space-between; padding: 9px 0; font-size: 13px; }
+    .detail-row + .detail-row { border-top: 1px solid hsl(0 0% 95%); }
+    .detail-label { color: var(--muted-fg); }
+    .detail-value { font-weight: 500; font-variant-numeric: tabular-nums; }
+    .detail-actions {
+      padding: 14px 22px;
+      border-top: 1px solid var(--border);
+      display: flex; gap: 8px;
+      background: hsl(0 0% 99%);
+    }
+    .btn {
+      flex: 1; padding: 8px 16px; border-radius: 6px;
+      font-size: 13px; font-weight: 500;
+      cursor: pointer; font-family: inherit;
+      transition: background 150ms ease-out, border-color 150ms ease-out, box-shadow 150ms ease-out;
+    }
+    .btn.primary { background: var(--primary); color: var(--primary-fg); border: 1px solid var(--primary); }
+    .btn.primary:hover { background: hsl(0 0% 18%); }
+    .btn.outline { background: var(--bg); color: var(--fg); border: 1px solid var(--border); }
+    .btn.outline:hover { background: var(--muted); }
+    .btn:focus-visible { outline: none; box-shadow: 0 0 0 3px hsl(73 100% 50% / 0.5); border-color: var(--brand); }
+
+    .legend { flex: 1; }
+    .legend h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted-fg); margin-bottom: 14px; font-weight: 600; }
+    .legend-row { display: grid; grid-template-columns: 120px 1fr; gap: 14px; align-items: center; padding: 8px 0; border-bottom: 1px solid hsl(0 0% 95%); font-size: 13px; }
+    .legend-row:last-child { border-bottom: none; }
+    .legend-row .desc { color: var(--muted-fg); }
+  </style>
+</head>
+<body>
+  <div class="page-header">
+    <div class="page-eyebrow">Locked Direction</div>
+    <h1 class="page-title">STREET Admin Portal — Visual Contract</h1>
+    <p class="page-sub">The Stagehand × Refined-and-restrained. Sidebar grouped like the Field Manual. Status badges now visually distinct across five states. Solid lime "New" badge borrowed from Tactile. This is what DESIGN.md will codify.</p>
+  </div>
+
+  <div class="recipe">
+    <span class="label">Recipe</span>
+    <b>Stagehand</b> (quiet surface, lime for signal) +
+    <b>Refined and restrained</b> (6px radius, subtle shadow, 150ms transitions) +
+    <b>Grouped sidebar</b> (Operations / Network / System) +
+    <b>Distinct status palette</b> (lime / amber / red / gray / strikethrough).
+  </div>
+
+  <div class="stack">
+
+    <!-- Orders List -->
+    <div class="frame orders">
+      <div class="frame-header">
+        <div class="frame-name">Orders list</div>
+        <div class="frame-tag">Primary surface · 75% of sessions land here</div>
+      </div>
+      <div class="app">
+        <aside class="sb">
+          <div class="logo">STREET</div>
+          <div class="section-label">Operations</div>
+          <div class="nav-item">Dashboard</div>
+          <div class="nav-item active">Orders</div>
+          <div class="nav-item">Stuck deliveries</div>
+          <div class="section-label">Network</div>
+          <div class="nav-item">Users</div>
+          <div class="nav-item">Retailers</div>
+          <div class="nav-item">Couriers</div>
+          <div class="section-label">System</div>
+          <div class="nav-item">Referrals</div>
+          <div class="nav-item">Platform config</div>
+          <div class="nav-item">Audit log</div>
+        </aside>
+        <main class="main">
+          <div class="h1">Orders</div>
+          <div class="sub">152 results · Last 30 days · London</div>
+          <div class="tabs">
+            <div class="tab on">All <span class="count">152</span></div>
+            <div class="tab">Pending <span class="count">23</span></div>
+            <div class="tab">Stuck <span class="count">4</span></div>
+            <div class="tab">Delivered <span class="count">118</span></div>
+            <div class="tab">Cancelled <span class="count">7</span></div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Order</th>
+                <th>Customer</th>
+                <th>Retailer</th>
+                <th>Total</th>
+                <th>Placed</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="order-no">#84211</td>
+                <td>Jane Smith</td>
+                <td>retail-3</td>
+                <td class="total">£142.00</td>
+                <td>3 minutes ago</td>
+                <td><span class="pill new">New</span></td>
+              </tr>
+              <tr>
+                <td class="order-no">#84210</td>
+                <td>Marcus Lee</td>
+                <td>retail-1</td>
+                <td class="total">£98.50</td>
+                <td>9 minutes ago</td>
+                <td><span class="pill pending">Pending</span></td>
+              </tr>
+              <tr>
+                <td class="order-no">#84209</td>
+                <td>A. Okafor</td>
+                <td>retail-2</td>
+                <td class="total">£67.00</td>
+                <td>21 minutes ago</td>
+                <td><span class="pill delivered">Delivered</span></td>
+              </tr>
+              <tr>
+                <td class="order-no">#84208</td>
+                <td>Rita Velasco</td>
+                <td>retail-5</td>
+                <td class="total">£210.00</td>
+                <td>44 minutes ago</td>
+                <td><span class="pill stuck">Stuck</span></td>
+              </tr>
+              <tr>
+                <td class="order-no">#84207</td>
+                <td>Tom Hardy</td>
+                <td>retail-1</td>
+                <td class="total">£44.00</td>
+                <td>1 hour ago</td>
+                <td><span class="pill delivered">Delivered</span></td>
+              </tr>
+              <tr>
+                <td class="order-no">#84206</td>
+                <td>Priya N.</td>
+                <td>retail-2</td>
+                <td class="total">£189.00</td>
+                <td>1 hour ago</td>
+                <td><span class="pill pending">Pending</span></td>
+              </tr>
+              <tr>
+                <td class="order-no">#84205</td>
+                <td>James K.</td>
+                <td>retail-4</td>
+                <td class="total">£22.50</td>
+                <td>2 hours ago</td>
+                <td><span class="pill cancelled">Cancelled</span></td>
+              </tr>
+              <tr>
+                <td class="order-no">#84204</td>
+                <td>L. Achebe</td>
+                <td>retail-3</td>
+                <td class="total">£312.00</td>
+                <td>2 hours ago</td>
+                <td><span class="pill delivered">Delivered</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </main>
+      </div>
+    </div>
+
+    <!-- Order Detail Card + Status Legend -->
+    <div class="frame">
+      <div class="frame-header">
+        <div class="frame-name">Order detail card + status legend</div>
+        <div class="frame-tag">Refined card · Tactile-style lime "New" pill · 6px radius · shadow-sm</div>
+      </div>
+      <div class="detail-section">
+
+        <div class="detail-card">
+          <div class="detail-head">
+            <div class="detail-id">Order #84211</div>
+            <span class="pill new">New</span>
+          </div>
+          <div class="detail-body">
+            <div class="detail-row"><span class="detail-label">Customer</span><span class="detail-value">Jane Smith</span></div>
+            <div class="detail-row"><span class="detail-label">Retailer</span><span class="detail-value">retail-3</span></div>
+            <div class="detail-row"><span class="detail-label">Total</span><span class="detail-value">£142.00</span></div>
+            <div class="detail-row"><span class="detail-label">Items</span><span class="detail-value">3</span></div>
+            <div class="detail-row"><span class="detail-label">Placed</span><span class="detail-value">3 minutes ago</span></div>
+          </div>
+          <div class="detail-actions">
+            <button class="btn outline">Cancel</button>
+            <button class="btn primary">Resolve</button>
+          </div>
+        </div>
+
+        <div class="legend">
+          <h3>Status palette</h3>
+          <div class="legend-row">
+            <span class="pill new">New</span>
+            <span class="desc">Lime fill, near-black text. Loudest signal — needs attention now.</span>
+          </div>
+          <div class="legend-row">
+            <span class="pill pending">Pending</span>
+            <span class="desc">Amber tint. Waiting state — visible but not urgent.</span>
+          </div>
+          <div class="legend-row">
+            <span class="pill stuck">Stuck</span>
+            <span class="desc">Solid red, white text. Urgent — operator action required.</span>
+          </div>
+          <div class="legend-row">
+            <span class="pill delivered">Delivered</span>
+            <span class="desc">Quiet gray. Done — peripheral, not competing for attention.</span>
+          </div>
+          <div class="legend-row">
+            <span class="pill cancelled">Cancelled</span>
+            <span class="desc">Strikethrough, no fill. Rejected — deliberately deemphasised.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

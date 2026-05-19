@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>STREET Admin Portal — Component Feel Explorations</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: hsl(0 0% 100%);
+      --fg: hsl(220 9% 11%);
+      --muted: hsl(0 0% 96%);
+      --muted-fg: hsl(0 0% 45%);
+      --border: hsl(0 0% 90%);
+      --primary: hsl(0 0% 9%);
+      --primary-fg: hsl(0 0% 100%);
+      --brand: hsl(73 100% 50%);
+      --brand-fg: hsl(0 0% 8%);
+      --brand-dim: hsl(73 90% 25%);
+      --destructive: hsl(0 84% 60%);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: hsl(0 0% 98%); }
+    body {
+      font-family: 'Barlow', ui-sans-serif, system-ui, sans-serif;
+      color: var(--fg);
+      min-height: 100vh;
+      padding: 40px 32px 64px;
+    }
+
+    .page-header { max-width: 1400px; margin: 0 auto 32px; }
+    .page-title { font-weight: 900; font-size: 24px; margin-bottom: 6px; letter-spacing: -0.01em; }
+    .page-sub { color: var(--muted-fg); font-size: 14px; max-width: 720px; }
+
+    .grid {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+    @media (max-width: 1100px) { .grid { grid-template-columns: 1fr; } }
+
+    .variant {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+    .variant-header { padding: 14px 16px; background: var(--muted); border-bottom: 1px solid var(--border); }
+    .variant-name { font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; }
+    .variant-tag { font-size: 12px; color: var(--muted-fg); margin-top: 3px; }
+
+    .stage { padding: 40px 32px; min-height: 480px; display: flex; align-items: flex-start; justify-content: center; background: hsl(0 0% 99%); }
+
+    .specs { padding: 16px 18px; background: var(--bg); border-top: 1px solid var(--border); font-size: 12px; color: var(--muted-fg); line-height: 1.6; }
+    .specs b { color: var(--fg); font-weight: 600; }
+    .specs ul { list-style: none; padding: 0; margin: 0; }
+    .specs li { padding: 2px 0; }
+
+    /* ======================== */
+    /* Refined and restrained  */
+    /* ======================== */
+    .refined .order-card {
+      width: 100%; max-width: 380px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+      overflow: hidden;
+    }
+    .refined .order-head {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+    }
+    .refined .order-id { font-weight: 700; font-size: 16px; }
+    .refined .order-status {
+      font-size: 11px; font-weight: 500;
+      padding: 2px 8px; border-radius: 999px;
+      background: hsl(73 100% 50% / 0.18); color: var(--brand-dim);
+    }
+    .refined .order-body { padding: 18px 20px; }
+    .refined .row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 13px; }
+    .refined .row + .row { border-top: 1px solid hsl(0 0% 95%); }
+    .refined .label { color: var(--muted-fg); }
+    .refined .value { font-weight: 500; font-variant-numeric: tabular-nums; }
+    .refined .actions { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; gap: 8px; background: hsl(0 0% 99%); }
+    .refined .btn {
+      flex: 1; padding: 8px 14px; border-radius: 6px; font-size: 13px; font-weight: 500;
+      cursor: pointer; font-family: inherit; transition: background 150ms ease-out, border-color 150ms ease-out;
+    }
+    .refined .btn.primary { background: var(--primary); color: var(--primary-fg); border: 1px solid var(--primary); }
+    .refined .btn.primary:hover { background: hsl(0 0% 18%); }
+    .refined .btn.outline { background: var(--bg); color: var(--fg); border: 1px solid var(--border); }
+    .refined .btn.outline:hover { background: var(--muted); }
+    .refined .btn:focus-visible { outline: none; box-shadow: 0 0 0 3px hsl(73 100% 50% / 0.5); border-color: var(--brand); }
+
+    /* =================== */
+    /* Sharp and quiet    */
+    /* =================== */
+    .sharp .order-card {
+      width: 100%; max-width: 380px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+    }
+    .sharp .order-head {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+    }
+    .sharp .order-id { font-weight: 700; font-size: 16px; }
+    .sharp .order-status {
+      font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--brand-dim);
+    }
+    .sharp .order-body { padding: 16px 18px; }
+    .sharp .row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 13px; }
+    .sharp .label { color: var(--muted-fg); }
+    .sharp .value { font-weight: 500; font-variant-numeric: tabular-nums; }
+    .sharp .actions { padding: 12px 18px; border-top: 1px solid var(--border); display: flex; gap: 6px; }
+    .sharp .btn {
+      flex: 1; padding: 6px 12px; border-radius: 4px; font-size: 13px; font-weight: 500;
+      cursor: pointer; font-family: inherit;
+    }
+    .sharp .btn.primary { background: var(--primary); color: var(--primary-fg); border: 1px solid var(--primary); }
+    .sharp .btn.primary:hover { background: hsl(0 0% 4%); }
+    .sharp .btn.outline { background: var(--bg); color: var(--fg); border: 1px solid var(--border); }
+    .sharp .btn.outline:hover { border-color: var(--fg); }
+    .sharp .btn:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--brand); }
+
+    /* ========================= */
+    /* Tactile and confident   */
+    /* ========================= */
+    .tactile .order-card {
+      width: 100%; max-width: 380px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      overflow: hidden;
+      transition: transform 250ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 250ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .tactile .order-card:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+    }
+    .tactile .order-head {
+      padding: 20px 24px 16px;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+    }
+    .tactile .order-id { font-weight: 700; font-size: 17px; }
+    .tactile .order-status {
+      font-size: 11px; font-weight: 600;
+      padding: 4px 10px; border-radius: 999px;
+      background: var(--brand); color: var(--brand-fg);
+    }
+    .tactile .order-body { padding: 0 24px 8px; }
+    .tactile .row { display: flex; justify-content: space-between; padding: 10px 0; font-size: 14px; }
+    .tactile .row + .row { border-top: 1px solid hsl(0 0% 95%); }
+    .tactile .label { color: var(--muted-fg); }
+    .tactile .value { font-weight: 500; font-variant-numeric: tabular-nums; }
+    .tactile .actions { padding: 16px 24px 20px; display: flex; gap: 10px; }
+    .tactile .btn {
+      flex: 1; padding: 10px 16px; border-radius: 10px; font-size: 14px; font-weight: 500;
+      cursor: pointer; font-family: inherit;
+      transition: transform 250ms cubic-bezier(0.16, 1, 0.3, 1), background 250ms ease-out, box-shadow 250ms ease-out;
+    }
+    .tactile .btn:hover { transform: translateY(-1px); }
+    .tactile .btn:active { transform: translateY(0); }
+    .tactile .btn.primary { background: var(--primary); color: var(--primary-fg); border: none; box-shadow: 0 2px 6px rgba(0,0,0,0.12); }
+    .tactile .btn.primary:hover { background: hsl(0 0% 16%); box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+    .tactile .btn.outline { background: var(--bg); color: var(--fg); border: 1px solid var(--border); }
+    .tactile .btn.outline:hover { background: var(--muted); }
+    .tactile .btn:focus-visible { outline: none; box-shadow: 0 0 0 4px hsl(73 100% 50% / 0.4); }
+  </style>
+</head>
+<body>
+  <div class="page-header">
+    <h1 class="page-title">STREET Admin Portal — Component Feel Explorations</h1>
+    <p class="page-sub">Same component (Order detail card with two actions). Hover the cards and buttons to feel the difference in transitions and elevation. All three use the same brand tokens.</p>
+  </div>
+
+  <div class="grid">
+
+    <!-- Refined and restrained -->
+    <div class="variant refined">
+      <div class="variant-header">
+        <div class="variant-name">Refined and restrained</div>
+        <div class="variant-tag">Linear / Stripe family</div>
+      </div>
+      <div class="stage">
+        <div class="order-card">
+          <div class="order-head">
+            <div class="order-id">Order #84211</div>
+            <div class="order-status">New</div>
+          </div>
+          <div class="order-body">
+            <div class="row"><span class="label">Customer</span><span class="value">Jane Smith</span></div>
+            <div class="row"><span class="label">Total</span><span class="value">£142.00</span></div>
+            <div class="row"><span class="label">Items</span><span class="value">3</span></div>
+            <div class="row"><span class="label">Placed</span><span class="value">3 minutes ago</span></div>
+          </div>
+          <div class="actions">
+            <button class="btn outline">Cancel</button>
+            <button class="btn primary">Resolve</button>
+          </div>
+        </div>
+      </div>
+      <div class="specs">
+        <ul>
+          <li><b>Radius</b>: 6px</li>
+          <li><b>Border</b>: 1px + faint shadow (shadow-sm)</li>
+          <li><b>Hover</b>: 150ms color shift, no scale</li>
+          <li><b>Focus</b>: 3px lime ring</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Sharp and quiet -->
+    <div class="variant sharp">
+      <div class="variant-header">
+        <div class="variant-name">Sharp and quiet</div>
+        <div class="variant-tag">Vercel dashboard family</div>
+      </div>
+      <div class="stage">
+        <div class="order-card">
+          <div class="order-head">
+            <div class="order-id">Order #84211</div>
+            <div class="order-status">NEW</div>
+          </div>
+          <div class="order-body">
+            <div class="row"><span class="label">Customer</span><span class="value">Jane Smith</span></div>
+            <div class="row"><span class="label">Total</span><span class="value">£142.00</span></div>
+            <div class="row"><span class="label">Items</span><span class="value">3</span></div>
+            <div class="row"><span class="label">Placed</span><span class="value">3 minutes ago</span></div>
+          </div>
+          <div class="actions">
+            <button class="btn outline">Cancel</button>
+            <button class="btn primary">Resolve</button>
+          </div>
+        </div>
+      </div>
+      <div class="specs">
+        <ul>
+          <li><b>Radius</b>: 4px</li>
+          <li><b>Border</b>: 1px, no shadow</li>
+          <li><b>Hover</b>: 0ms (instant color shift)</li>
+          <li><b>Focus</b>: 2px lime ring, offset</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Tactile and confident -->
+    <div class="variant tactile">
+      <div class="variant-header">
+        <div class="variant-name">Tactile and confident</div>
+        <div class="variant-tag">More 'app' than 'tool'</div>
+      </div>
+      <div class="stage">
+        <div class="order-card">
+          <div class="order-head">
+            <div class="order-id">Order #84211</div>
+            <div class="order-status">New</div>
+          </div>
+          <div class="order-body">
+            <div class="row"><span class="label">Customer</span><span class="value">Jane Smith</span></div>
+            <div class="row"><span class="label">Total</span><span class="value">£142.00</span></div>
+            <div class="row"><span class="label">Items</span><span class="value">3</span></div>
+            <div class="row"><span class="label">Placed</span><span class="value">3 minutes ago</span></div>
+          </div>
+          <div class="actions">
+            <button class="btn outline">Cancel</button>
+            <button class="btn primary">Resolve</button>
+          </div>
+        </div>
+      </div>
+      <div class="specs">
+        <ul>
+          <li><b>Radius</b>: 12px card, 10px buttons</li>
+          <li><b>Border</b>: 1px + lifted shadow</li>
+          <li><b>Hover</b>: 250ms translateY(-1px), shadow grows</li>
+          <li><b>Focus</b>: 4px lime ring</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

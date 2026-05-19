@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>STREET Admin Portal — North Star Explorations</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: hsl(0 0% 100%);
+      --fg: hsl(220 9% 11%);
+      --muted: hsl(0 0% 96%);
+      --muted-fg: hsl(0 0% 45%);
+      --border: hsl(0 0% 90%);
+      --primary: hsl(0 0% 9%);
+      --primary-fg: hsl(0 0% 100%);
+      --brand: hsl(73 100% 50%);
+      --brand-fg: hsl(0 0% 8%);
+      --brand-dim: hsl(73 90% 25%);
+      --destructive: hsl(0 84% 60%);
+      --destructive-dim: hsl(0 84% 40%);
+      --sidebar-bg: hsl(0 0% 98%);
+      --sidebar-border: hsl(220 13% 91%);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: hsl(0 0% 98%); }
+    body {
+      font-family: 'Barlow', ui-sans-serif, system-ui, sans-serif;
+      color: var(--fg);
+      min-height: 100vh;
+      padding: 40px 32px 64px;
+    }
+
+    .page-header { max-width: 1400px; margin: 0 auto 32px; }
+    .page-title { font-weight: 900; font-size: 24px; margin-bottom: 6px; letter-spacing: -0.01em; }
+    .page-sub { color: var(--muted-fg); font-size: 14px; max-width: 720px; }
+
+    .grid {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+    @media (max-width: 1100px) { .grid { grid-template-columns: 1fr; } }
+
+    .variant {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+    .variant-header { padding: 14px 16px; background: var(--muted); border-bottom: 1px solid var(--border); }
+    .variant-name { font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; }
+    .variant-tag { font-size: 12px; color: var(--muted-fg); margin-top: 3px; }
+
+    /* ============= */
+    /* The Stagehand */
+    /* ============= */
+    .stagehand .app { display: grid; grid-template-columns: 180px 1fr; min-height: 540px; font-size: 13px; }
+    .stagehand .sb { background: var(--sidebar-bg); border-right: 1px solid var(--sidebar-border); padding: 20px 12px; }
+    .stagehand .logo {
+      font-weight: 900; letter-spacing: 0.15em; font-size: 14px;
+      padding: 0 8px 20px; border-bottom: 1px solid var(--sidebar-border); margin-bottom: 12px;
+    }
+    .stagehand .nav-item {
+      padding: 8px 12px; border-radius: 4px; color: var(--fg); font-size: 13px;
+      display: flex; align-items: center; gap: 8px; cursor: pointer; margin-bottom: 2px;
+    }
+    .stagehand .nav-item:hover { background: var(--muted); }
+    .stagehand .nav-item.active { background: hsl(220 9% 11% / 0.04); font-weight: 500; }
+    .stagehand .nav-item.active::before {
+      content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--brand);
+    }
+    .stagehand .main { padding: 28px 32px; }
+    .stagehand .h1 { font-weight: 700; font-size: 20px; margin-bottom: 4px; }
+    .stagehand .sub { color: var(--muted-fg); font-size: 13px; margin-bottom: 24px; }
+    .stagehand .tabs { display: flex; gap: 20px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+    .stagehand .tab { padding: 8px 0; font-size: 13px; color: var(--muted-fg); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+    .stagehand .tab.on { color: var(--fg); font-weight: 500; border-bottom-color: var(--fg); }
+    .stagehand table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .stagehand th { text-align: left; font-weight: 500; color: var(--muted-fg); padding: 10px 8px; border-bottom: 1px solid var(--border); font-size: 12px; }
+    .stagehand td { padding: 12px 8px; border-bottom: 1px solid var(--border); }
+    .stagehand .order-no { font-weight: 500; }
+    .stagehand .total { font-variant-numeric: tabular-nums; }
+    .stagehand .status { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 500; }
+    .stagehand .status.new { background: hsl(73 100% 50% / 0.18); color: var(--brand-dim); }
+    .stagehand .status.pending { background: hsl(0 0% 92%); color: hsl(0 0% 30%); }
+    .stagehand .status.stk { background: hsl(0 84% 60% / 0.1); color: var(--destructive-dim); }
+    .stagehand .status.dlv { background: hsl(0 0% 95%); color: hsl(0 0% 45%); }
+
+    /* =================== */
+    /* Operator's Console */
+    /* =================== */
+    .console .app { display: grid; grid-template-columns: 48px 1fr; min-height: 540px; font-size: 12px; }
+    .console .sb {
+      background: hsl(0 0% 8%); color: hsl(0 0% 75%); padding: 14px 8px;
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+    }
+    .console .sb .logo {
+      writing-mode: vertical-rl; transform: rotate(180deg);
+      font-weight: 900; letter-spacing: 0.22em; color: var(--brand);
+      font-size: 10px; margin-bottom: 12px; padding: 6px 0;
+    }
+    .console .sb .nav-icon { width: 32px; height: 32px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 13px; cursor: pointer; color: hsl(0 0% 60%); }
+    .console .sb .nav-icon:hover { background: hsl(0 0% 15%); color: hsl(0 0% 90%); }
+    .console .sb .nav-icon.active { background: var(--brand); color: var(--brand-fg); }
+    .console .main { padding: 0; display: flex; flex-direction: column; }
+    .console .topbar { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-bottom: 1px solid var(--border); }
+    .console .search {
+      flex: 1; display: flex; align-items: center; gap: 8px;
+      padding: 6px 10px; background: var(--muted); border-radius: 4px;
+      font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px; color: var(--muted-fg);
+    }
+    .console .kbd { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; padding: 1px 5px; border: 1px solid var(--border); border-radius: 3px; background: var(--bg); color: var(--fg); }
+    .console .page { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px 10px; }
+    .console .page h2 { font-weight: 700; font-size: 16px; }
+    .console .actions { display: flex; gap: 6px; }
+    .console .btn { padding: 5px 10px; border: 1px solid var(--border); border-radius: 4px; font-size: 12px; background: var(--bg); cursor: pointer; font-family: inherit; }
+    .console .btn:hover { background: var(--muted); }
+    .console .btn.primary { background: var(--brand); color: var(--brand-fg); border-color: var(--brand); font-weight: 500; }
+    .console .btn.primary:hover { background: hsl(73 100% 45%); }
+    .console table { width: 100%; border-collapse: collapse; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px; }
+    .console thead th { background: var(--muted); padding: 7px 12px; text-align: left; font-weight: 500; color: var(--muted-fg); font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border); }
+    .console tbody td { padding: 7px 12px; border-bottom: 1px solid var(--border); }
+    .console tbody tr:hover { background: var(--muted); cursor: pointer; }
+    .console .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+    .console .dot.new { background: var(--brand); }
+    .console .dot.stk { background: var(--destructive); }
+    .console .dot.dlv { background: hsl(0 0% 70%); }
+    .console .dot.pnd { background: hsl(0 0% 50%); }
+    .console .footer { margin-top: auto; padding: 8px 16px; border-top: 1px solid var(--border); display: flex; gap: 18px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11px; color: var(--muted-fg); }
+
+    /* ============ */
+    /* Field Manual */
+    /* ============ */
+    .manual .app { display: grid; grid-template-columns: 200px 1fr; min-height: 540px; font-size: 14px; }
+    .manual .sb { background: var(--bg); border-right: 1px solid var(--border); padding: 28px 20px; }
+    .manual .logo { font-weight: 900; letter-spacing: 0.18em; font-size: 14px; margin-bottom: 28px; }
+    .manual .section-label { font-size: 10px; color: var(--muted-fg); text-transform: uppercase; letter-spacing: 0.1em; margin: 16px 0 6px; font-weight: 500; }
+    .manual .nav-item { padding: 5px 0; color: var(--muted-fg); cursor: pointer; font-size: 14px; }
+    .manual .nav-item:hover { color: var(--fg); }
+    .manual .nav-item.active { color: var(--fg); font-weight: 500; }
+    .manual .main { padding: 36px 40px; }
+    .manual .breadcrumb { font-size: 12px; color: var(--muted-fg); margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.06em; }
+    .manual .breadcrumb b { color: var(--fg); font-weight: 600; }
+    .manual h1.title { font-weight: 900; font-size: 28px; margin-bottom: 8px; letter-spacing: -0.01em; }
+    .manual .underline { width: 32px; height: 2px; background: var(--brand); margin-bottom: 28px; }
+    .manual .record { padding: 18px 0; border-bottom: 1px solid var(--border); }
+    .manual .record:hover { background: hsl(0 0% 99%); }
+    .manual .record-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 4px; gap: 12px; }
+    .manual .record-id-group { display: flex; align-items: baseline; gap: 16px; }
+    .manual .record-id { font-weight: 700; font-size: 17px; font-variant-numeric: tabular-nums; }
+    .manual .record-total { font-variant-numeric: tabular-nums; color: var(--fg); font-size: 15px; }
+    .manual .record-status { font-size: 11px; color: var(--muted-fg); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; }
+    .manual .record-status.new { color: var(--brand-dim); }
+    .manual .record-status.stk { color: var(--destructive-dim); }
+    .manual .record-meta { font-size: 13px; color: var(--muted-fg); }
+  </style>
+</head>
+<body>
+  <div class="page-header">
+    <h1 class="page-title">STREET Admin Portal — North Star Explorations</h1>
+    <p class="page-sub">Same screen (Orders list), three creative metaphors. Open in a wide browser window. Pick the one that feels right to spend 6 hours a day in. All three use the real STREET tokens — lime <code style="font-family:'JetBrains Mono',monospace;font-size:12px;background:#f5f5f5;padding:1px 5px;border-radius:3px;">hsl(73 100% 50%)</code>, Barlow body, light surface.</p>
+  </div>
+
+  <div class="grid">
+
+    <!-- The Stagehand -->
+    <div class="variant stagehand">
+      <div class="variant-header">
+        <div class="variant-name">The Stagehand</div>
+        <div class="variant-tag">Present, professional, out of the way</div>
+      </div>
+      <div class="app">
+        <aside class="sb">
+          <div class="logo">STREET</div>
+          <div class="nav-item">Dashboard</div>
+          <div class="nav-item active">Orders</div>
+          <div class="nav-item">Users</div>
+          <div class="nav-item">Retailers</div>
+          <div class="nav-item">Couriers</div>
+          <div class="nav-item">Referrals</div>
+        </aside>
+        <main class="main">
+          <div class="h1">Orders</div>
+          <div class="sub">152 results · Last 30 days</div>
+          <div class="tabs">
+            <div class="tab on">All</div>
+            <div class="tab">Pending</div>
+            <div class="tab">Stuck</div>
+            <div class="tab">Delivered</div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Order</th>
+                <th>Customer</th>
+                <th>Total</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="order-no">#84211</td>
+                <td>Jane Smith</td>
+                <td class="total">£142.00</td>
+                <td><span class="status new">New</span></td>
+              </tr>
+              <tr>
+                <td class="order-no">#84210</td>
+                <td>Marcus Lee</td>
+                <td class="total">£98.50</td>
+                <td><span class="status pending">Pending</span></td>
+              </tr>
+              <tr>
+                <td class="order-no">#84209</td>
+                <td>A. Okafor</td>
+                <td class="total">£67.00</td>
+                <td><span class="status dlv">Delivered</span></td>
+              </tr>
+              <tr>
+                <td class="order-no">#84208</td>
+                <td>Rita Velasco</td>
+                <td class="total">£210.00</td>
+                <td><span class="status stk">Stuck</span></td>
+              </tr>
+              <tr>
+                <td class="order-no">#84207</td>
+                <td>Tom Hardy</td>
+                <td class="total">£44.00</td>
+                <td><span class="status dlv">Delivered</span></td>
+              </tr>
+              <tr>
+                <td class="order-no">#84206</td>
+                <td>Priya N.</td>
+                <td class="total">£189.00</td>
+                <td><span class="status pending">Pending</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </main>
+      </div>
+    </div>
+
+    <!-- The Operator's Console -->
+    <div class="variant console">
+      <div class="variant-header">
+        <div class="variant-name">The Operator's Console</div>
+        <div class="variant-tag">Dense, fast, keyboard-first</div>
+      </div>
+      <div class="app">
+        <aside class="sb">
+          <div class="logo">STREET</div>
+          <div class="nav-icon" title="Dashboard">▦</div>
+          <div class="nav-icon active" title="Orders">≡</div>
+          <div class="nav-icon" title="Users">◉</div>
+          <div class="nav-icon" title="Retailers">⌖</div>
+          <div class="nav-icon" title="Couriers">⏵</div>
+          <div class="nav-icon" title="Referrals">⁂</div>
+        </aside>
+        <main class="main">
+          <div class="topbar">
+            <div class="search">
+              <span>Search orders, users, retailers…</span>
+              <span style="margin-left:auto"><span class="kbd">⌘</span> <span class="kbd">K</span></span>
+            </div>
+          </div>
+          <div class="page">
+            <h2>Orders</h2>
+            <div class="actions">
+              <button class="btn">Filter</button>
+              <button class="btn">Export</button>
+              <button class="btn primary">+ New</button>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Total</th>
+                <th>Region</th>
+                <th>Status</th>
+                <th>Retailer</th>
+                <th>Age</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>84211</td><td>142.00</td><td>LDN</td><td><span class="dot new"></span>NEW</td><td>retail-3</td><td>3m</td></tr>
+              <tr><td>84210</td><td>98.50</td><td>LDN</td><td><span class="dot pnd"></span>PND</td><td>retail-1</td><td>9m</td></tr>
+              <tr><td>84209</td><td>67.00</td><td>LDN</td><td><span class="dot dlv"></span>DLV</td><td>retail-2</td><td>21m</td></tr>
+              <tr><td>84208</td><td>210.00</td><td>LDN</td><td><span class="dot stk"></span>STK</td><td>retail-5</td><td>44m</td></tr>
+              <tr><td>84207</td><td>44.00</td><td>LDN</td><td><span class="dot dlv"></span>DLV</td><td>retail-1</td><td>1h</td></tr>
+              <tr><td>84206</td><td>189.00</td><td>LDN</td><td><span class="dot pnd"></span>PND</td><td>retail-2</td><td>1h</td></tr>
+              <tr><td>84205</td><td>22.50</td><td>LDN</td><td><span class="dot dlv"></span>DLV</td><td>retail-4</td><td>2h</td></tr>
+            </tbody>
+          </table>
+          <div class="footer">
+            <span>152 results</span>
+            <span><span class="kbd">J</span> <span class="kbd">K</span> navigate</span>
+            <span><span class="kbd">/</span> search</span>
+            <span><span class="kbd">N</span> new</span>
+            <span><span class="kbd">⌘</span><span class="kbd">⏎</span> open</span>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- The Field Manual -->
+    <div class="variant manual">
+      <div class="variant-header">
+        <div class="variant-name">The Field Manual</div>
+        <div class="variant-tag">Functional, deliberate, indexed</div>
+      </div>
+      <div class="app">
+        <aside class="sb">
+          <div class="logo">STREET</div>
+          <div class="section-label">Operations</div>
+          <div class="nav-item">Dashboard</div>
+          <div class="nav-item active">Orders</div>
+          <div class="nav-item">Users</div>
+          <div class="nav-item">Retailers</div>
+          <div class="section-label">Network</div>
+          <div class="nav-item">Couriers</div>
+          <div class="nav-item">Referrals</div>
+          <div class="section-label">System</div>
+          <div class="nav-item">Settings</div>
+          <div class="nav-item">Audit</div>
+        </aside>
+        <main class="main">
+          <div class="breadcrumb">Orders / <b>All</b></div>
+          <h1 class="title">Orders</h1>
+          <div class="underline"></div>
+
+          <div class="record">
+            <div class="record-head">
+              <div class="record-id-group">
+                <span class="record-id">84211</span>
+                <span class="record-total">£142.00</span>
+              </div>
+              <span class="record-status new">New</span>
+            </div>
+            <div class="record-meta">Today · London · 3 items · Jane Smith · retail-3</div>
+          </div>
+
+          <div class="record">
+            <div class="record-head">
+              <div class="record-id-group">
+                <span class="record-id">84210</span>
+                <span class="record-total">£98.50</span>
+              </div>
+              <span class="record-status">Pending</span>
+            </div>
+            <div class="record-meta">Today · London · 1 item · Marcus Lee · retail-1</div>
+          </div>
+
+          <div class="record">
+            <div class="record-head">
+              <div class="record-id-group">
+                <span class="record-id">84209</span>
+                <span class="record-total">£67.00</span>
+              </div>
+              <span class="record-status">Delivered</span>
+            </div>
+            <div class="record-meta">Yesterday · London · 2 items · A. Okafor · retail-2</div>
+          </div>
+
+          <div class="record">
+            <div class="record-head">
+              <div class="record-id-group">
+                <span class="record-id">84208</span>
+                <span class="record-total">£210.00</span>
+              </div>
+              <span class="record-status stk">Stuck</span>
+            </div>
+            <div class="record-meta">Yesterday · London · 4 items · Rita Velasco · retail-5</div>
+          </div>
+
+          <div class="record">
+            <div class="record-head">
+              <div class="record-id-group">
+                <span class="record-id">84207</span>
+                <span class="record-total">£44.00</span>
+              </div>
+              <span class="record-status">Delivered</span>
+            </div>
+            <div class="record-meta">Yesterday · London · 1 item · Tom Hardy · retail-1</div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

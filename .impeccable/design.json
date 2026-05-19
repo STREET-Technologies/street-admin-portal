@@ -1,0 +1,247 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-05-19T00:00:00.000Z",
+  "title": "Design System: STREET Admin Portal",
+  "extensions": {
+    "colorMeta": {
+      "brand": {
+        "role": "primary",
+        "displayName": "Signal Lime",
+        "canonical": "hsl(73 100% 50%)",
+        "tonalRamp": [
+          "hsl(73 100% 12%)",
+          "hsl(73 100% 20%)",
+          "hsl(73 90% 30%)",
+          "hsl(73 95% 40%)",
+          "hsl(73 100% 50%)",
+          "hsl(73 100% 65%)",
+          "hsl(73 100% 80%)",
+          "hsl(73 100% 94%)"
+        ]
+      },
+      "primary": {
+        "role": "primary",
+        "displayName": "Coal",
+        "canonical": "hsl(0 0% 9%)",
+        "tonalRamp": [
+          "hsl(0 0% 4%)",
+          "hsl(0 0% 9%)",
+          "hsl(0 0% 16%)",
+          "hsl(0 0% 28%)",
+          "hsl(0 0% 45%)",
+          "hsl(0 0% 64%)",
+          "hsl(0 0% 84%)",
+          "hsl(0 0% 96%)"
+        ]
+      },
+      "fg": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "hsl(220 9% 11%)",
+        "tonalRamp": [
+          "hsl(220 9% 6%)",
+          "hsl(220 9% 11%)",
+          "hsl(220 8% 22%)",
+          "hsl(220 7% 35%)",
+          "hsl(220 6% 50%)",
+          "hsl(220 5% 70%)",
+          "hsl(220 13% 88%)",
+          "hsl(220 13% 96%)"
+        ]
+      },
+      "muted-fg": {
+        "role": "neutral",
+        "displayName": "Graphite",
+        "canonical": "hsl(0 0% 45%)",
+        "tonalRamp": [
+          "hsl(0 0% 9%)",
+          "hsl(0 0% 22%)",
+          "hsl(0 0% 35%)",
+          "hsl(0 0% 45%)",
+          "hsl(0 0% 60%)",
+          "hsl(0 0% 75%)",
+          "hsl(0 0% 88%)",
+          "hsl(0 0% 96%)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Mist",
+        "canonical": "hsl(0 0% 96%)",
+        "tonalRamp": [
+          "hsl(0 0% 86%)",
+          "hsl(0 0% 90%)",
+          "hsl(0 0% 93%)",
+          "hsl(0 0% 96%)",
+          "hsl(0 0% 98%)",
+          "hsl(0 0% 100%)"
+        ]
+      },
+      "sidebar-bg": {
+        "role": "neutral",
+        "displayName": "Ash",
+        "canonical": "hsl(0 0% 98%)"
+      },
+      "destructive": {
+        "role": "destructive",
+        "displayName": "Alarm Red",
+        "canonical": "hsl(0 84% 60%)",
+        "tonalRamp": [
+          "hsl(0 84% 20%)",
+          "hsl(0 84% 35%)",
+          "hsl(0 84% 50%)",
+          "hsl(0 84% 60%)",
+          "hsl(0 75% 75%)",
+          "hsl(0 65% 88%)",
+          "hsl(0 60% 96%)"
+        ]
+      },
+      "status-new-bg": { "role": "status", "displayName": "Status — New (lime)", "canonical": "hsl(73 100% 50%)" },
+      "status-pending-bg": { "role": "status", "displayName": "Status — Pending (amber)", "canonical": "hsl(38 92% 92%)" },
+      "status-stuck-bg": { "role": "status", "displayName": "Status — Stuck (red)", "canonical": "hsl(0 84% 60%)" },
+      "status-delivered-bg": { "role": "status", "displayName": "Status — Delivered (grey)", "canonical": "hsl(0 0% 94%)" },
+      "status-cancelled-bg": { "role": "status", "displayName": "Status — Cancelled (soft red)", "canonical": "hsl(0 60% 96%)" }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display (Hanson)", "purpose": "Sidebar logo only. Never used elsewhere." },
+      "headline": { "displayName": "Headline", "purpose": "Page title (h1). One per route." },
+      "title": { "displayName": "Title", "purpose": "Section heading, card heading, dialog title." },
+      "body": { "displayName": "Body", "purpose": "Default text. Table cells. Form values." },
+      "caption": { "displayName": "Caption", "purpose": "Metadata under a record, hint text under a field." },
+      "label": { "displayName": "Label (uppercase)", "purpose": "Table column headers, sidebar section labels, eyebrows." },
+      "pill": { "displayName": "Pill (uppercase)", "purpose": "Status badges, count chips. Always uppercase." }
+    },
+    "shadows": [
+      { "name": "shadow-xs", "value": "0 1px 2px rgba(0,0,0,0.04)", "purpose": "Inputs and outline buttons at rest. Nearly invisible interactive hint." },
+      { "name": "shadow-sm", "value": "0 1px 2px rgba(0,0,0,0.04)", "purpose": "Cards. Single quiet pixel of depth." },
+      { "name": "focus-ring", "value": "0 0 0 3px hsl(73 100% 50% / 0.5)", "purpose": "Lime focus indicator on every interactive element." }
+    ],
+    "motion": [
+      { "name": "duration-fast", "value": "150ms", "purpose": "Standard state transitions — hover color shift, focus border shift." },
+      { "name": "duration-base", "value": "250ms", "purpose": "Longer transitions — drawers, sheets, page transitions." },
+      { "name": "ease-out", "value": "cubic-bezier(0.4, 0, 0.2, 1)", "purpose": "Default easing for state changes." },
+      { "name": "ease-out-quint", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Easing for larger movements (drawer slide, sheet enter)." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" },
+      { "name": "2xl", "value": "1536px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Default call-to-action. Coal fill, white text, 6px radius. Used sparingly — one primary action per view.",
+      "html": "<button class=\"ds-btn ds-btn-primary\">Resolve</button>",
+      "css": ".ds-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 36px; padding: 8px 16px; border-radius: 6px; font-family: 'Barlow', ui-sans-serif, system-ui, sans-serif; font-size: 13px; font-weight: 500; line-height: 1; cursor: pointer; transition: background 150ms cubic-bezier(0.4, 0, 0.2, 1), border-color 150ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 150ms cubic-bezier(0.4, 0, 0.2, 1); } .ds-btn-primary { background: #171717; color: #ffffff; border: 1px solid #171717; } .ds-btn-primary:hover { background: #2e2e2e; } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 3px hsl(73 100% 50% / 0.5); }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Secondary action. White fill, Mist border, faint shadow. Used for non-primary actions and dialog Cancel.",
+      "html": "<button class=\"ds-btn ds-btn-outline\">Cancel</button>",
+      "css": ".ds-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 36px; padding: 8px 16px; border-radius: 6px; font-family: 'Barlow', ui-sans-serif, system-ui, sans-serif; font-size: 13px; font-weight: 500; line-height: 1; cursor: pointer; transition: background 150ms cubic-bezier(0.4, 0, 0.2, 1), border-color 150ms cubic-bezier(0.4, 0, 0.2, 1); } .ds-btn-outline { background: #ffffff; color: #1a1c20; border: 1px solid #e6e6e6; box-shadow: 0 1px 2px rgba(0,0,0,0.04); } .ds-btn-outline:hover { background: #f5f5f5; } .ds-btn-outline:focus-visible { outline: none; box-shadow: 0 0 0 3px hsl(73 100% 50% / 0.5); border-color: #c8ff00; }"
+    },
+    {
+      "name": "Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Default text field. 1px Mist border, faint shadow, lime focus ring.",
+      "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"Search orders, users…\" />",
+      "css": ".ds-input { width: 100%; height: 36px; padding: 6px 12px; background: #ffffff; color: #1a1c20; border: 1px solid #e6e6e6; border-radius: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.04); font-family: 'Barlow', ui-sans-serif, system-ui, sans-serif; font-size: 13px; line-height: 1.5; outline: none; transition: border-color 150ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 150ms cubic-bezier(0.4, 0, 0.2, 1); } .ds-input::placeholder { color: #737373; } .ds-input:focus-visible { border-color: #c8ff00; box-shadow: 0 0 0 3px hsl(73 100% 50% / 0.5); }"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Detail card. 6px radius (NOT shadcn's default 12px), 1px Mist border, faint shadow. Compact internal padding.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-head\"><div class=\"ds-card-title\">Order #84211</div><span class=\"ds-pill ds-pill-new\">NEW</span></div><div class=\"ds-card-body\"><div class=\"ds-row\"><span class=\"ds-label\">Customer</span><span class=\"ds-value\">Jane Smith</span></div><div class=\"ds-row\"><span class=\"ds-label\">Total</span><span class=\"ds-value\">£142.00</span></div></div></div>",
+      "css": ".ds-card { background: #ffffff; border: 1px solid #e6e6e6; border-radius: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.04); overflow: hidden; font-family: 'Barlow', ui-sans-serif, system-ui, sans-serif; color: #1a1c20; max-width: 380px; } .ds-card-head { padding: 18px 22px; border-bottom: 1px solid #e6e6e6; display: flex; align-items: baseline; justify-content: space-between; } .ds-card-title { font-weight: 700; font-size: 16px; } .ds-card-body { padding: 18px 22px; } .ds-row { display: flex; justify-content: space-between; padding: 9px 0; font-size: 13px; } .ds-row + .ds-row { border-top: 1px solid #f0f0f0; } .ds-label { color: #737373; } .ds-value { font-weight: 500; font-variant-numeric: tabular-nums; } .ds-pill { display: inline-block; padding: 3px 10px; border-radius: 999px; font-family: 'Barlow', ui-sans-serif, system-ui, sans-serif; font-size: 11px; font-weight: 600; line-height: 1; text-transform: uppercase; letter-spacing: 0.04em; } .ds-pill-new { background: #c8ff00; color: #141414; }"
+    },
+    {
+      "name": "Status Pill — New",
+      "kind": "chip",
+      "refersTo": "pill-new",
+      "description": "Highest-attention status. Lime fill, near-black text. The loudest signal in the system.",
+      "html": "<span class=\"ds-pill ds-pill-new\">NEW</span>",
+      "css": ".ds-pill { display: inline-block; padding: 3px 10px; border-radius: 999px; font-family: 'Barlow', ui-sans-serif, system-ui, sans-serif; font-size: 11px; font-weight: 600; line-height: 1; text-transform: uppercase; letter-spacing: 0.04em; } .ds-pill-new { background: #c8ff00; color: #141414; }"
+    },
+    {
+      "name": "Status Pill — Stuck",
+      "kind": "chip",
+      "refersTo": "pill-stuck",
+      "description": "Urgent alarm state. Solid red fill, white text. Operator action required.",
+      "html": "<span class=\"ds-pill ds-pill-stuck\">STUCK</span>",
+      "css": ".ds-pill { display: inline-block; padding: 3px 10px; border-radius: 999px; font-family: 'Barlow', ui-sans-serif, system-ui, sans-serif; font-size: 11px; font-weight: 600; line-height: 1; text-transform: uppercase; letter-spacing: 0.04em; } .ds-pill-stuck { background: #ef4444; color: #ffffff; }"
+    },
+    {
+      "name": "Status Pill — Delivered",
+      "kind": "chip",
+      "refersTo": "pill-delivered",
+      "description": "Quietest status. Light grey fill, muted grey text. Done — deliberately peripheral.",
+      "html": "<span class=\"ds-pill ds-pill-delivered\">DELIVERED</span>",
+      "css": ".ds-pill { display: inline-block; padding: 3px 10px; border-radius: 999px; font-family: 'Barlow', ui-sans-serif, system-ui, sans-serif; font-size: 11px; font-weight: 600; line-height: 1; text-transform: uppercase; letter-spacing: 0.04em; } .ds-pill-delivered { background: #f0f0f0; color: #737373; }"
+    },
+    {
+      "name": "Sidebar Nav Item (Active)",
+      "kind": "nav",
+      "refersTo": "sidebar-nav-item-active",
+      "description": "Active navigation row. Prepended with a 6px lime dot — the signature mark of the system.",
+      "html": "<div class=\"ds-nav\"><a class=\"ds-nav-item ds-nav-item-active\" href=\"#\">Orders</a><a class=\"ds-nav-item\" href=\"#\">Users</a></div>",
+      "css": ".ds-nav { width: 220px; background: #fafafa; padding: 14px; border-right: 1px solid #e3e5ea; font-family: 'Barlow', ui-sans-serif, system-ui, sans-serif; } .ds-nav-item { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 4px; color: #1a1c20; font-size: 13px; text-decoration: none; cursor: pointer; transition: background 150ms cubic-bezier(0.4, 0, 0.2, 1); } .ds-nav-item:hover { background: #f5f5f5; } .ds-nav-item-active { background: rgba(26, 28, 32, 0.05); font-weight: 500; } .ds-nav-item-active::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #c8ff00; flex-shrink: 0; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Stagehand",
+    "overview": "This is the operator's room, not the storefront. The STREET marketplace brand is streetwear and skate-loud — uppercase Hanson, lime green, brutalist confidence — but the admin portal carries that brand the way a stagehand wears black: present, professional, out of the way. The team lives in this surface for six hours a day; brand expression here would be costume, not character. The system is a single light-mode surface, near-white on white with a hand-tuned greyscale, and one signal color: lime hsl(73 100% 50%). Lime is reserved for active state, focus rings, the New status, and the sidebar's active-nav indicator — never for decoration. Surfaces and chrome are quiet so the data can speak.",
+    "keyCharacteristics": [
+      "One light theme, no toggle. No dark mode, no preferences for visual chrome.",
+      "Lime is signal, not skin. Reserved color used on roughly ≤8% of any screen.",
+      "Information density without enterprise punishment. Comfortable rows, deliberate whitespace.",
+      "Speed of investigation over delight. The tool earns its place by making finding faster.",
+      "Brand stamped, not shouted. Hanson appears only on the sidebar logo."
+    ],
+    "rules": [
+      { "name": "The Lime-Is-Signal Rule", "body": "Lime is never decorative. It appears as: the active sidebar dot, the New status pill, the 3px focus ring on inputs and buttons, chart-1, and nowhere else by default.", "section": "colors" },
+      { "name": "The ≤8% Rule", "body": "Across any single screen, lime should cover roughly 8% or less of pixel area at rest.", "section": "colors" },
+      { "name": "The No-Pure-Black Rule", "body": "Use Ink (#1a1c20) for text and Coal (#171717) for primary fills. Never #000. Pure black on a pure-white admin surface produces a vibrating, fatiguing read on long sessions.", "section": "colors" },
+      { "name": "The Status Hierarchy Rule", "body": "Status color = urgency rank. From loudest to quietest: Stuck > New > Pending > Cancelled > Delivered.", "section": "colors" },
+      { "name": "The Hanson-Once Rule", "body": "Hanson appears exactly once per page — in the sidebar logo. Anywhere else is brand cosplay. The dead helper classes .street-title and .street-body-title from src/index.css should be deleted; they violate this rule.", "section": "typography" },
+      { "name": "The Tabular-Nums Rule", "body": "Every column of numbers gets font-variant-numeric: tabular-nums. Order totals, order IDs, counts, durations, timestamps.", "section": "typography" },
+      { "name": "The All-Caps-Pills Rule", "body": "Status pills are always uppercase, regardless of state. Hierarchy comes from fill color, not from letter case.", "section": "typography" },
+      { "name": "The Flat-By-Default Rule", "body": "Surfaces are flat at rest. Use Mist Border, not a shadow, to separate adjacent surfaces.", "section": "elevation" },
+      { "name": "The Lime-Ring Rule", "body": "The focus indicator is always the lime ring at 3px, 50% opacity. Never use a generic blue browser default.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do use lime only for active state, focus ring, New status, and chart-1. Never for primary buttons, never for decoration, never as a gradient.",
+      "Do keep total lime coverage at or under roughly 8% of any single screen at rest.",
+      "Do use 6px radius on buttons, inputs, and cards. Override shadcn's Card default of rounded-xl to match.",
+      "Do use tabular-nums on every numeric column — totals, IDs, counts, durations.",
+      "Do UPPERCASE every status pill, every label, every section heading in the sidebar.",
+      "Do keep Hanson to the sidebar logo only.",
+      "Do prefer 1px borders + greyscale shifts (Paper → Ash → Mist) over shadows to separate regions.",
+      "Do use the 3px lime focus ring on every interactive element. Never the browser default.",
+      "Do put the active sidebar dot at 6px solid lime. It is the signature mark of the system."
+    ],
+    "donts": [
+      "Don't ship dark mode, a theme toggle, or any visual-chrome user preference. One surface, one theme.",
+      "Don't use Hanson outside the sidebar logo. Delete the dead .street-title / .street-body-title helper classes.",
+      "Don't use #000 or #fff literals. Always Ink/Coal/Paper from the token table.",
+      "Don't look like a generic SaaS admin template — cream cards, gradient buttons, hero-metric tiles, pastel category icons.",
+      "Don't look like an enterprise-heavy admin — thirty-column tables, no whitespace, modals on modals.",
+      "Don't look like a consumer-app cheerful product — rounded-everything, illustrations, emojis as state indicators.",
+      "Don't go brutalist-loud — uppercase Hanson on every heading, oversized type, lime backgrounds, marketing-page energy.",
+      "Don't use gradient text (background-clip: text over a gradient). Forbidden everywhere.",
+      "Don't use side-stripe borders (border-left > 1px as a colored accent).",
+      "Don't use identical card grids — same-sized icon-heading-text cards repeated endlessly.",
+      "Don't animate CSS layout properties (width/height/padding/margin). Animate transform/opacity only. 300ms ceiling on any transition.",
+      "Don't reach for a modal as the first thought. Try inline editing, drawers, or a row-expand first.",
+      "Don't add a new status pill variant without verifying it's distinguishable from the existing five at a glance in a tall list."
+    ]
+  }
+}
