@@ -167,6 +167,7 @@ export interface UpdateRetailerPayload {
   latitude?: number;
   longitude?: number;
   commissionPercentage?: number;
+  shippingReturnsUrl?: string;
 }
 
 /** Update a vendor (retailer) by ID (partial update). */

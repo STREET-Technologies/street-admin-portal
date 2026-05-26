@@ -140,6 +140,14 @@ export function RetailerOverviewTab({ retailer }: RetailerOverviewTabProps) {
               }}
               disabled={!canWrite}
             />
+            <EditableField
+              label="Shipping & Returns URL"
+              value={retailer.shippingReturnsUrl || ""}
+              onSave={async (val) => {
+                await updateRetailer.mutateAsync({ shippingReturnsUrl: val });
+              }}
+              disabled={!canWrite}
+            />
           </div>
         </CardContent>
       </Card>

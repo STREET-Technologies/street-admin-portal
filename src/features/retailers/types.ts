@@ -23,6 +23,7 @@ export interface BackendVendor {
   isOnline: boolean;
   isActive: boolean;
   stripeAccountId: string | null;
+  shippingReturnsUrl: string | null;
   openingHours: Record<string, unknown> | null;
   createdAt: string;
   updatedAt: string;
@@ -42,6 +43,7 @@ export interface RetailerViewModel {
   category: string;
   commissionPercentage: number | null;
   storeUrl: string | null;
+  shippingReturnsUrl: string | null;
   address: string;
   postcode: string;
   country: string;
@@ -78,6 +80,7 @@ export function toRetailerViewModel(vendor: BackendVendor): RetailerViewModel {
     category: vendor.vendorCategory ?? "Uncategorized",
     commissionPercentage: vendor.commissionPercentage,
     storeUrl: vendor.storeUrl,
+    shippingReturnsUrl: vendor.shippingReturnsUrl,
     address: vendor.address ?? "",
     postcode: vendor.postcode ?? "",
     country: vendor.country ?? "",
