@@ -124,6 +124,16 @@ export interface OrderViewModel {
   retailerId?: string;
   userId?: string;
   paymentStatus?: string;
+  /**
+   * Return state on the underlying order (TT-226). NONE when no return exists.
+   */
+  returnStatus: string;
+  /**
+   * Consolidated UI status — supersedes `status` for display when a return is
+   * active or completed. Use this for header pills + list status columns.
+   * Examples: DELIVERED, RETURNED, PARTIALLY_RETURNED, RETURN_REQUESTED.
+   */
+  displayStatus: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -221,11 +231,49 @@ export interface OrderItemViewModel {
   totalPrice: string;
   imageUrl: string | null;
   packingStatus: string | null;
+  /**
+   * Quantity of this line item returned across all closed returns (TT-226).
+   * 0 = not returned, == quantity = fully returned, between = partial.
+   */
+  returnedQuantity: number;
+  /** Aggregated reason from the most recent return on this item, if any. */
+  returnReason: string | null;
 }
 
 // ---------------------------------------------------------------------------
 // Transform: BackendOrder -> OrderViewModel
 // ---------------------------------------------------------------------------
+
+/**
+ * Consolidate order status + return status into a single display status (TT-226).
+ *
+ * When a return is active or completed it supersedes the original status for
+ * UI purposes — a returned order should show as RETURNED in the pill, not
+ * DELIVERED. Declined/cancelled returns fall through to the original status.
+ */
+export function deriveDisplayStatus(
+  orderStatus: string | undefined,
+  returnStatus: string | undefined,
+): string {
+  const order = (orderStatus ?? "").toUpperCase();
+  const ret = (returnStatus ?? "NONE").toUpperCase();
+
+  switch (ret) {
+    case "REQUESTED":
+      return "RETURN_REQUESTED";
+    case "IN_PROGRESS":
+      return "RETURN_IN_PROGRESS";
+    case "PARTIAL":
+      return "PARTIALLY_RETURNED";
+    case "COMPLETE":
+      return "RETURNED";
+    case "NONE":
+    case "DECLINED":
+    case "CANCELLED":
+    default:
+      return order;
+  }
+}
 
 /** Format a GBP amount (in pounds) as a currency string. */
 function formatGBP(amount: string | number | null | undefined): string {
@@ -249,6 +297,9 @@ export function toOrderViewModel(backend: BackendOrder): OrderViewModel {
   const email =
     backend.customerEmail ?? backend.user?.email ?? "No email";
 
+  const returnStatus = backend.returnStatus ?? "NONE";
+  const displayStatus = deriveDisplayStatus(backend.status, returnStatus);
+
   return {
     id: backend.id,
     orderId: backend.orderId ?? backend.id.slice(0, 8),
@@ -264,6 +315,8 @@ export function toOrderViewModel(backend: BackendOrder): OrderViewModel {
     retailerId: backend.vendor?.id ?? backend.vendorId,
     userId: backend.user?.id ?? backend.customerId ?? undefined,
     paymentStatus: backend.paymentStatus?.toLowerCase(),
+    returnStatus,
+    displayStatus,
   };
 }
 
@@ -279,7 +332,14 @@ function str(obj: Record<string, unknown> | null | undefined, key: string): stri
 }
 
 /** Transform a BackendOrderItem into an OrderItemViewModel. */
-function toItemViewModel(item: BackendOrderItem, index: number): OrderItemViewModel {
+function toItemViewModel(
+  item: BackendOrderItem,
+  index: number,
+  returnAggregates?: {
+    returnedQuantity: number;
+    returnReason: string | null;
+  },
+): OrderItemViewModel {
   const meta = item.metadata as Record<string, unknown> | null | undefined;
 
   // Extract first image from images array: [{src, ...}, ...]
@@ -299,6 +359,8 @@ function toItemViewModel(item: BackendOrderItem, index: number): OrderItemViewMo
     totalPrice: formatGBP(item.totalPrice),
     imageUrl,
     packingStatus: (packingState?.status as string) ?? null,
+    returnedQuantity: returnAggregates?.returnedQuantity ?? 0,
+    returnReason: returnAggregates?.returnReason ?? null,
   };
 }
 
@@ -323,8 +385,41 @@ export function toOrderDetailViewModel(backend: BackendOrder): OrderDetailViewMo
       }
     : null;
 
+  // TT-226 — aggregate per-item return state from all returns + return line items.
+  // Excludes DECLINED/CANCELLED returns since they didn't result in items returned.
+  const returnAggregatesByOrderItem = new Map<
+    string,
+    { returnedQuantity: number; returnReason: string | null }
+  >();
+  for (const r of backend.returns ?? []) {
+    const status = (r.status ?? "").toUpperCase();
+    if (status === "DECLINED" || status === "CANCELLED" || status === "CANCELED") {
+      continue;
+    }
+    for (const line of r.lineItems ?? []) {
+      const orderItemId = line.orderItem?.id;
+      if (!orderItemId) continue;
+      const existing = returnAggregatesByOrderItem.get(orderItemId) ?? {
+        returnedQuantity: 0,
+        returnReason: null,
+      };
+      existing.returnedQuantity += line.quantity ?? 0;
+      // Take the first non-UNKNOWN reason we see — close-enough display heuristic.
+      if (!existing.returnReason && line.reason && line.reason !== "UNKNOWN") {
+        existing.returnReason = line.reason;
+      }
+      returnAggregatesByOrderItem.set(orderItemId, existing);
+    }
+  }
+
   // Items
-  const items = (backend.orderItems ?? []).map(toItemViewModel);
+  const items = (backend.orderItems ?? []).map((item, idx) =>
+    toItemViewModel(
+      item,
+      idx,
+      item.id ? returnAggregatesByOrderItem.get(item.id) : undefined,
+    ),
+  );
 
   // Payment (prefer payments array, fall back to top-level fields)
   const primaryPayment = backend.payments?.[0];
