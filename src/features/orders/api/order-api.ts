@@ -15,6 +15,11 @@ export interface GetOrdersParams {
   paymentMethod?: string;
   /** When true, only orders whose reconciliation cron gave up (powers the Stuck tab). */
   stuck?: boolean;
+  /**
+   * Single returnStatus value or comma-separated list (TT-226). Powers the
+   * Returned tab. Values: REQUESTED | IN_PROGRESS | PARTIAL | COMPLETE.
+   */
+  returnStatus?: string;
   /** Backend allowlist: orderId | customerName | totalAmount | createdAt */
   sortBy?: string;
   sortOrder?: "asc" | "desc";
@@ -77,6 +82,7 @@ export async function getOrders(
   if (params.status) searchParams.set("status", params.status);
   if (params.paymentMethod) searchParams.set("paymentMethod", params.paymentMethod);
   if (params.stuck) searchParams.set("stuck", "true");
+  if (params.returnStatus) searchParams.set("returnStatus", params.returnStatus);
   if (params.sortBy) searchParams.set("sortBy", params.sortBy);
   if (params.sortOrder) searchParams.set("sortOrder", params.sortOrder);
   if (params.page) searchParams.set("page", String(params.page));

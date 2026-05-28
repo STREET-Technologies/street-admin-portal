@@ -39,6 +39,7 @@ type TabKey =
   | "stuck"
   | "declined"
   | "delivered"
+  | "returned"
   | "cancelled";
 
 const ORDER_TABS: Array<{ value: TabKey; label: string }> = [
@@ -48,12 +49,13 @@ const ORDER_TABS: Array<{ value: TabKey; label: string }> = [
   { value: "stuck", label: "Stuck" },
   { value: "declined", label: "Declined" },
   { value: "delivered", label: "Delivered" },
+  { value: "returned", label: "Returned" },
   { value: "cancelled", label: "Cancelled" },
 ];
 
 function tabToQueryParams(
   tab: TabKey,
-): { status?: string; stuck?: boolean } {
+): { status?: string; stuck?: boolean; returnStatus?: string } {
   switch (tab) {
     case "all":
       return {};
@@ -70,6 +72,9 @@ function tabToQueryParams(
       return { status: "REJECTED,MISSED" };
     case "delivered":
       return { status: "DELIVERED,COMPLETED" };
+    case "returned":
+      // TT-226 — any order with a non-terminal-cancelled return state
+      return { returnStatus: "REQUESTED,IN_PROGRESS,PARTIAL,COMPLETE" };
     case "cancelled":
       return { status: "CANCELLED,PAYMENT_FAILED" };
   }
@@ -155,7 +160,12 @@ function createColumns(
       accessorKey: "status",
       header: "Status",
       enableSorting: false,
-      cell: ({ row }) => <StatusBadge status={row.original.status} size="sm" />,
+      cell: ({ row }) => (
+        <StatusBadge
+          status={row.original.displayStatus.toLowerCase()}
+          size="sm"
+        />
+      ),
     },
     {
       accessorKey: "reconciliationAttempts",
@@ -249,6 +259,7 @@ export function OrderListPage() {
     search: debouncedSearch || undefined,
     status: tabParams.status,
     stuck: tabParams.stuck,
+    returnStatus: tabParams.returnStatus,
     paymentMethod: paymentMethodFilter !== "all" ? paymentMethodFilter : undefined,
     sortBy: searchParams.sortBy,
     sortOrder: searchParams.sortOrder,

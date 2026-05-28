@@ -82,6 +82,13 @@ const STATUS_ALIAS: Record<string, StatusVariant> = {
   open: "pending", // Shopify Return.status=OPEN — under processing
   complete: "delivered",
   closed: "delivered", // Shopify Return.status=CLOSED — terminal
+
+  // ─── Consolidated displayStatus values (TT-226) ───
+  // These supersede the original order status when a return is active.
+  return_requested: "new",
+  return_in_progress: "pending",
+  partially_returned: "pending",
+  returned: "delivered", // terminal — return complete
 };
 
 interface StatusBadgeProps {
@@ -96,6 +103,11 @@ interface StatusBadgeProps {
 // friendlier business-domain term (e.g. REJECTED → DECLINED).
 const DISPLAY_LABEL_OVERRIDES: Record<string, string> = {
   rejected: "Declined",
+  // TT-226 — consolidated displayStatus labels
+  return_requested: "Return requested",
+  return_in_progress: "Return in progress",
+  partially_returned: "Partially returned",
+  returned: "Returned",
 };
 
 function formatStatus(status: string): string {

@@ -1,5 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
 import {
+  AlertTriangle,
   ExternalLink,
   MapPin,
   Package,
@@ -48,6 +49,11 @@ function formatPaymentMethod(method: string): string {
   return method.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+// Friendly return-reason label (e.g. SIZE_TOO_SMALL → "size too small").
+function formatReason(reason: string): string {
+  return reason.replace(/_/g, " ").toLowerCase();
+}
+
 export function OrderDetailPage({ orderId }: OrderDetailPageProps) {
   const navigate = useNavigate();
   const { data: backendOrder, isLoading, isError, refetch } =
@@ -92,11 +98,12 @@ export function OrderDetailPage({ orderId }: OrderDetailPageProps) {
     <div className="space-y-6">
       <BackButton to="/orders" label="Orders" useHistory />
 
-      {/* Header carries the order ID, customer name, order + payment status pills */}
+      {/* Header carries the order ID, customer name, and consolidated displayStatus
+          pill — supersedes the original order status when a return is active (TT-226). */}
       <EntityDetailHeader
         title={`Order ${orderDetail.orderId}`}
         subtitle={`Placed by ${orderDetail.customerName}`}
-        status={orderDetail.status}
+        status={orderDetail.displayStatus.toLowerCase()}
         avatarFallback="#"
       />
 
@@ -334,6 +341,24 @@ function ItemsCard({ items }: { items: OrderItemViewModel[] }) {
                           SKU: {item.sku}
                         </p>
                       )}
+                      {item.returnedQuantity > 0 && (
+                        <div className="mt-1 flex items-center gap-1.5 text-xs">
+                          <StatusBadge
+                            status={
+                              item.returnedQuantity >= item.quantity
+                                ? "returned"
+                                : "partially_returned"
+                            }
+                            size="sm"
+                          />
+                          <span className="text-muted-foreground">
+                            {item.returnedQuantity}/{item.quantity}
+                            {item.returnReason
+                              ? ` · ${formatReason(item.returnReason)}`
+                              : ""}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </TableCell>
@@ -412,6 +437,25 @@ function PricingPaymentCard({
                 </span>
               </div>
             )}
+          </>
+        )}
+
+        {orderDetail.totalShippingRefundedFormatted && (
+          <>
+            <Separator />
+            <div className="flex items-start gap-2 rounded-md border border-amber-200/60 bg-amber-50 px-3 py-2 text-xs dark:border-amber-500/30 dark:bg-amber-500/10">
+              <AlertTriangle className="mt-0.5 size-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
+              <div>
+                <p className="font-semibold text-amber-900 dark:text-amber-200">
+                  Shipping refunded — retailer absorbed{" "}
+                  {orderDetail.totalShippingRefundedFormatted}
+                </p>
+                <p className="text-amber-800/80 dark:text-amber-200/70">
+                  Stuart leg already paid by STREET and recovered via Shopify
+                  Billing. Not recoverable for retailer.
+                </p>
+              </div>
+            </div>
           </>
         )}
       </CardContent>
