@@ -34,6 +34,7 @@ import { useOrderDetailQuery } from "../api/order-queries";
 import { toOrderDetailViewModel } from "../types";
 import type { OrderDetailViewModel, OrderItemViewModel } from "../types";
 import { StuckDeliveryControl } from "./StuckDeliveryControl";
+import { ReturnsCard } from "./ReturnsCard";
 
 interface OrderDetailPageProps {
   orderId: string;
@@ -121,6 +122,9 @@ export function OrderDetailPage({ orderId }: OrderDetailPageProps) {
         <PricingPaymentCard orderDetail={orderDetail} />
         <DeliveryCard orderDetail={orderDetail} />
       </div>
+
+      {/* Returns + refunds (TT-226) — only renders when there's a return or shipping refund */}
+      <ReturnsCard orderDetail={orderDetail} />
 
       {/* Stuck delivery resolve — renders its own card only when applicable */}
       <StuckDeliveryControl
