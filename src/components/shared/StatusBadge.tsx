@@ -74,6 +74,14 @@ const STATUS_ALIAS: Record<string, StatusVariant> = {
   canceled: "cancelled",
   payment_failed: "cancelled",
   payment_cancelled: "cancelled",
+
+  // ─── Return statuses (TT-226) — orthogonal to order status ───
+  requested: "new", // customer/retailer requested, awaiting action
+  in_progress: "pending",
+  partial: "pending",
+  open: "pending", // Shopify Return.status=OPEN — under processing
+  complete: "delivered",
+  closed: "delivered", // Shopify Return.status=CLOSED — terminal
 };
 
 interface StatusBadgeProps {

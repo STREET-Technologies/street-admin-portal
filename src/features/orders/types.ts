@@ -49,6 +49,35 @@ export interface BackendOrder {
    * the cron is/was attempting to recover the delivery; >=12 means it gave up.
    */
   reconciliationAttempts?: number | null;
+  // TT-226 — returns sync from Shopify
+  returnStatus?: string | null;
+  totalShippingRefundedAmount?: string | number | null;
+  returns?: BackendReturn[] | null;
+}
+
+/** Return record attached to an order (TT-226). */
+export interface BackendReturn {
+  id: string;
+  shopifyReturnId: string;
+  status: string;
+  customerNote?: string | null;
+  refundAmount?: string | number | null;
+  refundedAmount?: string | number | null;
+  shippingRefundAmount?: string | number | null;
+  currency?: string | null;
+  closedAt?: string | null;
+  createdAt: string;
+  lineItems?: BackendReturnLineItem[];
+}
+
+export interface BackendReturnLineItem {
+  id: string;
+  quantity: number;
+  reason: string;
+  condition: string;
+  restockType?: string | null;
+  customerNote?: string | null;
+  orderItem?: { id: string } | null;
 }
 
 /** Individual item within an order. */
@@ -152,6 +181,33 @@ export interface OrderDetailViewModel extends OrderViewModel {
     total: string;
     isShopifyOrder: boolean;
   } | null;
+  /** TT-226 — return state and per-return details */
+  returnStatus: string;
+  totalShippingRefundedAmount: number;
+  totalShippingRefundedFormatted: string | null;
+  returns: ReturnViewModel[];
+}
+
+/** Transformed Return record for the detail page (TT-226). */
+export interface ReturnViewModel {
+  id: string;
+  shopifyReturnId: string;
+  status: string;
+  customerNote: string | null;
+  refundedAmount: number;
+  refundedAmountFormatted: string;
+  shippingRefundAmount: number;
+  shippingRefundAmountFormatted: string | null;
+  currency: string;
+  closedAt: string | null;
+  createdAt: string;
+  lineItems: {
+    id: string;
+    orderItemId: string | null;
+    quantity: number;
+    reason: string;
+    condition: string;
+  }[];
 }
 
 /** Transformed order line item for display. */
@@ -333,6 +389,46 @@ export function toOrderDetailViewModel(backend: BackendOrder): OrderDetailViewMo
       }
     : null;
 
+  // TT-226 — returns
+  const totalShippingRefunded =
+    typeof backend.totalShippingRefundedAmount === "string"
+      ? parseFloat(backend.totalShippingRefundedAmount)
+      : (backend.totalShippingRefundedAmount ?? 0);
+  const totalShippingRefundedFormatted =
+    totalShippingRefunded > 0 ? formatGBP(totalShippingRefunded) : null;
+
+  const returns: ReturnViewModel[] = (backend.returns ?? []).map((r) => {
+    const refunded =
+      typeof r.refundedAmount === "string"
+        ? parseFloat(r.refundedAmount)
+        : (r.refundedAmount ?? 0);
+    const shippingRefund =
+      typeof r.shippingRefundAmount === "string"
+        ? parseFloat(r.shippingRefundAmount)
+        : (r.shippingRefundAmount ?? 0);
+    return {
+      id: r.id,
+      shopifyReturnId: r.shopifyReturnId,
+      status: r.status,
+      customerNote: r.customerNote ?? null,
+      refundedAmount: refunded,
+      refundedAmountFormatted: formatGBP(refunded),
+      shippingRefundAmount: shippingRefund,
+      shippingRefundAmountFormatted:
+        shippingRefund > 0 ? formatGBP(shippingRefund) : null,
+      currency: r.currency ?? "GBP",
+      closedAt: r.closedAt ?? null,
+      createdAt: r.createdAt,
+      lineItems: (r.lineItems ?? []).map((li) => ({
+        id: li.id,
+        orderItemId: li.orderItem?.id ?? null,
+        quantity: li.quantity,
+        reason: li.reason,
+        condition: li.condition,
+      })),
+    };
+  });
+
   return {
     ...base,
     shopifyOrderId: backend.shopifyOrderId ?? null,
@@ -343,5 +439,9 @@ export function toOrderDetailViewModel(backend: BackendOrder): OrderDetailViewMo
     delivery,
     shippingAddress,
     pricing,
+    returnStatus: backend.returnStatus ?? "NONE",
+    totalShippingRefundedAmount: totalShippingRefunded,
+    totalShippingRefundedFormatted,
+    returns,
   };
 }
