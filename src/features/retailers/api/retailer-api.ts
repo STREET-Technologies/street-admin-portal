@@ -179,6 +179,63 @@ export function updateRetailer(
 }
 
 // ---------------------------------------------------------------------------
+// Outlets
+// ---------------------------------------------------------------------------
+
+/** Outlet (Shopify location) linked to a vendor. */
+export interface AdminOutlet {
+  id: string;
+  name: string;
+  address: string | null;
+  address2: string | null;
+  city: string | null;
+  postcode: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  isPublished: boolean;
+  isActive: boolean;
+  isPrimary: boolean;
+}
+
+/**
+ * Fetch outlets belonging to a specific vendor (retailer). Primary outlet first.
+ *
+ * Backend: GET /admin/vendors/:id/outlets → { data: AdminOutlet[] }
+ * api.get unwraps the { data } envelope automatically → AdminOutlet[].
+ */
+export function getRetailerOutlets(
+  retailerId: string,
+): Promise<AdminOutlet[]> {
+  return api.get<AdminOutlet[]>(`admin/vendors/${retailerId}/outlets`);
+}
+
+/** Toggle the published state of an outlet. */
+export function setOutletPublished(
+  retailerId: string,
+  outletId: string,
+  isPublished: boolean,
+): Promise<AdminOutlet> {
+  return api.patch<AdminOutlet>(
+    `admin/vendors/${retailerId}/outlets/${outletId}/publish`,
+    { isPublished },
+  );
+}
+
+/**
+ * Re-elect an outlet as the primary for a vendor.
+ * No request body — backend derives everything from the outlet ID.
+ * Also force-publishes the outlet and mirrors vendor address/coords.
+ */
+export function setOutletPrimary(
+  retailerId: string,
+  outletId: string,
+): Promise<AdminOutlet> {
+  return api.patch<AdminOutlet>(
+    `admin/vendors/${retailerId}/outlets/${outletId}/primary`,
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Billing health
 // ---------------------------------------------------------------------------
 
