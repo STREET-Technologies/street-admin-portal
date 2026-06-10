@@ -24,6 +24,7 @@ import { RetailerStaffTab } from "./RetailerStaffTab";
 import { RetailerNotesTab } from "./RetailerNotesTab";
 import { RetailerActivityTab } from "./RetailerActivityTab";
 import { RetailerBillingTab } from "./RetailerBillingTab";
+import { RetailerOutletsTab } from "./RetailerOutletsTab";
 
 interface RetailerDetailPageProps {
   retailerId: string;
@@ -138,6 +139,7 @@ export function RetailerDetailPage({ retailerId }: RetailerDetailPageProps) {
           <UnderlineTabsTrigger value="notes">Notes</UnderlineTabsTrigger>
           <UnderlineTabsTrigger value="activity">Activity</UnderlineTabsTrigger>
           <UnderlineTabsTrigger value="billing">Billing</UnderlineTabsTrigger>
+          <UnderlineTabsTrigger value="outlets">Outlets</UnderlineTabsTrigger>
         </UnderlineTabsList>
 
         <TabsContent value="overview" className="mt-6">
@@ -162,6 +164,10 @@ export function RetailerDetailPage({ retailerId }: RetailerDetailPageProps) {
 
         <TabsContent value="billing" className="mt-6">
           <RetailerBillingTab retailerId={retailerId} />
+        </TabsContent>
+
+        <TabsContent value="outlets" className="mt-6">
+          <RetailerOutletsTab retailerId={retailerId} />
         </TabsContent>
       </Tabs>
     </div>
