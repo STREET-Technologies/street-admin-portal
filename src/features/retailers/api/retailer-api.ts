@@ -221,6 +221,20 @@ export function setOutletPublished(
   );
 }
 
+/**
+ * Re-elect an outlet as the primary for a vendor.
+ * No request body — backend derives everything from the outlet ID.
+ * Also force-publishes the outlet and mirrors vendor address/coords.
+ */
+export function setOutletPrimary(
+  retailerId: string,
+  outletId: string,
+): Promise<AdminOutlet> {
+  return api.patch<AdminOutlet>(
+    `admin/vendors/${retailerId}/outlets/${outletId}/primary`,
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Billing health
 // ---------------------------------------------------------------------------

@@ -12,6 +12,7 @@ import {
   getRetailerBilling,
   getRetailerOutlets,
   setOutletPublished,
+  setOutletPrimary,
   updateRetailer,
   createRetailerStaff,
   type UpdateRetailerPayload,
@@ -149,6 +150,26 @@ export function useSetOutletPublishedMutation(retailerId: string) {
     onSuccess: () => {
       void queryClient.invalidateQueries({
         queryKey: retailerKeys.outlets(retailerId),
+      });
+    },
+  });
+}
+
+/**
+ * Re-elect an outlet as primary.
+ * Invalidates outlets list AND retailer detail (vendor address/coords change).
+ */
+export function useSetOutletPrimaryMutation(retailerId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (outletId: string) => setOutletPrimary(retailerId, outletId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: retailerKeys.outlets(retailerId),
+      });
+      void queryClient.invalidateQueries({
+        queryKey: retailerKeys.detail(retailerId),
       });
     },
   });
