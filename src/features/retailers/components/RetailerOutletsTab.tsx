@@ -64,7 +64,9 @@ export function RetailerOutletsTab({ retailerId }: RetailerOutletsTabProps) {
           const addressLine = [outlet.address, outlet.city, outlet.postcode]
             .filter(Boolean)
             .join(", ");
-          const isPending = publishMutation.isPending;
+          const isPending =
+            publishMutation.isPending &&
+            publishMutation.variables?.outletId === outlet.id;
 
           return (
             <Card key={outlet.id}>
