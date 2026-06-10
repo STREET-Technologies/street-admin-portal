@@ -10,6 +10,8 @@ import {
   getRetailerOrders,
   getRetailerStaff,
   getRetailerBilling,
+  getRetailerOutlets,
+  setOutletPublished,
   updateRetailer,
   createRetailerStaff,
   type UpdateRetailerPayload,
@@ -42,6 +44,8 @@ export const retailerKeys = {
     [...retailerKeys.detail(id), "staff"] as const,
   billing: (id: string) =>
     [...retailerKeys.detail(id), "billing"] as const,
+  outlets: (id: string) =>
+    [...retailerKeys.detail(id), "outlets"] as const,
 };
 
 /**
@@ -103,6 +107,14 @@ export function useRetailerBillingQuery(retailerId: string) {
   });
 }
 
+export function useRetailerOutletsQuery(retailerId: string) {
+  return useQuery({
+    queryKey: retailerKeys.outlets(retailerId),
+    queryFn: () => getRetailerOutlets(retailerId),
+    enabled: Boolean(retailerId),
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Mutation hooks
 // ---------------------------------------------------------------------------
@@ -117,6 +129,26 @@ export function useCreateRetailerStaffMutation(retailerId: string) {
     onSuccess: () => {
       void queryClient.invalidateQueries({
         queryKey: retailerKeys.staff(retailerId),
+      });
+    },
+  });
+}
+
+/** Toggle outlet published state. Invalidates the outlets list on success. */
+export function useSetOutletPublishedMutation(retailerId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      outletId,
+      isPublished,
+    }: {
+      outletId: string;
+      isPublished: boolean;
+    }) => setOutletPublished(retailerId, outletId, isPublished),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: retailerKeys.outlets(retailerId),
       });
     },
   });
