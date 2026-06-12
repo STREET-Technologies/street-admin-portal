@@ -1,11 +1,5 @@
 import { useState } from "react";
 import { Loader2, Mail, Phone, Plus, User } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { formatDate } from "@/lib/format-utils";
@@ -57,14 +51,12 @@ export function RetailerStaffTab({ retailerId }: RetailerStaffTabProps) {
               [member.firstName, member.lastName].filter(Boolean).join(" ") ||
               "Unnamed";
             return (
-              <Card key={member.id}>
-                <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <User className="size-4 text-muted-foreground" />
-                    {name}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-1.5 text-sm">
+              <div key={member.id} className="rounded-md border bg-card p-5">
+                <h3 className="flex items-center gap-2 text-sm font-semibold">
+                  <User className="size-4 text-muted-foreground" />
+                  {name}
+                </h3>
+                <div className="mt-3 space-y-1.5 text-sm">
                   {member.email && (
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Mail className="size-3.5" />
@@ -77,12 +69,11 @@ export function RetailerStaffTab({ retailerId }: RetailerStaffTabProps) {
                       {member.phone}
                     </div>
                   )}
-                  <p className="text-xs text-muted-foreground">
-                    Added{" "}
-                    {formatDate(member.createdAt)}
+                  <p className="text-xs text-muted-foreground tabular-nums">
+                    Added {formatDate(member.createdAt)}
                   </p>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             );
           })}
         </div>

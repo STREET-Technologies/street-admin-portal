@@ -35,3 +35,6 @@ dist-ssr
 # Snyk Security Extension - AI Rules (auto-generated)
 .github/instructions/snyk_rules.instructions.md
 .worktrees/
+
+# Vercel CLI link (project metadata — not for git)
+.vercel/

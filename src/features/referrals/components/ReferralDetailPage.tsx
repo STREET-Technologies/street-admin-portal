@@ -4,13 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useAdminRole } from "@/features/auth/hooks/useAdminRole";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -66,7 +59,7 @@ export function ReferralDetailPage({ referralId }: ReferralDetailPageProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Back navigation */}
       <Button
         variant="ghost"
@@ -101,149 +94,135 @@ export function ReferralDetailPage({ referralId }: ReferralDetailPageProps) {
         </div>
       </div>
 
-      <Separator />
+      {/* Key facts — hairline-divided strip, no per-tile shadow */}
+      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-md border bg-border sm:grid-cols-4">
+        <div className="bg-card px-4 py-3.5">
+          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            Owner
+          </p>
+          {code.ownerId ? (
+            <button
+              type="button"
+              className="mt-0.5 text-sm font-medium hover:underline"
+              onClick={() =>
+                void navigate({
+                  to: "/users/$userId",
+                  params: { userId: code.ownerId! },
+                })
+              }
+            >
+              {code.ownerName}
+            </button>
+          ) : (
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              {code.belongsTo || "No owner (promotional)"}
+            </p>
+          )}
+        </div>
 
-      {/* Info cards — compact stat-card pattern, no decorative icons */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card className="py-3 gap-1">
-          <CardContent className="px-4">
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Owner
-            </p>
-            {code.ownerId ? (
-              <button
-                type="button"
-                className="mt-0.5 text-sm font-medium hover:underline"
-                onClick={() =>
-                  void navigate({
-                    to: "/users/$userId",
-                    params: { userId: code.ownerId! },
-                  })
-                }
-              >
-                {code.ownerName}
-              </button>
-            ) : (
-              <p className="mt-0.5 text-sm text-muted-foreground">
-                {code.belongsTo || "No owner (promotional)"}
-              </p>
-            )}
-          </CardContent>
-        </Card>
+        <div className="bg-card px-4 py-3.5">
+          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            Uses
+          </p>
+          <p className="mt-0.5 text-xl font-semibold tabular-nums">
+            {code.totalUses}
+          </p>
+          <p className="text-xs text-muted-foreground tabular-nums">
+            {code.successfulReferrals} successful
+            {code.maxUses != null && ` / ${code.maxUses} max`}
+          </p>
+        </div>
 
-        <Card className="py-3 gap-1">
-          <CardContent className="px-4">
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Uses
-            </p>
-            <p className="mt-0.5 text-xl font-semibold tabular-nums">
-              {code.totalUses}
-            </p>
-            <p className="text-xs text-muted-foreground tabular-nums">
-              {code.successfulReferrals} successful
-              {code.maxUses != null && ` / ${code.maxUses} max`}
-            </p>
-          </CardContent>
-        </Card>
+        <div className="bg-card px-4 py-3.5">
+          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            Created
+          </p>
+          <p className="mt-0.5 text-sm font-medium tabular-nums">
+            {formatDate(code.createdAt)}
+          </p>
+        </div>
 
-        <Card className="py-3 gap-1">
-          <CardContent className="px-4">
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Created
-            </p>
-            <p className="mt-0.5 text-sm font-medium tabular-nums">
-              {formatDate(code.createdAt)}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="py-3 gap-1">
-          <CardContent className="px-4">
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Expires
-            </p>
-            <p className="mt-0.5 text-sm font-medium tabular-nums">
-              {code.expiresAt ? formatDate(code.expiresAt) : "Never"}
-            </p>
-          </CardContent>
-        </Card>
+        <div className="bg-card px-4 py-3.5">
+          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            Expires
+          </p>
+          <p className="mt-0.5 text-sm font-medium tabular-nums">
+            {code.expiresAt ? formatDate(code.expiresAt) : "Never"}
+          </p>
+        </div>
       </div>
 
-      {/* Uses table */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Referral Uses</CardTitle>
-        </CardHeader>
-        <CardContent>
+      {/* Uses table — flat section */}
+      <section>
+        <h2 className="text-base font-semibold leading-none">Referral uses</h2>
+        <div className="mt-4">
           {usesLoading ? (
             <LoadingState variant="table" rows={3} />
           ) : !uses || uses.length === 0 ? (
-            <p className="py-6 text-center text-sm text-muted-foreground">
+            <p className="border-t py-8 text-center text-sm text-muted-foreground">
               No uses yet
             </p>
           ) : (
-            <div className="rounded-lg border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Friend</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Friend Discount</TableHead>
-                    <TableHead>Referrer Reward</TableHead>
-                    <TableHead>Used</TableHead>
-                    <TableHead>Completed</TableHead>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Friend</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Friend Discount</TableHead>
+                  <TableHead>Referrer Reward</TableHead>
+                  <TableHead>Used</TableHead>
+                  <TableHead>Completed</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {uses.map((use: BackendReferralUse) => (
+                  <TableRow key={use.id}>
+                    <TableCell>
+                      {use.friendUserId ? (
+                        <button
+                          type="button"
+                          className="text-sm hover:underline"
+                          onClick={() =>
+                            void navigate({
+                              to: "/users/$userId",
+                              params: { userId: use.friendUserId! },
+                            })
+                          }
+                        >
+                          {use.friendName?.trim() || "Unknown"}
+                        </button>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">
+                          Unknown
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <StatusBadge status={use.status} size="sm" />
+                    </TableCell>
+                    <TableCell className="text-sm tabular-nums">
+                      {use.friendDiscountApplied != null
+                        ? `£${Number(use.friendDiscountApplied).toFixed(2)}`
+                        : "N/A"}
+                    </TableCell>
+                    <TableCell className="text-sm tabular-nums">
+                      {use.referrerRewardEarned != null
+                        ? `£${Number(use.referrerRewardEarned).toFixed(2)}`
+                        : "N/A"}
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground tabular-nums">
+                      {formatDateTime(use.usedAt)}
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground tabular-nums">
+                      {formatDateTime(use.completedAt)}
+                    </TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {uses.map((use: BackendReferralUse) => (
-                    <TableRow key={use.id}>
-                      <TableCell>
-                        {use.friendUserId ? (
-                          <button
-                            type="button"
-                            className="text-sm hover:underline"
-                            onClick={() =>
-                              void navigate({
-                                to: "/users/$userId",
-                                params: { userId: use.friendUserId! },
-                              })
-                            }
-                          >
-                            {use.friendName?.trim() || "Unknown"}
-                          </button>
-                        ) : (
-                          <span className="text-sm text-muted-foreground">
-                            Unknown
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <StatusBadge status={use.status} size="sm" />
-                      </TableCell>
-                      <TableCell className="text-sm">
-                        {use.friendDiscountApplied != null
-                          ? `\u00A3${Number(use.friendDiscountApplied).toFixed(2)}`
-                          : "N/A"}
-                      </TableCell>
-                      <TableCell className="text-sm">
-                        {use.referrerRewardEarned != null
-                          ? `\u00A3${Number(use.referrerRewardEarned).toFixed(2)}`
-                          : "N/A"}
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {formatDateTime(use.usedAt)}
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {formatDateTime(use.completedAt)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                ))}
+              </TableBody>
+            </Table>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </section>
     </div>
   );
 }

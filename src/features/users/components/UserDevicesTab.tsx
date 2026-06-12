@@ -1,10 +1,4 @@
 import { Smartphone } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
@@ -47,26 +41,26 @@ export function UserDevicesTab({ userId }: UserDevicesTabProps) {
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       {devices.map((device) => (
-        <Card key={device.id}>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm">
+        <div key={device.id} className="rounded-md border bg-card p-5">
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="text-sm font-semibold">
               {device.deviceName ?? device.platform ?? "Unknown Device"}
-            </CardTitle>
+            </h3>
             <StatusBadge
               status={device.isActive ? "active" : "inactive"}
               size="sm"
             />
-          </CardHeader>
-          <CardContent className="space-y-3">
+          </div>
+          <div className="mt-4 space-y-3">
             <div className="space-y-1">
-              <p className="text-xs font-medium text-muted-foreground">
+              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                 Platform
               </p>
               <p className="text-sm capitalize">{device.platform}</p>
             </div>
             {device.deviceId && (
               <div className="space-y-1">
-                <p className="text-xs font-medium text-muted-foreground">
+                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Device ID
                 </p>
                 <p className="text-sm font-mono text-muted-foreground">
@@ -76,32 +70,32 @@ export function UserDevicesTab({ userId }: UserDevicesTabProps) {
             )}
             {device.lastUsedAt && (
               <div className="space-y-1">
-                <p className="text-xs font-medium text-muted-foreground">
-                  Last Used
+                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Last used
                 </p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground tabular-nums">
                   {formatDate(device.lastUsedAt)}
                 </p>
               </div>
             )}
             <div className="space-y-1">
-              <p className="text-xs font-medium text-muted-foreground">
+              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                 Registered
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground tabular-nums">
                 {formatDate(device.createdAt)}
               </p>
             </div>
             <div className="space-y-1">
-              <p className="text-xs font-medium text-muted-foreground">
-                FCM Token
+              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                FCM token
               </p>
               <p className="text-xs font-mono text-muted-foreground truncate">
                 {device.token.slice(0, 20)}...
               </p>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       ))}
     </div>
   );

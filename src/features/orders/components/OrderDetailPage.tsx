@@ -10,12 +10,6 @@ import {
 import { BackButton } from "@/components/shared/BackButton";
 import { Separator } from "@/components/ui/separator";
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
   Table,
   TableBody,
   TableCell,
@@ -95,7 +89,7 @@ export function OrderDetailPage({ orderId }: OrderDetailPageProps) {
     : undefined;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <BackButton to="/orders" label="Orders" useHistory />
 
       {/* Header carries the order ID, customer name, and consolidated displayStatus
@@ -107,27 +101,25 @@ export function OrderDetailPage({ orderId }: OrderDetailPageProps) {
         avatarFallback="#"
       />
 
-      <Separator />
-
       {/* Top row: order summary + customer & shipping */}
-      <div className="grid gap-6 md:grid-cols-2">
-        <OrderSummaryCard
+      <div className="grid gap-x-10 gap-y-8 md:grid-cols-2">
+        <OrderSummarySection
           orderDetail={orderDetail}
           onNavigateToRetailer={navigateToRetailer}
         />
-        <CustomerShippingCard
+        <CustomerShippingSection
           orderDetail={orderDetail}
           onNavigateToCustomer={navigateToCustomer}
         />
       </div>
 
       {/* Items table */}
-      <ItemsCard items={orderDetail.items} />
+      <ItemsSection items={orderDetail.items} />
 
       {/* Bottom row: pricing/payment + delivery */}
-      <div className="grid gap-6 md:grid-cols-2">
-        <PricingPaymentCard orderDetail={orderDetail} />
-        <DeliveryCard orderDetail={orderDetail} />
+      <div className="grid gap-x-10 gap-y-8 md:grid-cols-2">
+        <PricingPaymentSection orderDetail={orderDetail} />
+        <DeliverySection orderDetail={orderDetail} />
       </div>
 
       {/* Returns + refunds (TT-226) — only renders when there's a return or shipping refund */}
@@ -144,10 +136,18 @@ export function OrderDetailPage({ orderId }: OrderDetailPageProps) {
 }
 
 // ---------------------------------------------------------------------------
-// Cards
+// Sections — flat, single-plane. Title + 1px divider + content. No elevation.
 // ---------------------------------------------------------------------------
 
-function OrderSummaryCard({
+function SectionHeading({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 className="flex items-center gap-2 text-base font-semibold leading-none">
+      {children}
+    </h2>
+  );
+}
+
+function OrderSummarySection({
   orderDetail,
   onNavigateToRetailer,
 }: {
@@ -155,11 +155,9 @@ function OrderSummaryCard({
   onNavigateToRetailer?: () => void;
 }) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Order summary</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
+    <section>
+      <SectionHeading>Order summary</SectionHeading>
+      <div className="mt-4 space-y-3 border-t pt-5">
         <CopyableField label="Internal ID" value={orderDetail.id} mono />
         {orderDetail.shopifyOrderId && (
           <CopyableField
@@ -206,12 +204,12 @@ function OrderSummaryCard({
               <StatusBadge status={orderDetail.paymentStatus} size="sm" />
             </div>
           )}
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 }
 
-function CustomerShippingCard({
+function CustomerShippingSection({
   orderDetail,
   onNavigateToCustomer,
 }: {
@@ -221,14 +219,12 @@ function CustomerShippingCard({
   const { customer, shippingAddress } = orderDetail;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <User className="size-4" />
-          Customer & shipping
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
+    <section>
+      <SectionHeading>
+        <User className="size-4" />
+        Customer & shipping
+      </SectionHeading>
+      <div className="mt-4 space-y-3 border-t pt-5">
         <div className="space-y-1">
           <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
             Name
@@ -273,117 +269,105 @@ function CustomerShippingCard({
             </div>
           </>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 }
 
-function ItemsCard({ items }: { items: OrderItemViewModel[] }) {
-  if (items.length === 0) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Package className="size-4" />
-            Items
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <EmptyState
-            icon={Package}
-            title="No items"
-            description="This order has no line items."
-          />
-        </CardContent>
-      </Card>
-    );
-  }
-
+function ItemsSection({ items }: { items: OrderItemViewModel[] }) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Package className="size-4" />
-          Items ({items.length})
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Product</TableHead>
-              <TableHead>Variant</TableHead>
-              <TableHead className="text-right">Qty</TableHead>
-              <TableHead className="text-right">Price</TableHead>
-              <TableHead className="text-right">Total</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {items.map((item) => (
-              <TableRow key={item.id}>
-                <TableCell>
-                  <div className="flex items-center gap-3">
-                    {item.imageUrl && (
-                      <Avatar size="sm">
-                        <AvatarImage
-                          src={item.imageUrl}
-                          alt={item.productName}
-                        />
-                        <AvatarFallback>
-                          {item.productName.charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
-                    )}
-                    <div>
-                      <p className="text-sm font-medium">{item.productName}</p>
-                      {item.sku !== "--" && (
-                        <p className="text-xs text-muted-foreground">
-                          SKU: {item.sku}
-                        </p>
-                      )}
-                      {item.returnedQuantity > 0 && (
-                        <div className="mt-1 flex items-center gap-1.5 text-xs">
-                          <StatusBadge
-                            status={
-                              item.returnedQuantity >= item.quantity
-                                ? "returned"
-                                : "partially_returned"
-                            }
-                            size="sm"
-                          />
-                          <span className="text-muted-foreground">
-                            {item.returnedQuantity}/{item.quantity}
-                            {item.returnReason
-                              ? ` · ${formatReason(item.returnReason)}`
-                              : ""}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {item.variant}
-                </TableCell>
-                <TableCell className="text-right text-sm tabular-nums">
-                  {item.quantity}
-                </TableCell>
-                <TableCell className="text-right text-sm tabular-nums">
-                  {item.unitPrice}
-                </TableCell>
-                <TableCell className="text-right text-sm font-medium tabular-nums">
-                  {item.totalPrice}
-                </TableCell>
+    <section>
+      <SectionHeading>
+        <Package className="size-4" />
+        Items{items.length > 0 ? ` (${items.length})` : ""}
+      </SectionHeading>
+      <div className="mt-4">
+        {items.length === 0 ? (
+          <div className="border-t pt-5">
+            <EmptyState
+              icon={Package}
+              title="No items"
+              description="This order has no line items."
+            />
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Product</TableHead>
+                <TableHead>Variant</TableHead>
+                <TableHead className="text-right">Qty</TableHead>
+                <TableHead className="text-right">Price</TableHead>
+                <TableHead className="text-right">Total</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
+            </TableHeader>
+            <TableBody>
+              {items.map((item) => (
+                <TableRow key={item.id}>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      {item.imageUrl && (
+                        <Avatar size="sm">
+                          <AvatarImage
+                            src={item.imageUrl}
+                            alt={item.productName}
+                          />
+                          <AvatarFallback>
+                            {item.productName.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                      )}
+                      <div>
+                        <p className="text-sm font-medium">{item.productName}</p>
+                        {item.sku !== "--" && (
+                          <p className="text-xs text-muted-foreground">
+                            SKU: {item.sku}
+                          </p>
+                        )}
+                        {item.returnedQuantity > 0 && (
+                          <div className="mt-1 flex items-center gap-1.5 text-xs">
+                            <StatusBadge
+                              status={
+                                item.returnedQuantity >= item.quantity
+                                  ? "returned"
+                                  : "partially_returned"
+                              }
+                              size="sm"
+                            />
+                            <span className="text-muted-foreground">
+                              {item.returnedQuantity}/{item.quantity}
+                              {item.returnReason
+                                ? ` · ${formatReason(item.returnReason)}`
+                                : ""}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {item.variant}
+                  </TableCell>
+                  <TableCell className="text-right text-sm tabular-nums">
+                    {item.quantity}
+                  </TableCell>
+                  <TableCell className="text-right text-sm tabular-nums">
+                    {item.unitPrice}
+                  </TableCell>
+                  <TableCell className="text-right text-sm font-medium tabular-nums">
+                    {item.totalPrice}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </div>
+    </section>
   );
 }
 
-function PricingPaymentCard({
+function PricingPaymentSection({
   orderDetail,
 }: {
   orderDetail: OrderDetailViewModel;
@@ -391,11 +375,9 @@ function PricingPaymentCard({
   const { pricing, payment } = orderDetail;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Pricing & payment</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-2">
+    <section>
+      <SectionHeading>Pricing & payment</SectionHeading>
+      <div className="mt-4 space-y-2 border-t pt-5">
         {pricing && (
           <>
             <div className="flex justify-between text-sm">
@@ -458,103 +440,91 @@ function PricingPaymentCard({
             </div>
           </>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 }
 
-function DeliveryCard({
+function DeliverySection({
   orderDetail,
 }: {
   orderDetail: OrderDetailViewModel;
 }) {
   const { delivery } = orderDetail;
 
-  if (!delivery) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Truck className="size-4" />
-            Delivery
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+  return (
+    <section>
+      <SectionHeading>
+        <Truck className="size-4" />
+        Delivery
+      </SectionHeading>
+      <div className="mt-4 space-y-3 border-t pt-5">
+        {!delivery ? (
           <p className="text-sm text-muted-foreground">
             No delivery has been dispatched for this order yet.
           </p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Truck className="size-4" />
-          Delivery
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">Status</span>
-          <StatusBadge status={delivery.status} size="sm" />
-        </div>
-        {delivery.courierName && (
-          <div className="space-y-1">
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Courier
-            </p>
-            <div className="flex items-center gap-2">
-              {delivery.courierPhoto && (
-                <Avatar size="sm">
-                  <AvatarImage
-                    src={delivery.courierPhoto}
-                    alt={delivery.courierName}
-                  />
-                  <AvatarFallback>
-                    {delivery.courierName.charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
-              )}
-              <span className="text-sm">{delivery.courierName}</span>
+        ) : (
+          <>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Status</span>
+              <StatusBadge status={delivery.status} size="sm" />
             </div>
-          </div>
+            {delivery.courierName && (
+              <div className="space-y-1">
+                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Courier
+                </p>
+                <div className="flex items-center gap-2">
+                  {delivery.courierPhoto && (
+                    <Avatar size="sm">
+                      <AvatarImage
+                        src={delivery.courierPhoto}
+                        alt={delivery.courierName}
+                      />
+                      <AvatarFallback>
+                        {delivery.courierName.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                  )}
+                  <span className="text-sm">{delivery.courierName}</span>
+                </div>
+              </div>
+            )}
+            {delivery.courierPhone && (
+              <CopyableField label="Courier Phone" value={delivery.courierPhone} />
+            )}
+            {delivery.vehicleType && (
+              <div className="space-y-1">
+                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Vehicle
+                </p>
+                <p className="text-sm capitalize">{delivery.vehicleType}</p>
+              </div>
+            )}
+            {delivery.estimatedDelivery && (
+              <div className="space-y-1">
+                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  ETA
+                </p>
+                <p className="text-sm tabular-nums">
+                  {formatDateTime(delivery.estimatedDelivery)}
+                </p>
+              </div>
+            )}
+            {delivery.trackingUrl && (
+              <a
+                href={delivery.trackingUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+              >
+                View tracking
+                <ExternalLink className="size-3" />
+              </a>
+            )}
+          </>
         )}
-        {delivery.courierPhone && (
-          <CopyableField label="Courier Phone" value={delivery.courierPhone} />
-        )}
-        {delivery.vehicleType && (
-          <div className="space-y-1">
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Vehicle
-            </p>
-            <p className="text-sm capitalize">{delivery.vehicleType}</p>
-          </div>
-        )}
-        {delivery.estimatedDelivery && (
-          <div className="space-y-1">
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              ETA
-            </p>
-            <p className="text-sm tabular-nums">
-              {formatDateTime(delivery.estimatedDelivery)}
-            </p>
-          </div>
-        )}
-        {delivery.trackingUrl && (
-          <a
-            href={delivery.trackingUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
-          >
-            View tracking
-            <ExternalLink className="size-3" />
-          </a>
-        )}
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 }
