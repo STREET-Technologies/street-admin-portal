@@ -1,6 +1,5 @@
 import { CreditCard, AlertTriangle, CheckCircle, Clock, XCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { formatCurrency } from "@/lib/format-utils";
@@ -20,7 +19,7 @@ function SubscriptionStatusBadge({ status }: { status: string | null }) {
   return <Badge variant="secondary">{status}</Badge>;
 }
 
-function StatCard({
+function StatTile({
   icon: Icon,
   label,
   value,
@@ -39,11 +38,11 @@ function StatCard({
         : "text-muted-foreground";
 
   return (
-    <div className="flex items-center gap-3 rounded-lg border p-4">
+    <div className="flex items-center gap-3 rounded-md border p-4">
       <Icon className={`size-5 shrink-0 ${iconClass}`} />
       <div>
-        <p className="text-xs text-muted-foreground">{label}</p>
-        <p className="text-2xl font-semibold">{value}</p>
+        <p className="text-xs uppercase tracking-wider text-muted-foreground">{label}</p>
+        <p className="text-2xl font-semibold tabular-nums">{value}</p>
       </div>
     </div>
   );
@@ -75,16 +74,14 @@ export function RetailerBillingTab({ retailerId }: RetailerBillingTabProps) {
       : null;
 
   return (
-    <div className="space-y-6">
-      {/* Shopify subscription */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <CreditCard className="size-4" />
-            Shopify Billing Subscription
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+    <div className="space-y-8">
+      {/* Shopify subscription — flat section */}
+      <section>
+        <h2 className="flex items-center gap-2 text-base font-semibold leading-none">
+          <CreditCard className="size-4" />
+          Shopify Billing Subscription
+        </h2>
+        <div className="mt-4 border-t pt-5">
           {!data.subscription ? (
             <p className="text-sm text-muted-foreground">
               {data.shopDomain
@@ -94,28 +91,28 @@ export function RetailerBillingTab({ retailerId }: RetailerBillingTabProps) {
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1">
-                <p className="text-xs text-muted-foreground">Status</p>
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">Status</p>
                 <SubscriptionStatusBadge status={data.subscription.status} />
               </div>
               <div className="space-y-1">
-                <p className="text-xs text-muted-foreground">Shop domain</p>
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">Shop domain</p>
                 <p className="text-sm font-medium">{data.shopDomain ?? "—"}</p>
               </div>
               <div className="space-y-1">
-                <p className="text-xs text-muted-foreground">Spending cap</p>
-                <p className="text-sm font-medium">
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">Spending cap</p>
+                <p className="text-sm font-medium tabular-nums">
                   {formatCurrency(data.subscription.cappedAmount, data.subscription.billingCurrency)}
                 </p>
               </div>
               <div className="space-y-1">
-                <p className="text-xs text-muted-foreground">Currency</p>
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">Currency</p>
                 <p className="text-sm font-medium">{data.subscription.billingCurrency ?? "—"}</p>
               </div>
               {capPercent !== null && (
                 <div className="col-span-2 space-y-1.5">
                   <div className="flex justify-between text-xs text-muted-foreground">
                     <span>Cap consumed ({formatCurrency(data.orders.chargedAmount, data.subscription!.billingCurrency)} of {formatCurrency(data.subscription!.cappedAmount, data.subscription!.billingCurrency)})</span>
-                    <span>{capPercent.toFixed(1)}%</span>
+                    <span className="tabular-nums">{capPercent.toFixed(1)}%</span>
                   </div>
                   <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
                     <div
@@ -133,23 +130,19 @@ export function RetailerBillingTab({ retailerId }: RetailerBillingTabProps) {
               )}
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </section>
 
-      {/* Order billing stats */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Order Billing Breakdown</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <StatCard icon={CheckCircle} label="Charged" value={data.orders.charged} />
-            <StatCard icon={Clock} label="Pending" value={data.orders.pending} highlight={data.orders.pending > 0 ? "warn" : undefined} />
-            <StatCard icon={XCircle} label="Failed" value={data.orders.failed} highlight={data.orders.failed > 0 ? "danger" : undefined} />
-            <StatCard icon={AlertTriangle} label="Skipped" value={data.orders.skipped} />
-          </div>
-        </CardContent>
-      </Card>
+      {/* Order billing stats — flat section */}
+      <section>
+        <h2 className="text-base font-semibold leading-none">Order Billing Breakdown</h2>
+        <div className="mt-4 grid grid-cols-2 gap-3 border-t pt-5 sm:grid-cols-4">
+          <StatTile icon={CheckCircle} label="Charged" value={data.orders.charged} />
+          <StatTile icon={Clock} label="Pending" value={data.orders.pending} highlight={data.orders.pending > 0 ? "warn" : undefined} />
+          <StatTile icon={XCircle} label="Failed" value={data.orders.failed} highlight={data.orders.failed > 0 ? "danger" : undefined} />
+          <StatTile icon={AlertTriangle} label="Skipped" value={data.orders.skipped} />
+        </div>
+      </section>
     </div>
   );
 }

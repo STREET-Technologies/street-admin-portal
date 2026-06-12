@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Loader2, MapPin } from "lucide-react";
 import { toast } from "sonner";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import {
@@ -207,19 +206,17 @@ export function RetailerOutletsTab({ retailerId }: RetailerOutletsTabProps) {
               primaryMutation.variables === outlet.id;
 
             return (
-              <Card key={outlet.id}>
-                <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <MapPin className="size-4 shrink-0 text-muted-foreground" />
-                    <span className="flex-1 leading-tight">{outlet.name}</span>
-                    {outlet.isPrimary && (
-                      <span className="inline-flex items-center rounded-full bg-[#CDFF00]/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-foreground">
-                        Primary
-                      </span>
-                    )}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
+              <div key={outlet.id} className="rounded-md border bg-card p-5">
+                <div className="flex items-center gap-2 text-base font-semibold">
+                  <MapPin className="size-4 shrink-0 text-muted-foreground" />
+                  <span className="flex-1 leading-tight">{outlet.name}</span>
+                  {outlet.isPrimary && (
+                    <span className="inline-flex items-center rounded-full bg-[#CDFF00]/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-foreground">
+                      Primary
+                    </span>
+                  )}
+                </div>
+                <div className="mt-4 space-y-3 text-sm">
                   {addressLine && (
                     <p className="text-muted-foreground">{addressLine}</p>
                   )}
@@ -275,8 +272,8 @@ export function RetailerOutletsTab({ retailerId }: RetailerOutletsTabProps) {
                       )}
                     </Button>
                   )}
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             );
           })}
         </div>

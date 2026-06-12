@@ -1,10 +1,4 @@
 import { MapPin } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { CopyableField } from "@/components/shared/CopyableField";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -58,26 +52,19 @@ export function UserAddressesTab({ userId }: UserAddressesTabProps) {
   return (
     <div className="grid gap-4 md:grid-cols-2">
       {addresses.map((address) => (
-        <Card key={address.id}>
-          <CardHeader>
-            <CardTitle className="text-sm">
-              {address.label ?? "Address"}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <CopyableField
-              label="Full Address"
-              value={formatAddress(address)}
-            />
+        <div key={address.id} className="rounded-md border bg-card p-5">
+          <h3 className="text-sm font-semibold">{address.label ?? "Address"}</h3>
+          <div className="mt-4 space-y-3">
+            <CopyableField label="Full Address" value={formatAddress(address)} />
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <p className="text-xs font-medium text-muted-foreground">
+                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   City
                 </p>
                 <p className="text-sm">{address.city}</p>
               </div>
               <div className="space-y-1">
-                <p className="text-xs font-medium text-muted-foreground">
+                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Postcode
                 </p>
                 <p className="text-sm">{address.postcode}</p>
@@ -85,16 +72,16 @@ export function UserAddressesTab({ userId }: UserAddressesTabProps) {
             </div>
             {address.latitude != null && address.longitude != null && (
               <div className="space-y-1">
-                <p className="text-xs font-medium text-muted-foreground">
+                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Coordinates
                 </p>
-                <p className="font-mono text-xs text-muted-foreground">
+                <p className="font-mono text-xs text-muted-foreground tabular-nums">
                   {Number(address.latitude).toFixed(6)}, {Number(address.longitude).toFixed(6)}
                 </p>
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       ))}
     </div>
   );

@@ -1,10 +1,4 @@
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CopyableField } from "@/components/shared/CopyableField";
 import { EditableField } from "@/components/shared/EditableField";
@@ -42,41 +36,35 @@ export function UserOverviewTab({ user }: UserOverviewTabProps) {
   const showBadges = user.isTestAccount || user.isAnonymized;
 
   return (
-    <div className="space-y-6">
-      {/* Stats row */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
+    <div className="space-y-8">
+      {/* Stats strip — one bordered region, hairline-divided cells. No per-tile shadow. */}
+      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-md border bg-border lg:grid-cols-4">
+        <Stat
           label="Total orders"
           value={statsLoading ? undefined : String(stats?.totalOrders ?? 0)}
           isLoading={statsLoading}
         />
-        <StatCard
+        <Stat
           label="Total spent"
           value={statsLoading ? undefined : formatGBP(stats?.totalSpent ?? "0")}
           isLoading={statsLoading}
         />
-        <StatCard
+        <Stat
           label="First order"
-          value={
-            statsLoading ? undefined : formatShortDate(stats?.firstOrderDate ?? null)
-          }
+          value={statsLoading ? undefined : formatShortDate(stats?.firstOrderDate ?? null)}
           isLoading={statsLoading}
         />
-        <StatCard
+        <Stat
           label="Last order"
-          value={
-            statsLoading ? undefined : formatShortDate(stats?.lastOrderDate ?? null)
-          }
+          value={statsLoading ? undefined : formatShortDate(stats?.lastOrderDate ?? null)}
           isLoading={statsLoading}
         />
       </div>
 
-      {/* Customer info — single card consolidating contact + account fields */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Customer info</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      {/* Customer info — flat section: title + divider + fields. Not a lifted card. */}
+      <section>
+        <h2 className="text-base font-semibold leading-none">Customer info</h2>
+        <div className="mt-4 space-y-4 border-t pt-5">
           <div className="grid grid-cols-2 gap-x-6 gap-y-4">
             <EditableField
               label="Email"
@@ -114,30 +102,24 @@ export function UserOverviewTab({ user }: UserOverviewTabProps) {
           {showBadges && (
             <div className="flex gap-2 pt-1">
               {user.isTestAccount && (
-                <Badge
-                  variant="outline"
-                  className="border-amber-300 text-amber-700"
-                >
+                <Badge variant="outline" className="border-amber-300 text-amber-700">
                   Test account
                 </Badge>
               )}
               {user.isAnonymized && (
-                <Badge
-                  variant="outline"
-                  className="border-gray-300 text-gray-500"
-                >
+                <Badge variant="outline" className="border-gray-300 text-gray-500">
                   Anonymized
                 </Badge>
               )}
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </section>
     </div>
   );
 }
 
-function StatCard({
+function Stat({
   label,
   value,
   isLoading,
@@ -147,17 +129,15 @@ function StatCard({
   isLoading: boolean;
 }) {
   return (
-    <Card className="py-3 gap-1">
-      <CardContent className="px-4">
-        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-          {label}
-        </p>
-        {isLoading ? (
-          <Skeleton className="mt-1 h-6 w-20" />
-        ) : (
-          <p className="mt-0.5 text-xl font-semibold tabular-nums">{value}</p>
-        )}
-      </CardContent>
-    </Card>
+    <div className="bg-card px-4 py-3.5">
+      <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+        {label}
+      </p>
+      {isLoading ? (
+        <Skeleton className="mt-1.5 h-6 w-20" />
+      ) : (
+        <p className="mt-1 text-xl font-semibold tabular-nums">{value}</p>
+      )}
+    </div>
   );
 }
