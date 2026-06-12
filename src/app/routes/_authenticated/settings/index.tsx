@@ -3,6 +3,7 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { Separator } from "@/components/ui/separator";
 import { ReferralSettingsCard } from "@/features/referrals/components/ReferralSettingsCard";
 import { PlatformConfigCard } from "@/features/platform-config/components/PlatformConfigCard";
+import { AcceptanceTimerCard } from "@/features/platform-config/components/AcceptanceTimerCard";
 
 export const Route = createFileRoute("/_authenticated/settings/")({
   component: SettingsPage,
@@ -13,6 +14,8 @@ function SettingsPage() {
     <div className="space-y-8">
       <PageHeader title="Settings" description="Application configuration" />
       <PlatformConfigCard />
+      <Separator />
+      <AcceptanceTimerCard />
       <Separator />
       <ReferralSettingsCard />
     </div>
