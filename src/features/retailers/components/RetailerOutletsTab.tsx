@@ -16,6 +16,7 @@ import { useAdminRole } from "@/features/auth/hooks/useAdminRole";
 import {
   useRetailerOutletsQuery,
   useSetOutletPublishedMutation,
+  useSetOutletActiveMutation,
   useSetOutletPrimaryMutation,
 } from "../api/retailer-queries";
 import type { AdminOutlet } from "../api/retailer-api";
@@ -79,6 +80,7 @@ export function RetailerOutletsTab({ retailerId }: RetailerOutletsTabProps) {
   const { canWrite } = useAdminRole();
   const { data: outlets, isLoading, isError } = useRetailerOutletsQuery(retailerId);
   const publishMutation = useSetOutletPublishedMutation(retailerId);
+  const activeMutation = useSetOutletActiveMutation(retailerId);
   const primaryMutation = useSetOutletPrimaryMutation(retailerId);
 
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
@@ -122,6 +124,17 @@ export function RetailerOutletsTab({ retailerId }: RetailerOutletsTabProps) {
     try {
       await publishMutation.mutateAsync({ outletId, isPublished });
       toast.success(isPublished ? "Outlet published" : "Outlet unpublished");
+    } catch {
+      toast.error("Failed to update outlet");
+    }
+  }
+
+  // Active toggle — pause/resume a branch without unpublishing it (TT-281).
+  // Independent of primary/address, so no confirmation needed.
+  async function handleActiveToggle(outlet: AdminOutlet, checked: boolean) {
+    try {
+      await activeMutation.mutateAsync({ outletId: outlet.id, isActive: checked });
+      toast.success(checked ? "Outlet activated" : "Outlet paused");
     } catch {
       toast.error("Failed to update outlet");
     }
@@ -201,6 +214,9 @@ export function RetailerOutletsTab({ retailerId }: RetailerOutletsTabProps) {
             const isPublishPending =
               publishMutation.isPending &&
               publishMutation.variables?.outletId === outlet.id;
+            const isActivePending =
+              activeMutation.isPending &&
+              activeMutation.variables?.outletId === outlet.id;
             const isThisPrimaryPending =
               isPrimaryMutationPending &&
               primaryMutation.variables === outlet.id;
@@ -252,6 +268,21 @@ export function RetailerOutletsTab({ retailerId }: RetailerOutletsTabProps) {
                         void handlePublishToggle(outlet, checked)
                       }
                       disabled={!canWrite || isPublishPending}
+                      size="sm"
+                      className="data-[state=checked]:bg-[#CDFF00] dark:data-[state=checked]:bg-[#CDFF00]"
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">
+                      {outlet.isActive ? "Active" : "Paused"}
+                    </span>
+                    <Switch
+                      checked={outlet.isActive}
+                      onCheckedChange={(checked) =>
+                        void handleActiveToggle(outlet, checked)
+                      }
+                      disabled={!canWrite || isActivePending}
                       size="sm"
                       className="data-[state=checked]:bg-[#CDFF00] dark:data-[state=checked]:bg-[#CDFF00]"
                     />

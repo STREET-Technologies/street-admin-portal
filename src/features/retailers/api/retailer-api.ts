@@ -221,6 +221,18 @@ export function setOutletPublished(
   );
 }
 
+/** Toggle the active state of an outlet (pause/resume without unpublishing). */
+export function setOutletActive(
+  retailerId: string,
+  outletId: string,
+  isActive: boolean,
+): Promise<AdminOutlet> {
+  return api.patch<AdminOutlet>(
+    `admin/vendors/${retailerId}/outlets/${outletId}/active`,
+    { isActive },
+  );
+}
+
 /**
  * Re-elect an outlet as the primary for a vendor.
  * No request body — backend derives everything from the outlet ID.

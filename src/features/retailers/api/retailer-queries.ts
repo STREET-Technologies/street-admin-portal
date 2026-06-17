@@ -12,6 +12,7 @@ import {
   getRetailerBilling,
   getRetailerOutlets,
   setOutletPublished,
+  setOutletActive,
   setOutletPrimary,
   updateRetailer,
   createRetailerStaff,
@@ -147,6 +148,26 @@ export function useSetOutletPublishedMutation(retailerId: string) {
       outletId: string;
       isPublished: boolean;
     }) => setOutletPublished(retailerId, outletId, isPublished),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: retailerKeys.outlets(retailerId),
+      });
+    },
+  });
+}
+
+/** Toggle outlet active state. Invalidates the outlets list on success. */
+export function useSetOutletActiveMutation(retailerId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      outletId,
+      isActive,
+    }: {
+      outletId: string;
+      isActive: boolean;
+    }) => setOutletActive(retailerId, outletId, isActive),
     onSuccess: () => {
       void queryClient.invalidateQueries({
         queryKey: retailerKeys.outlets(retailerId),
