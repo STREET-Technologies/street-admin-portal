@@ -108,6 +108,9 @@ export interface BackendVendorStaff {
   email: string | null;
   phone: string | null;
   createdAt: string;
+  /** Outlet the account is scoped to (TT-280/285). null = owner/HQ (sees all). */
+  outletId: string | null;
+  outletName: string | null;
 }
 
 /** Fetch user accounts linked to a vendor (retailer staff). */
@@ -129,6 +132,8 @@ export interface CreateStaffPayload {
   lastName: string;
   email: string;
   phone?: string;
+  /** Outlet to scope the account to (branch). Omit/undefined = owner/HQ. */
+  outletId?: string;
 }
 
 export interface CreateStaffResult {
@@ -145,6 +150,18 @@ export function createRetailerStaff(
   return api.post<CreateStaffResult>(
     `admin/vendors/${retailerId}/staff`,
     data,
+  );
+}
+
+/** Assign or clear a staff account's outlet (null = owner/HQ) (TT-285). */
+export function setRetailerStaffOutlet(
+  retailerId: string,
+  userId: string,
+  outletId: string | null,
+): Promise<{ userId: string; outletId: string | null }> {
+  return api.patch<{ userId: string; outletId: string | null }>(
+    `admin/vendors/${retailerId}/staff/${userId}/outlet`,
+    { outletId },
   );
 }
 

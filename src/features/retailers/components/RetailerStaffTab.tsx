@@ -1,11 +1,26 @@
 import { useState } from "react";
-import { Loader2, Mail, Phone, Plus, User } from "lucide-react";
+import { toast } from "sonner";
+import { Loader2, Mail, Phone, Plus, Store, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { formatDate } from "@/lib/format-utils";
-import { useRetailerStaffQuery } from "../api/retailer-queries";
+import {
+  useRetailerStaffQuery,
+  useRetailerOutletsQuery,
+  useSetStaffOutletMutation,
+} from "../api/retailer-queries";
 import { useAdminRole } from "@/features/auth/hooks/useAdminRole";
 import { AddStaffDialog } from "./AddStaffDialog";
+
+// Sentinel for the "Owner / HQ" option — Radix Select disallows empty values.
+const OWNER_VALUE = "__owner__";
 
 interface RetailerStaffTabProps {
   retailerId: string;
@@ -14,7 +29,21 @@ interface RetailerStaffTabProps {
 export function RetailerStaffTab({ retailerId }: RetailerStaffTabProps) {
   const { canWrite } = useAdminRole();
   const { data: staff, isLoading } = useRetailerStaffQuery(retailerId);
+  const { data: outlets } = useRetailerOutletsQuery(retailerId);
+  const setOutletMutation = useSetStaffOutletMutation(retailerId);
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  async function handleOutletChange(userId: string, value: string) {
+    try {
+      await setOutletMutation.mutateAsync({
+        userId,
+        outletId: value === OWNER_VALUE ? null : value,
+      });
+      toast.success("Staff access updated");
+    } catch {
+      toast.error("Failed to update staff access");
+    }
+  }
 
   if (isLoading) {
     return (
@@ -72,6 +101,36 @@ export function RetailerStaffTab({ retailerId }: RetailerStaffTabProps) {
                   <p className="text-xs text-muted-foreground tabular-nums">
                     Added {formatDate(member.createdAt)}
                   </p>
+                </div>
+
+                <div className="mt-4 space-y-1.5">
+                  <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                    <Store className="size-3.5" />
+                    Access
+                  </span>
+                  <Select
+                    value={member.outletId ?? OWNER_VALUE}
+                    onValueChange={(v) => void handleOutletChange(member.id, v)}
+                    disabled={
+                      !canWrite ||
+                      (setOutletMutation.isPending &&
+                        setOutletMutation.variables?.userId === member.id)
+                    }
+                  >
+                    <SelectTrigger size="sm" className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={OWNER_VALUE}>
+                        Owner / HQ — all branches
+                      </SelectItem>
+                      {(outlets ?? []).map((o) => (
+                        <SelectItem key={o.id} value={o.id}>
+                          {o.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             );

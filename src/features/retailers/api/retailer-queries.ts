@@ -16,6 +16,7 @@ import {
   setOutletPrimary,
   updateRetailer,
   createRetailerStaff,
+  setRetailerStaffOutlet,
   type UpdateRetailerPayload,
   type CreateStaffPayload,
 } from "./retailer-api";
@@ -128,6 +129,26 @@ export function useCreateRetailerStaffMutation(retailerId: string) {
   return useMutation({
     mutationFn: (data: CreateStaffPayload) =>
       createRetailerStaff(retailerId, data),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: retailerKeys.staff(retailerId),
+      });
+    },
+  });
+}
+
+/** Assign/clear a staff account's outlet. Invalidates the staff list on success. */
+export function useSetStaffOutletMutation(retailerId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      userId,
+      outletId,
+    }: {
+      userId: string;
+      outletId: string | null;
+    }) => setRetailerStaffOutlet(retailerId, userId, outletId),
     onSuccess: () => {
       void queryClient.invalidateQueries({
         queryKey: retailerKeys.staff(retailerId),

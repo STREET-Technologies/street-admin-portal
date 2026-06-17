@@ -12,8 +12,21 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useCreateRetailerStaffMutation } from "../api/retailer-queries";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  useCreateRetailerStaffMutation,
+  useRetailerOutletsQuery,
+} from "../api/retailer-queries";
 import { ApiError } from "@/lib/api-client";
+
+// Sentinel for the "Owner / HQ" option — Radix Select disallows empty values.
+const OWNER_VALUE = "__owner__";
 
 interface AddStaffDialogProps {
   retailerId: string;
@@ -30,6 +43,9 @@ export function AddStaffDialog({
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [outletValue, setOutletValue] = useState(OWNER_VALUE);
+
+  const { data: outlets } = useRetailerOutletsQuery(retailerId);
 
   // Success state: shows temp password after creation
   const [result, setResult] = useState<{
@@ -46,6 +62,7 @@ export function AddStaffDialog({
     setLastName("");
     setEmail("");
     setPhone("");
+    setOutletValue(OWNER_VALUE);
     setResult(null);
     setCopied(false);
   }
@@ -71,6 +88,7 @@ export function AddStaffDialog({
         lastName: lastName.trim(),
         email: email.trim(),
         phone: phone.trim() || undefined,
+        outletId: outletValue === OWNER_VALUE ? undefined : outletValue,
       },
       {
         onSuccess: (data) => {
@@ -203,6 +221,28 @@ export function AddStaffDialog({
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="staff-outlet">Access</Label>
+            <Select value={outletValue} onValueChange={setOutletValue}>
+              <SelectTrigger id="staff-outlet">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={OWNER_VALUE}>
+                  Owner / HQ — sees all branches
+                </SelectItem>
+                {(outlets ?? []).map((o) => (
+                  <SelectItem key={o.id} value={o.id}>
+                    {o.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              Branch accounts see only their outlet's orders.
+            </p>
           </div>
 
           <DialogFooter>
