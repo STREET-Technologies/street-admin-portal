@@ -1,6 +1,16 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { Loader2, Mail, Phone, Plus, Store, User } from "lucide-react";
+import {
+  Ban,
+  KeyRound,
+  Loader2,
+  Mail,
+  Phone,
+  Plus,
+  ShieldCheck,
+  Store,
+  User,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -15,6 +25,8 @@ import {
   useRetailerStaffQuery,
   useRetailerOutletsQuery,
   useSetStaffOutletMutation,
+  useResetStaffPasswordMutation,
+  useSetStaffDisabledMutation,
 } from "../api/retailer-queries";
 import { useAdminRole } from "@/features/auth/hooks/useAdminRole";
 import { AddStaffDialog } from "./AddStaffDialog";
@@ -31,6 +43,8 @@ export function RetailerStaffTab({ retailerId }: RetailerStaffTabProps) {
   const { data: staff, isLoading } = useRetailerStaffQuery(retailerId);
   const { data: outlets } = useRetailerOutletsQuery(retailerId);
   const setOutletMutation = useSetStaffOutletMutation(retailerId);
+  const resetPasswordMutation = useResetStaffPasswordMutation(retailerId);
+  const setDisabledMutation = useSetStaffDisabledMutation(retailerId);
   const [dialogOpen, setDialogOpen] = useState(false);
 
   async function handleOutletChange(userId: string, value: string) {
@@ -42,6 +56,46 @@ export function RetailerStaffTab({ retailerId }: RetailerStaffTabProps) {
       toast.success("Staff access updated");
     } catch {
       toast.error("Failed to update staff access");
+    }
+  }
+
+  async function handleResetPassword(userId: string, email: string | null) {
+    if (
+      !window.confirm(
+        `Send a password-reset email to ${email ?? "this account"}? Their current password will stop working immediately.`,
+      )
+    ) {
+      return;
+    }
+    try {
+      await resetPasswordMutation.mutateAsync(userId);
+      toast.success(`Reset email sent to ${email ?? "the account"}`);
+    } catch {
+      toast.error("Failed to send reset email");
+    }
+  }
+
+  async function handleToggleDisabled(userId: string, currentlyDisabled: boolean) {
+    if (
+      !currentlyDisabled &&
+      !window.confirm(
+        "Deactivate this account? They will be logged out and unable to sign into the retailer app until reactivated.",
+      )
+    ) {
+      return;
+    }
+    try {
+      await setDisabledMutation.mutateAsync({
+        userId,
+        disabled: !currentlyDisabled,
+      });
+      toast.success(
+        currentlyDisabled
+          ? "Account reactivated"
+          : "Account deactivated — active sessions dropped",
+      );
+    } catch {
+      toast.error("Failed to update account status");
     }
   }
 
@@ -79,11 +133,25 @@ export function RetailerStaffTab({ retailerId }: RetailerStaffTabProps) {
             const name =
               [member.firstName, member.lastName].filter(Boolean).join(" ") ||
               "Unnamed";
+            const disabled = member.isAdminDisabled;
+            const isRowBusy =
+              (resetPasswordMutation.isPending &&
+                resetPasswordMutation.variables === member.id) ||
+              (setDisabledMutation.isPending &&
+                setDisabledMutation.variables?.userId === member.id);
             return (
-              <div key={member.id} className="rounded-md border bg-card p-5">
+              <div
+                key={member.id}
+                className={`rounded-md border bg-card p-5 ${disabled ? "opacity-60" : ""}`}
+              >
                 <h3 className="flex items-center gap-2 text-sm font-semibold">
                   <User className="size-4 text-muted-foreground" />
                   {name}
+                  {disabled && (
+                    <span className="rounded bg-destructive/10 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-destructive">
+                      Deactivated
+                    </span>
+                  )}
                 </h3>
                 <div className="mt-3 space-y-1.5 text-sm">
                   {member.email && (
@@ -131,6 +199,42 @@ export function RetailerStaffTab({ retailerId }: RetailerStaffTabProps) {
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+
+                <div className="mt-4 flex items-center gap-2 border-t pt-3">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-2 text-xs"
+                    disabled={!canWrite || isRowBusy}
+                    onClick={() =>
+                      void handleResetPassword(member.id, member.email)
+                    }
+                  >
+                    <KeyRound className="mr-1 size-3.5" />
+                    Reset password
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={`h-8 px-2 text-xs ${disabled ? "" : "text-destructive hover:text-destructive"}`}
+                    disabled={!canWrite || isRowBusy}
+                    onClick={() =>
+                      void handleToggleDisabled(member.id, disabled)
+                    }
+                  >
+                    {disabled ? (
+                      <>
+                        <ShieldCheck className="mr-1 size-3.5" />
+                        Reactivate
+                      </>
+                    ) : (
+                      <>
+                        <Ban className="mr-1 size-3.5" />
+                        Deactivate
+                      </>
+                    )}
+                  </Button>
                 </div>
               </div>
             );

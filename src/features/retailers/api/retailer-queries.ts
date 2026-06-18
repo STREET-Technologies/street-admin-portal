@@ -17,6 +17,8 @@ import {
   updateRetailer,
   createRetailerStaff,
   setRetailerStaffOutlet,
+  resetRetailerStaffPassword,
+  setRetailerStaffDisabled,
   type UpdateRetailerPayload,
   type CreateStaffPayload,
 } from "./retailer-api";
@@ -149,6 +151,29 @@ export function useSetStaffOutletMutation(retailerId: string) {
       userId: string;
       outletId: string | null;
     }) => setRetailerStaffOutlet(retailerId, userId, outletId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: retailerKeys.staff(retailerId),
+      });
+    },
+  });
+}
+
+/** Reset a staff account's password (emails the set-password link). TT-295. */
+export function useResetStaffPasswordMutation(retailerId: string) {
+  return useMutation({
+    mutationFn: (userId: string) =>
+      resetRetailerStaffPassword(retailerId, userId),
+  });
+}
+
+/** Deactivate/reactivate a staff account. Invalidates the staff list. TT-295. */
+export function useSetStaffDisabledMutation(retailerId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ userId, disabled }: { userId: string; disabled: boolean }) =>
+      setRetailerStaffDisabled(retailerId, userId, disabled),
     onSuccess: () => {
       void queryClient.invalidateQueries({
         queryKey: retailerKeys.staff(retailerId),

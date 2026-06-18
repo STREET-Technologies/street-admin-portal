@@ -111,6 +111,8 @@ export interface BackendVendorStaff {
   /** Outlet the account is scoped to (TT-280/285). null = owner/HQ (sees all). */
   outletId: string | null;
   outletName: string | null;
+  /** Admin-deactivated: cannot log into the retailer app (TT-295). */
+  isAdminDisabled: boolean;
 }
 
 /** Fetch user accounts linked to a vendor (retailer staff). */
@@ -162,6 +164,32 @@ export function setRetailerStaffOutlet(
   return api.patch<{ userId: string; outletId: string | null }>(
     `admin/vendors/${retailerId}/staff/${userId}/outlet`,
     { outletId },
+  );
+}
+
+/**
+ * Reset a retailer login account's password (TT-295). The backend regenerates a
+ * temp password and emails the set-password link — no credential is returned.
+ */
+export function resetRetailerStaffPassword(
+  retailerId: string,
+  userId: string,
+): Promise<{ userId: string; email: string }> {
+  return api.post<{ userId: string; email: string }>(
+    `admin/vendors/${retailerId}/staff/${userId}/reset-password`,
+    {},
+  );
+}
+
+/** Deactivate/reactivate a retailer login account (TT-295). */
+export function setRetailerStaffDisabled(
+  retailerId: string,
+  userId: string,
+  disabled: boolean,
+): Promise<{ userId: string; isAdminDisabled: boolean }> {
+  return api.patch<{ userId: string; isAdminDisabled: boolean }>(
+    `admin/vendors/${retailerId}/staff/${userId}/${disabled ? "disable" : "enable"}`,
+    {},
   );
 }
 
