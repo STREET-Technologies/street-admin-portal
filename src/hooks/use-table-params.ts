@@ -57,6 +57,8 @@ export function useTableParams(
   // Read current search params from URL (strict: false = works from any route)
   const search = useSearch({ strict: false }) as SearchParams;
   const navigate = useNavigate();
+  // The `search` updater type for a route-agnostic navigate (see casts below).
+  type NavigateSearch = NonNullable<Parameters<typeof navigate>[0]>["search"];
 
   const page = search.page ?? 1;
   const limit = search.limit ?? defaultPageSize;
@@ -78,12 +80,14 @@ export function useTableParams(
 
   const onPaginationChange = useCallback(
     (next: { pageIndex: number; pageSize: number }) => {
+      // Route-agnostic hook (useSearch strict:false), so we cast past the
+      // per-route search typing TanStack Router 1.159 tightened.
       void navigate({
-        search: (prev: Record<string, unknown>) => ({
+        search: ((prev: SearchParams) => ({
           ...prev,
           page: next.pageIndex + 1,
           limit: next.pageSize,
-        }),
+        })) as NavigateSearch,
         replace: true,
       });
     },
@@ -98,12 +102,12 @@ export function useTableParams(
       const nextSort = nextSorting[0];
 
       void navigate({
-        search: (prev: Record<string, unknown>) => ({
+        search: ((prev: SearchParams) => ({
           ...prev,
           page: 1,
           sortBy: nextSort?.id,
           sortOrder: nextSort ? (nextSort.desc ? "desc" : "asc") : undefined,
-        }),
+        })) as NavigateSearch,
         replace: true,
       });
     },

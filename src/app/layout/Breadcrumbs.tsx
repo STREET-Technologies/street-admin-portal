@@ -67,7 +67,7 @@ function useResolvedLabel(segment: string, prevSegment: string | undefined): str
 
   if (prevSegment === "orders") {
     const order = queryClient.getQueryData<BackendOrder>(["orders", "detail", "byOrderId", segment]);
-    if (order?.orderNumber) return order.orderNumber;
+    if (order?.orderId) return order.orderId;
   }
 
   return formatSegment(segment);
