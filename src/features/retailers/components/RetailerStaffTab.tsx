@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { formatDate } from "@/lib/format-utils";
 import {
   useRetailerStaffQuery,
@@ -28,6 +29,7 @@ import {
   useResetStaffPasswordMutation,
   useSetStaffDisabledMutation,
 } from "../api/retailer-queries";
+import type { BackendVendorStaff } from "../api/retailer-api";
 import { useAdminRole } from "@/features/auth/hooks/useAdminRole";
 import { AddStaffDialog } from "./AddStaffDialog";
 
@@ -46,6 +48,12 @@ export function RetailerStaffTab({ retailerId }: RetailerStaffTabProps) {
   const resetPasswordMutation = useResetStaffPasswordMutation(retailerId);
   const setDisabledMutation = useSetStaffDisabledMutation(retailerId);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [confirm, setConfirm] = useState<{
+    kind: "reset" | "deactivate";
+    member: BackendVendorStaff;
+  } | null>(null);
+  const confirmBusy =
+    resetPasswordMutation.isPending || setDisabledMutation.isPending;
 
   async function handleOutletChange(userId: string, value: string) {
     try {
@@ -59,43 +67,38 @@ export function RetailerStaffTab({ retailerId }: RetailerStaffTabProps) {
     }
   }
 
-  async function handleResetPassword(userId: string, email: string | null) {
-    if (
-      !window.confirm(
-        `Send a password-reset email to ${email ?? "this account"}? Their current password will stop working immediately.`,
-      )
-    ) {
-      return;
-    }
+  // Destructive actions (reset, deactivate) confirm via an in-app dialog;
+  // reactivation runs directly.
+  async function runConfirmedAction() {
+    if (!confirm) return;
+    const { kind, member } = confirm;
     try {
-      await resetPasswordMutation.mutateAsync(userId);
-      toast.success(`Reset email sent to ${email ?? "the account"}`);
+      if (kind === "reset") {
+        await resetPasswordMutation.mutateAsync(member.id);
+        toast.success(`Reset email sent to ${member.email ?? "the account"}`);
+      } else {
+        await setDisabledMutation.mutateAsync({
+          userId: member.id,
+          disabled: true,
+        });
+        toast.success("Account deactivated — active sessions dropped");
+      }
+      setConfirm(null);
     } catch {
-      toast.error("Failed to send reset email");
+      toast.error(
+        kind === "reset"
+          ? "Failed to send reset email"
+          : "Failed to deactivate account",
+      );
     }
   }
 
-  async function handleToggleDisabled(userId: string, currentlyDisabled: boolean) {
-    if (
-      !currentlyDisabled &&
-      !window.confirm(
-        "Deactivate this account? They will be logged out and unable to sign into the retailer app until reactivated.",
-      )
-    ) {
-      return;
-    }
+  async function handleReactivate(userId: string) {
     try {
-      await setDisabledMutation.mutateAsync({
-        userId,
-        disabled: !currentlyDisabled,
-      });
-      toast.success(
-        currentlyDisabled
-          ? "Account reactivated"
-          : "Account deactivated — active sessions dropped",
-      );
+      await setDisabledMutation.mutateAsync({ userId, disabled: false });
+      toast.success("Account reactivated");
     } catch {
-      toast.error("Failed to update account status");
+      toast.error("Failed to reactivate account");
     }
   }
 
@@ -207,9 +210,7 @@ export function RetailerStaffTab({ retailerId }: RetailerStaffTabProps) {
                     size="sm"
                     className="h-8 px-2 text-xs"
                     disabled={!canWrite || isRowBusy}
-                    onClick={() =>
-                      void handleResetPassword(member.id, member.email)
-                    }
+                    onClick={() => setConfirm({ kind: "reset", member })}
                   >
                     <KeyRound className="mr-1 size-3.5" />
                     Reset password
@@ -220,7 +221,9 @@ export function RetailerStaffTab({ retailerId }: RetailerStaffTabProps) {
                     className={`h-8 px-2 text-xs ${disabled ? "" : "text-destructive hover:text-destructive"}`}
                     disabled={!canWrite || isRowBusy}
                     onClick={() =>
-                      void handleToggleDisabled(member.id, disabled)
+                      disabled
+                        ? void handleReactivate(member.id)
+                        : setConfirm({ kind: "deactivate", member })
                     }
                   >
                     {disabled ? (
@@ -246,6 +249,25 @@ export function RetailerStaffTab({ retailerId }: RetailerStaffTabProps) {
         retailerId={retailerId}
         open={dialogOpen}
         onOpenChange={setDialogOpen}
+      />
+
+      <ConfirmDialog
+        open={confirm !== null}
+        onOpenChange={(o) => {
+          if (!o) setConfirm(null);
+        }}
+        destructive
+        loading={confirmBusy}
+        onConfirm={() => void runConfirmedAction()}
+        title={confirm?.kind === "reset" ? "Reset password?" : "Deactivate account?"}
+        confirmLabel={
+          confirm?.kind === "reset" ? "Send reset email" : "Deactivate"
+        }
+        description={
+          confirm?.kind === "reset"
+            ? `Send a password-reset email to ${confirm.member.email ?? "this account"}. Their current password will stop working immediately and they'll set a new one from the email.`
+            : "This account will be signed out and unable to log into the retailer app until reactivated. Order history is preserved."
+        }
       />
     </div>
   );
