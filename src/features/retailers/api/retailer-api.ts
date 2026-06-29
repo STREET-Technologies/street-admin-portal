@@ -223,6 +223,23 @@ export function updateRetailer(
   return api.patch<BackendVendor>(`admin/vendors/${retailerId}`, data);
 }
 
+/**
+ * Re-sync a vendor's store-level brand/contact/locale from Shopify (TT-315).
+ *
+ * Brand-asset changes (logo, cover image) and some profile edits fire no Shopify
+ * webhook, so this gives staff a manual trigger. The backend asks the shopify-app
+ * (which holds the access token) to re-fetch and push the latest to the vendor.
+ * Store address is excluded — it syncs from the Shopify locations / outlet mirror.
+ */
+export function resyncRetailerFromShopify(
+  retailerId: string,
+): Promise<{ success: boolean }> {
+  return api.post<{ success: boolean }>(
+    `admin/vendors/${retailerId}/resync-shopify`,
+    {},
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Outlets
 // ---------------------------------------------------------------------------

@@ -15,6 +15,7 @@ import {
   setOutletActive,
   setOutletPrimary,
   updateRetailer,
+  resyncRetailerFromShopify,
   createRetailerStaff,
   setRetailerStaffOutlet,
   resetRetailerStaffPassword,
@@ -249,6 +250,24 @@ export function useUpdateRetailerMutation(retailerId: string) {
   return useMutation({
     mutationFn: (data: Partial<UpdateRetailerPayload>) =>
       updateRetailer(retailerId, data),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: retailerKeys.detail(retailerId),
+      });
+    },
+  });
+}
+
+/**
+ * Re-sync store-level details from Shopify (TT-315). On success the backend has
+ * overwritten the vendor's brand/contact/locale, so invalidate the detail cache
+ * to pull the refreshed record into the portal.
+ */
+export function useResyncRetailerFromShopifyMutation(retailerId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => resyncRetailerFromShopify(retailerId),
     onSuccess: () => {
       void queryClient.invalidateQueries({
         queryKey: retailerKeys.detail(retailerId),
