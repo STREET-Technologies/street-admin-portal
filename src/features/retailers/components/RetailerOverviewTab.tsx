@@ -1,5 +1,3 @@
-import { toast } from "sonner";
-import { RefreshCw } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -7,13 +5,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
 import { CopyableField } from "@/components/shared/CopyableField";
 import { EditableField } from "@/components/shared/EditableField";
-import {
-  useUpdateRetailerMutation,
-  useResyncRetailerFromShopifyMutation,
-} from "../api/retailer-queries";
+import { useUpdateRetailerMutation } from "../api/retailer-queries";
 import { useAdminRole } from "@/features/auth/hooks/useAdminRole";
 import { VENDOR_CATEGORIES } from "../constants/categories";
 import type { RetailerViewModel } from "../types";
@@ -25,18 +19,6 @@ interface RetailerOverviewTabProps {
 export function RetailerOverviewTab({ retailer }: RetailerOverviewTabProps) {
   const { canWrite } = useAdminRole();
   const updateRetailer = useUpdateRetailerMutation(retailer.id);
-  const resyncFromShopify = useResyncRetailerFromShopifyMutation(retailer.id);
-
-  const isShopify = Boolean(retailer.storeUrl);
-
-  const handleResync = async () => {
-    try {
-      await resyncFromShopify.mutateAsync();
-      toast.success("Store details re-synced from Shopify");
-    } catch {
-      toast.error("Could not re-sync from Shopify. Please try again.");
-    }
-  };
 
   return (
     <div className="grid gap-x-10 gap-y-8 md:grid-cols-2">
@@ -97,25 +79,7 @@ export function RetailerOverviewTab({ retailer }: RetailerOverviewTabProps) {
 
       {/* Business details — flat section */}
       <section>
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="text-base font-semibold leading-none">Business details</h2>
-          {canWrite && isShopify && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleResync}
-              disabled={resyncFromShopify.isPending}
-              title="Re-pull store name, branding and contact details from Shopify. Address syncs separately from Shopify locations."
-            >
-              <RefreshCw
-                className={`mr-2 h-3.5 w-3.5 ${
-                  resyncFromShopify.isPending ? "animate-spin" : ""
-                }`}
-              />
-              {resyncFromShopify.isPending ? "Re-syncing…" : "Re-sync from Shopify"}
-            </Button>
-          )}
-        </div>
+        <h2 className="text-base font-semibold leading-none">Business details</h2>
         <div className="mt-4 grid grid-cols-2 gap-x-6 gap-y-4 border-t pt-5">
           <CopyableField label="ID" value={retailer.id} mono />
           <div className="space-y-1">

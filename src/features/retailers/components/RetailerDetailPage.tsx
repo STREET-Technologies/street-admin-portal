@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { BackButton } from "@/components/shared/BackButton";
 import { Separator } from "@/components/ui/separator";
@@ -9,13 +9,18 @@ import {
   UnderlineTabsTrigger,
 } from "@/components/shared/UnderlineTabs";
 import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { EntityDetailHeader } from "@/components/shared/EntityDetailHeader";
 import { EditableField } from "@/components/shared/EditableField";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { formatDate } from "@/lib/format-utils";
-import { useRetailerQuery, useUpdateRetailerMutation } from "../api/retailer-queries";
+import {
+  useRetailerQuery,
+  useUpdateRetailerMutation,
+  useResyncRetailerFromShopifyMutation,
+} from "../api/retailer-queries";
 import { useAdminRole } from "@/features/auth/hooks/useAdminRole";
 import { useTabParam } from "@/hooks/use-tab-param";
 import { RetailerOverviewTab } from "./RetailerOverviewTab";
@@ -35,6 +40,7 @@ export function RetailerDetailPage({ retailerId }: RetailerDetailPageProps) {
   const { data: retailer, isLoading, isError, refetch } =
     useRetailerQuery(retailerId);
   const updateRetailer = useUpdateRetailerMutation(retailerId);
+  const resyncFromShopify = useResyncRetailerFromShopifyMutation(retailerId);
   const [isTogglingOnline, setIsTogglingOnline] = useState(false);
   const [activeTab, setActiveTab] = useTabParam("overview");
 
@@ -47,6 +53,15 @@ export function RetailerDetailPage({ retailerId }: RetailerDetailPageProps) {
       toast.error("Failed to update online status");
     } finally {
       setIsTogglingOnline(false);
+    }
+  }
+
+  async function handleResyncFromShopify() {
+    try {
+      await resyncFromShopify.mutateAsync();
+      toast.success("Store details re-synced from Shopify");
+    } catch {
+      toast.error("Could not re-sync from Shopify. Please try again.");
     }
   }
 
@@ -75,6 +90,26 @@ export function RetailerDetailPage({ retailerId }: RetailerDetailPageProps) {
         status={retailer.status}
         avatarFallback={retailer.name.charAt(0).toUpperCase()}
       >
+        {/* Re-sync the whole store's brand/contact/locale from Shopify. Lives
+            beside the Online toggle because it's a store-level action, not a
+            single business-detail field. Shopify vendors + write access only. */}
+        {canWrite && retailer.storeUrl && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => void handleResyncFromShopify()}
+            disabled={resyncFromShopify.isPending}
+            title="Re-pull store name, branding and contact details from Shopify. Address syncs separately from Shopify locations."
+          >
+            <RefreshCw
+              className={`mr-2 h-3.5 w-3.5 ${
+                resyncFromShopify.isPending ? "animate-spin" : ""
+              }`}
+            />
+            {resyncFromShopify.isPending ? "Re-syncing…" : "Re-sync from Shopify"}
+          </Button>
+        )}
+
         <div className={`flex items-center gap-2 rounded-lg border px-3 py-2 transition-colors ${retailer.isOnline ? "border-foreground bg-[#CDFF00]/5 dark:border-[#CDFF00]/50" : "border-border"}`}>
           {isTogglingOnline && (
             <Loader2 className="size-3.5 animate-spin text-muted-foreground" />
