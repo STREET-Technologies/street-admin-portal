@@ -110,7 +110,7 @@ export function RetailerDetailPage({ retailerId }: RetailerDetailPageProps) {
           </Button>
         )}
 
-        <div className={`flex items-center gap-2 rounded-lg border px-3 py-2 transition-colors ${retailer.isOnline ? "border-foreground bg-[#CDFF00]/5 dark:border-[#CDFF00]/50" : "border-border"}`}>
+        <div className={`flex h-8 items-center gap-2 rounded-lg border px-3 transition-colors ${retailer.isOnline ? "border-foreground bg-[#CDFF00]/5 dark:border-[#CDFF00]/50" : "border-border"}`}>
           {isTogglingOnline && (
             <Loader2 className="size-3.5 animate-spin text-muted-foreground" />
           )}

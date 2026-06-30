@@ -15,7 +15,8 @@ export type EntityStatus =
   | "inactive"
   | "blocked"
   | "pending"
-  | "suspended";
+  | "suspended"
+  | "uninstalled";
 
 /** Lifecycle status of an order. */
 export type OrderStatus =

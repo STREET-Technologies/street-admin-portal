@@ -195,6 +195,7 @@ export function RetailerListPage() {
             <SelectItem value="active">Active</SelectItem>
             <SelectItem value="inactive">Inactive</SelectItem>
             <SelectItem value="blocked">Blocked</SelectItem>
+            <SelectItem value="uninstalled">Uninstalled</SelectItem>
           </SelectContent>
         </Select>
       </div>

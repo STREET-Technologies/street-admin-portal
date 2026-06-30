@@ -61,6 +61,7 @@ const STATUS_ALIAS: Record<string, StatusVariant> = {
   rejected: "declined",
   declined: "declined",
   missed: "declined",
+  uninstalled: "declined", // store removed the Shopify app — needs attention (TT-317)
 
   // ─── Terminal — done ───
   delivered: "delivered",

@@ -22,6 +22,11 @@ export interface BackendVendor {
   commissionPercentage: number | null;
   isOnline: boolean;
   isActive: boolean;
+  /**
+   * Set when the store uninstalled the Shopify app. Admin-only, visible during
+   * the 48h grace window before backend redaction. Null = installed. (TT-317)
+   */
+  uninstalledAt: string | null;
   stripeAccountId: string | null;
   shippingReturnsUrl: string | null;
   openingHours: Record<string, unknown> | null;
@@ -52,6 +57,8 @@ export interface RetailerViewModel {
   description: string;
   stripeAccountId: string | null;
   isOnline: boolean;
+  /** ISO timestamp the store uninstalled the Shopify app, or null. (TT-317) */
+  uninstalledAt: string | null;
   openingHours: Record<string, unknown> | null;
   createdAt: string;
   updatedAt: string;
@@ -61,7 +68,14 @@ export interface RetailerViewModel {
 // Status derivation
 // ---------------------------------------------------------------------------
 
-function deriveStatus(isActive: boolean, isOnline: boolean): EntityStatus {
+function deriveStatus(
+  isActive: boolean,
+  isOnline: boolean,
+  uninstalledAt: string | null,
+): EntityStatus {
+  // Uninstall takes precedence — isActive/isOnline are left untouched by the
+  // uninstall flow, so without this an uninstalled store would read as active.
+  if (uninstalledAt) return "uninstalled";
   if (!isActive) return "blocked";
   return isOnline ? "active" : "inactive";
 }
@@ -76,7 +90,7 @@ export function toRetailerViewModel(vendor: BackendVendor): RetailerViewModel {
     name: vendor.storeName,
     email: vendor.email ?? "",
     phone: vendor.phone ?? "",
-    status: deriveStatus(vendor.isActive, vendor.isOnline),
+    status: deriveStatus(vendor.isActive, vendor.isOnline, vendor.uninstalledAt),
     category: vendor.vendorCategory ?? "Uncategorized",
     commissionPercentage: vendor.commissionPercentage,
     storeUrl: vendor.storeUrl,
@@ -89,6 +103,7 @@ export function toRetailerViewModel(vendor: BackendVendor): RetailerViewModel {
     description: vendor.description ?? "",
     stripeAccountId: vendor.stripeAccountId,
     isOnline: vendor.isOnline,
+    uninstalledAt: vendor.uninstalledAt,
     openingHours: vendor.openingHours,
     createdAt: vendor.createdAt,
     updatedAt: vendor.updatedAt,
