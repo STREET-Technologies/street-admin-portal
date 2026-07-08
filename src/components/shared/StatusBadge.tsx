@@ -51,6 +51,7 @@ const STATUS_ALIAS: Record<string, StatusVariant> = {
   waiting_for_pickup: "pending",
   in_delivery: "pending",
   shipped: "pending",
+  returning: "pending", // TT-115 — Stuart courier return-to-store in progress
 
   // ─── Urgent — operator action required ───
   stuck: "stuck",

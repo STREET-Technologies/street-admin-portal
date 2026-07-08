@@ -64,7 +64,7 @@ function tabToQueryParams(
     case "in-progress":
       return {
         status:
-          "CONFIRMED,IN_PACKING,READY_FOR_DELIVERY,WAITING_FOR_PICKUP,IN_DELIVERY,SHIPPED",
+          "CONFIRMED,IN_PACKING,READY_FOR_DELIVERY,WAITING_FOR_PICKUP,IN_DELIVERY,SHIPPED,RETURNING",
       };
     case "stuck":
       return { stuck: true };
@@ -73,8 +73,13 @@ function tabToQueryParams(
     case "delivered":
       return { status: "DELIVERED,COMPLETED" };
     case "returned":
-      // TT-226 — any order with a non-terminal-cancelled return state
-      return { returnStatus: "REQUESTED,IN_PROGRESS,PARTIAL,COMPLETE" };
+      // TT-226 — any order with a non-terminal-cancelled return state, OR'd
+      // (TT-115) with the Stuart return-to-store order statuses — backend
+      // combines status + returnStatus with OR when both are present.
+      return {
+        returnStatus: "REQUESTED,IN_PROGRESS,PARTIAL,COMPLETE",
+        status: "RETURNING,RETURNED",
+      };
     case "cancelled":
       return { status: "CANCELLED,PAYMENT_FAILED" };
   }

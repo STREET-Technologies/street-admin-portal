@@ -42,6 +42,8 @@ const TERMINAL_ORDER_STATUSES = [
   "DELIVERED",
   "CANCELLED",
   "COMPLETED",
+  "RETURNED", // TT-115 — a returned order needs no manual stuck-resolution
+
   "REJECTED",
   "MISSED",
 ];
