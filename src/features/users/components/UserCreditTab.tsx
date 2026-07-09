@@ -11,8 +11,8 @@ import { cn } from "@/lib/utils";
 import { useUserCreditQuery } from "../api/user-queries";
 import type { CreditLedgerEntry } from "../api/user-api";
 
-/** Ledger entries shown per page before paging kicks in. */
-const LEDGER_PAGE_SIZE = 5;
+/** List rows shown per page before paging kicks in (ledger + discount codes). */
+const PAGE_SIZE = 5;
 
 interface UserCreditTabProps {
   userId: string;
@@ -68,6 +68,7 @@ const LEDGER_LABELS: Record<CreditLedgerEntry["entryType"], string> = {
 export function UserCreditTab({ userId }: UserCreditTabProps) {
   const { data, isLoading, isError, refetch } = useUserCreditQuery(userId);
   const [ledgerPage, setLedgerPage] = useState(0);
+  const [codesPage, setCodesPage] = useState(0);
 
   if (isLoading) {
     return <LoadingState variant="card" />;
@@ -85,12 +86,19 @@ export function UserCreditTab({ userId }: UserCreditTabProps) {
 
   const { balance, ledger, redemptions } = data;
 
-  // Client-side paging over the fetched ledger (backend returns up to 50).
-  const ledgerPageCount = Math.max(1, Math.ceil(ledger.length / LEDGER_PAGE_SIZE));
+  // Client-side paging over the fetched lists (backend returns up to 50).
+  const ledgerPageCount = Math.max(1, Math.ceil(ledger.length / PAGE_SIZE));
   const safeLedgerPage = Math.min(ledgerPage, ledgerPageCount - 1);
   const pagedLedger = ledger.slice(
-    safeLedgerPage * LEDGER_PAGE_SIZE,
-    safeLedgerPage * LEDGER_PAGE_SIZE + LEDGER_PAGE_SIZE,
+    safeLedgerPage * PAGE_SIZE,
+    safeLedgerPage * PAGE_SIZE + PAGE_SIZE,
+  );
+
+  const codesPageCount = Math.max(1, Math.ceil(redemptions.length / PAGE_SIZE));
+  const safeCodesPage = Math.min(codesPage, codesPageCount - 1);
+  const pagedCodes = redemptions.slice(
+    safeCodesPage * PAGE_SIZE,
+    safeCodesPage * PAGE_SIZE + PAGE_SIZE,
   );
 
   return (
@@ -176,29 +184,40 @@ export function UserCreditTab({ userId }: UserCreditTabProps) {
             />
           </div>
         ) : (
-          <ul className="mt-4 divide-y border-t">
-            {redemptions.map((code) => (
-              <li
-                key={code.id}
-                className="flex items-center justify-between gap-4 py-3"
-              >
-                <div className="min-w-0 space-y-1">
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-mono text-sm font-medium">
-                      {code.discountCode}
-                    </span>
-                    <CopyButton value={code.discountCode} label="Copy code" />
+          <>
+            <ul className="mt-4 divide-y border-t">
+              {pagedCodes.map((code) => (
+                <li
+                  key={code.id}
+                  className="flex items-center justify-between gap-4 py-3"
+                >
+                  <div className="min-w-0 space-y-1">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-mono text-sm font-medium">
+                        {code.discountCode}
+                      </span>
+                      <CopyButton value={code.discountCode} label="Copy code" />
+                    </div>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {formatCurrency(code.amount)} off · min{" "}
+                      {formatCurrency(code.minimumOrderAmount)}
+                      {code.expiresAt
+                        ? ` · exp ${formatDate(code.expiresAt)}`
+                        : ""}
+                    </p>
                   </div>
-                  <p className="truncate text-xs text-muted-foreground">
-                    {formatCurrency(code.amount)} off · min{" "}
-                    {formatCurrency(code.minimumOrderAmount)}
-                    {code.expiresAt ? ` · exp ${formatDate(code.expiresAt)}` : ""}
-                  </p>
-                </div>
-                <StatusBadge status={code.status} size="sm" />
-              </li>
-            ))}
-          </ul>
+                  <StatusBadge status={code.status} size="sm" />
+                </li>
+              ))}
+            </ul>
+            {codesPageCount > 1 && (
+              <Pager
+                page={safeCodesPage}
+                pageCount={codesPageCount}
+                onPage={setCodesPage}
+              />
+            )}
+          </>
         )}
       </section>
     </div>
