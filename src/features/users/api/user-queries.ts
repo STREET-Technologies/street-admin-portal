@@ -11,6 +11,7 @@ import {
   getUserOrders,
   getUserDevices,
   getUserStats,
+  getUserCredit,
   updateUser,
   type GetUsersParams,
   type UpdateUserPayload,
@@ -31,6 +32,7 @@ export const userKeys = {
   orders: (id: string) => [...userKeys.detail(id), "orders"] as const,
   devices: (id: string) => [...userKeys.detail(id), "devices"] as const,
   stats: (id: string) => [...userKeys.all, "stats", id] as const,
+  credit: (id: string) => [...userKeys.detail(id), "credit"] as const,
 };
 
 // ---------------------------------------------------------------------------
@@ -92,6 +94,15 @@ export function useUserStatsQuery(userId: string) {
   return useQuery({
     queryKey: userKeys.stats(userId),
     queryFn: () => getUserStats(userId),
+    enabled: !!userId,
+  });
+}
+
+/** User credit wallet: balance, ledger, and generated discount codes. */
+export function useUserCreditQuery(userId: string) {
+  return useQuery({
+    queryKey: userKeys.credit(userId),
+    queryFn: () => getUserCredit(userId),
     enabled: !!userId,
   });
 }
