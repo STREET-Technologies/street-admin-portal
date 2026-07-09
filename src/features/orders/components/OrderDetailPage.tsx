@@ -394,6 +394,14 @@ function PricingPaymentSection({
                 <span className="tabular-nums">{pricing.serviceFee}</span>
               </div>
             )}
+            {pricing.discount && (
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Discount</span>
+                <span className="tabular-nums text-emerald-600 dark:text-emerald-400">
+                  −{pricing.discount}
+                </span>
+              </div>
+            )}
             <Separator />
             <div className="flex justify-between text-base font-semibold">
               <span>Total</span>

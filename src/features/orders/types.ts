@@ -188,6 +188,8 @@ export interface OrderDetailViewModel extends OrderViewModel {
     subtotal: string;
     deliveryFee: string;
     serviceFee: string;
+    /** Formatted discount (e.g. "£5.00"), or null when no code was used. */
+    discount: string | null;
     total: string;
     isShopifyOrder: boolean;
   } | null;
@@ -474,11 +476,15 @@ export function toOrderDetailViewModel(backend: BackendOrder): OrderDetailViewMo
     !!backend.shopifyOrderId ||
     backend.paymentMethod === 'shopify_checkout' ||
     pb?.shopifyCheckout === true;
+  // TT-326 — customer discount lives in pricingBreakdown.discount (also
+  // backfilled onto historical orders). Only surface it when non-zero.
+  const discountRaw = typeof pb?.discount === "number" ? pb.discount : 0;
   const pricing = pb
     ? {
         subtotal: formatGBP((pb.items as number) ?? backend.subtotal),
         deliveryFee: formatGBP(pb.deliveryFee as number | null),
         serviceFee: formatGBP(pb.serviceFee as number | null),
+        discount: discountRaw > 0 ? formatGBP(discountRaw) : null,
         total: formatGBP((pb.total as number) ?? backend.totalAmount),
         isShopifyOrder,
       }
