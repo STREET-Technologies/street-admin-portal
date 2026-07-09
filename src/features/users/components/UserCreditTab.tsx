@@ -1,16 +1,58 @@
-import { Wallet, Ticket } from "lucide-react";
+import { useState } from "react";
+import { Wallet, Ticket, ChevronLeft, ChevronRight } from "lucide-react";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { CopyButton } from "@/components/shared/CopyButton";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
+import { Button } from "@/components/ui/button";
 import { formatCurrency, formatDate } from "@/lib/format-utils";
 import { cn } from "@/lib/utils";
 import { useUserCreditQuery } from "../api/user-queries";
 import type { CreditLedgerEntry } from "../api/user-api";
 
+/** Ledger entries shown per page before paging kicks in. */
+const LEDGER_PAGE_SIZE = 5;
+
 interface UserCreditTabProps {
   userId: string;
+}
+
+/** Minimal prev/next pager, styled to match the DataTable pagination bar. */
+function Pager({
+  page,
+  pageCount,
+  onPage,
+}: {
+  page: number;
+  pageCount: number;
+  onPage: (page: number) => void;
+}) {
+  return (
+    <div className="mt-3 flex items-center justify-end gap-1">
+      <Button
+        variant="outline"
+        size="icon-sm"
+        onClick={() => onPage(page - 1)}
+        disabled={page === 0}
+        aria-label="Previous page"
+      >
+        <ChevronLeft className="size-4" />
+      </Button>
+      <span className="min-w-[5rem] text-center text-sm text-muted-foreground">
+        Page {page + 1} of {pageCount}
+      </span>
+      <Button
+        variant="outline"
+        size="icon-sm"
+        onClick={() => onPage(page + 1)}
+        disabled={page >= pageCount - 1}
+        aria-label="Next page"
+      >
+        <ChevronRight className="size-4" />
+      </Button>
+    </div>
+  );
 }
 
 /** Human labels for the append-only credit ledger entry types. */
@@ -25,6 +67,7 @@ const LEDGER_LABELS: Record<CreditLedgerEntry["entryType"], string> = {
 
 export function UserCreditTab({ userId }: UserCreditTabProps) {
   const { data, isLoading, isError, refetch } = useUserCreditQuery(userId);
+  const [ledgerPage, setLedgerPage] = useState(0);
 
   if (isLoading) {
     return <LoadingState variant="card" />;
@@ -41,6 +84,14 @@ export function UserCreditTab({ userId }: UserCreditTabProps) {
   }
 
   const { balance, ledger, redemptions } = data;
+
+  // Client-side paging over the fetched ledger (backend returns up to 50).
+  const ledgerPageCount = Math.max(1, Math.ceil(ledger.length / LEDGER_PAGE_SIZE));
+  const safeLedgerPage = Math.min(ledgerPage, ledgerPageCount - 1);
+  const pagedLedger = ledger.slice(
+    safeLedgerPage * LEDGER_PAGE_SIZE,
+    safeLedgerPage * LEDGER_PAGE_SIZE + LEDGER_PAGE_SIZE,
+  );
 
   return (
     <div className="space-y-8">
@@ -66,34 +117,43 @@ export function UserCreditTab({ userId }: UserCreditTabProps) {
             />
           </div>
         ) : (
-          <ul className="mt-4 divide-y border-t">
-            {ledger.map((entry) => (
-              <li
-                key={entry.id}
-                className="flex items-center justify-between gap-4 py-3"
-              >
-                <div className="min-w-0">
-                  <p className="text-sm font-medium">
-                    {LEDGER_LABELS[entry.entryType]}
-                  </p>
-                  <p className="truncate text-xs text-muted-foreground">
-                    {entry.description ?? "—"} · {formatDate(entry.createdAt)}
-                  </p>
-                </div>
-                <span
-                  className={cn(
-                    "shrink-0 text-sm font-semibold tabular-nums",
-                    entry.amount < 0
-                      ? "text-rose-600 dark:text-rose-400"
-                      : "text-emerald-600 dark:text-emerald-400",
-                  )}
+          <>
+            <ul className="mt-4 divide-y border-t">
+              {pagedLedger.map((entry) => (
+                <li
+                  key={entry.id}
+                  className="flex items-center justify-between gap-4 py-3"
                 >
-                  {entry.amount < 0 ? "−" : "+"}
-                  {formatCurrency(Math.abs(entry.amount))}
-                </span>
-              </li>
-            ))}
-          </ul>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium">
+                      {LEDGER_LABELS[entry.entryType]}
+                    </p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {entry.description ?? "—"} · {formatDate(entry.createdAt)}
+                    </p>
+                  </div>
+                  <span
+                    className={cn(
+                      "shrink-0 text-sm font-semibold tabular-nums",
+                      entry.amount < 0
+                        ? "text-rose-600 dark:text-rose-400"
+                        : "text-emerald-600 dark:text-emerald-400",
+                    )}
+                  >
+                    {entry.amount < 0 ? "−" : "+"}
+                    {formatCurrency(Math.abs(entry.amount))}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            {ledgerPageCount > 1 && (
+              <Pager
+                page={safeLedgerPage}
+                pageCount={ledgerPageCount}
+                onPage={setLedgerPage}
+              />
+            )}
+          </>
         )}
       </section>
 
