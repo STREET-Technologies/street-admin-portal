@@ -433,14 +433,14 @@ function PricingPaymentSection({
         {orderDetail.totalShippingRefundedFormatted && (
           <>
             <Separator />
-            <div className="flex items-start gap-2 rounded-md border border-amber-200/60 bg-amber-50 px-3 py-2 text-xs dark:border-amber-500/30 dark:bg-amber-500/10">
-              <AlertTriangle className="mt-0.5 size-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
+            <div className="flex items-start gap-2 rounded-md border bg-muted/50 px-3 py-2 text-xs">
+              <AlertTriangle className="mt-0.5 size-3.5 shrink-0 text-amber-600 dark:text-amber-500" />
               <div>
-                <p className="font-semibold text-amber-900 dark:text-amber-200">
+                <p className="font-semibold text-foreground">
                   Shipping refunded — retailer absorbed{" "}
                   {orderDetail.totalShippingRefundedFormatted}
                 </p>
-                <p className="text-amber-800/80 dark:text-amber-200/70">
+                <p className="mt-0.5 text-muted-foreground">
                   Stuart leg already paid by STREET and recovered via Shopify
                   Billing. Not recoverable for retailer.
                 </p>
