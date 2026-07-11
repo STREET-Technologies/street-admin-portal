@@ -33,7 +33,10 @@ export const authApi = {
       data.name ??
       ([data.firstName, data.lastName].filter(Boolean).join(" ") ||
         data.email);
-    return { email: data.email, name, adminRole: data.adminRole ?? 'admin' };
+    // Fail closed: the backend guarantees a concrete adminRole for admins
+    // (an admin with a null role resolves to 'admin' server-side), so a missing
+    // value here means "not a full admin" — default to least privilege.
+    return { email: data.email, name, adminRole: data.adminRole ?? 'viewer' };
   },
 
   /**
