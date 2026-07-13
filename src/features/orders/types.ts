@@ -215,7 +215,9 @@ export interface ReturnViewModel {
 export interface OrderItemViewModel {
   id: string;
   productName: string;
+  /** Real variant name (e.g. "Large") — from metadata.variantTitle, not the product title. */
   variant: string;
+  variantId: string | null;
   sku: string;
   quantity: number;
   unitPrice: string;
@@ -343,7 +345,17 @@ function toItemViewModel(
   return {
     id: item.id ?? `item-${index}`,
     productName: (meta?.productName as string) ?? `Product ${item.productId.slice(0, 8)}`,
-    variant: (meta?.title as string) ?? "--",
+    // metadata.title duplicates the product name; variantTitle is the real
+    // variant (e.g. "Large"). optionValues is the fallback for older orders.
+    variant:
+      (meta?.variantTitle as string) ??
+      (Array.isArray(meta?.optionValues)
+        ? (meta.optionValues as string[]).join(" / ")
+        : null) ??
+      "--",
+    variantId:
+      (meta?.shopifyVariantId as string) ??
+      (item.variantId != null ? String(item.variantId) : null),
     sku: (meta?.sku as string) ?? "--",
     quantity: item.quantity,
     unitPrice: formatGBP(item.price),

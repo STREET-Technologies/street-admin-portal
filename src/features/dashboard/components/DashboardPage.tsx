@@ -165,12 +165,12 @@ function AttentionRail({ stats }: { stats: DashboardStats }) {
           className={`flex items-center gap-3 rounded-md border px-4 py-3 transition-colors hover:bg-muted/50 ${
             item.tone === "critical"
               ? "border-red-300 bg-red-50/50 dark:border-red-900 dark:bg-red-950/20"
-              : "border-amber-300 bg-amber-50/50 dark:border-amber-900 dark:bg-amber-950/20"
+              : "border-border bg-muted/40"
           }`}
         >
           <item.icon
             className={`size-4 shrink-0 ${
-              item.tone === "critical" ? "text-red-600" : "text-amber-600"
+              item.tone === "critical" ? "text-red-600" : "text-muted-foreground"
             }`}
           />
           <span className="text-sm">

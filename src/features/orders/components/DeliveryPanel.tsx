@@ -335,7 +335,7 @@ function ReconciliationBlock({
               ? "border-green-200 bg-green-50/50 dark:border-green-900 dark:bg-green-950/20"
               : isStuck
                 ? "border-red-200 bg-red-50/50 dark:border-red-900 dark:bg-red-950/20"
-                : "border-amber-200 bg-amber-50/50 dark:border-amber-900 dark:bg-amber-950/20"
+                : "border-border bg-muted/40"
           }`}
         >
           <div className="flex items-center gap-2">
@@ -344,7 +344,9 @@ function ReconciliationBlock({
             ) : (
               <AlertTriangle
                 className={
-                  isStuck ? "size-4 text-red-600" : "size-4 text-amber-600"
+                  isStuck
+                    ? "size-4 text-red-600"
+                    : "size-4 text-muted-foreground"
                 }
               />
             )}
@@ -359,7 +361,7 @@ function ReconciliationBlock({
               className={`ml-auto inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium tabular-nums ${
                 isStuck
                   ? "border-red-300 bg-red-100 text-red-800"
-                  : "border-amber-300 bg-amber-100 text-amber-900"
+                  : "border-border bg-muted text-foreground"
               }`}
             >
               {attempts}/{MAX_ATTEMPTS} attempts

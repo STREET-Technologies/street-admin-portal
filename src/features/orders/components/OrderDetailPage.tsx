@@ -10,7 +10,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { EntityDetailHeader } from "@/components/shared/EntityDetailHeader";
 import { CopyableField } from "@/components/shared/CopyableField";
 import { StatusBadge } from "@/components/shared/StatusBadge";
@@ -295,6 +294,7 @@ function ItemsSection({ items }: { items: OrderItemViewModel[] }) {
               <TableRow>
                 <TableHead>Product</TableHead>
                 <TableHead>Variant</TableHead>
+                <TableHead>SKU</TableHead>
                 <TableHead className="text-right">Qty</TableHead>
                 <TableHead className="text-right">Price</TableHead>
                 <TableHead className="text-right">Total</TableHead>
@@ -305,29 +305,23 @@ function ItemsSection({ items }: { items: OrderItemViewModel[] }) {
                 <TableRow key={item.id}>
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      {item.imageUrl && (
-                        <Avatar size="sm">
-                          <AvatarImage
+                      {/* Product photos are ~3:2 — a square/rectangular tile
+                          keeps them legible where a circle crops them. */}
+                      <span className="flex h-10 w-14 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-muted">
+                        {item.imageUrl ? (
+                          <img
                             src={item.imageUrl}
                             alt={item.productName}
+                            className="h-full w-full object-cover"
                           />
-                          <AvatarFallback>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">
                             {item.productName.charAt(0)}
-                          </AvatarFallback>
-                        </Avatar>
-                      )}
+                          </span>
+                        )}
+                      </span>
                       <div>
                         <p className="text-sm font-medium">{item.productName}</p>
-                        {item.sku !== "--" && (
-                          <p className="text-xs text-muted-foreground">
-                            SKU: {item.sku}
-                          </p>
-                        )}
-                        {item.packingStatus && (
-                          <p className="text-xs text-muted-foreground">
-                            Packing: {item.packingStatus}
-                          </p>
-                        )}
                         {item.returnedQuantity > 0 && (
                           <div className="mt-1 flex items-center gap-1.5 text-xs">
                             <StatusBadge
@@ -349,8 +343,16 @@ function ItemsSection({ items }: { items: OrderItemViewModel[] }) {
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {item.variant}
+                  <TableCell className="text-sm">
+                    <span>{item.variant}</span>
+                    {item.variantId && (
+                      <p className="font-mono text-xs text-muted-foreground">
+                        {item.variantId}
+                      </p>
+                    )}
+                  </TableCell>
+                  <TableCell className="font-mono text-xs text-muted-foreground">
+                    {item.sku}
                   </TableCell>
                   <TableCell className="text-right text-sm tabular-nums">
                     {item.quantity}
