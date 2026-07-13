@@ -1,4 +1,5 @@
 import ky, { type Options, HTTPError } from "ky";
+import type { PaginatedResponse } from "@/types";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_URL || "http://localhost:8080/v1";
@@ -168,6 +169,21 @@ async function requestRaw<T>(
 }
 
 /**
+ * Serialize query params into a "?a=b" string, skipping undefined/empty
+ * values. Single place all feature APIs build their query strings.
+ */
+export function toQueryString<T extends object>(params: T): string {
+  const searchParams = new URLSearchParams();
+  for (const [key, value] of Object.entries(params) as [string, unknown][]) {
+    if (value !== undefined && value !== null && value !== "") {
+      searchParams.set(key, String(value));
+    }
+  }
+  const query = searchParams.toString();
+  return query ? `?${query}` : "";
+}
+
+/**
  * Centralized API client.
  * All feature-level API modules import and use this.
  */
@@ -175,8 +191,19 @@ export const api = {
   get: <T>(endpoint: string) => request<T>("get", endpoint),
 
   /**
-   * GET without envelope unwrapping. Use for paginated endpoints
-   * where the response has both `data` and `meta` at the same level.
+   * GET a paginated admin list. Every admin list endpoint returns
+   * { data: rows[], meta: { total, page, limit, totalPages } } at the
+   * envelope's top level — this is the one place that contract is read.
+   */
+  getPaginated: <T>(endpoint: string): Promise<PaginatedResponse<T>> =>
+    requestRaw<{ data: T[]; meta: PaginatedResponse<T>["meta"] }>(
+      "get",
+      endpoint,
+    ).then((raw) => ({ data: raw.data, meta: raw.meta })),
+
+  /**
+   * GET without envelope unwrapping. Prefer getPaginated for lists; use
+   * this only for responses that fit neither the plain nor paginated shape.
    */
   getRaw: <T>(endpoint: string) => requestRaw<T>("get", endpoint),
 

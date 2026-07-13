@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Search, Store } from "lucide-react";
@@ -20,7 +20,7 @@ import { useTableParams } from "@/hooks/use-table-params";
 import { useDebounce } from "@/hooks/use-debounce";
 import { formatDate } from "@/lib/format-utils";
 import { useRetailersQuery } from "../api/retailer-queries";
-import type { RetailerViewModel } from "../types";
+import type { RetailerStatusFilter, RetailerViewModel } from "../types";
 
 // ---------------------------------------------------------------------------
 // Column definitions
@@ -119,14 +119,29 @@ const columns: ColumnDef<RetailerViewModel, unknown>[] = [
 export function RetailerListPage() {
   const navigate = useNavigate();
   const [searchValue, setSearchValue] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<RetailerStatusFilter | "all">(
+    "all",
+  );
   const debouncedSearch = useDebounce(searchValue, 300);
 
   const { pagination, sorting, onPaginationChange, onSortingChange, searchParams } =
     useTableParams({ pageSize: 20, sortBy: "createdAt", sortOrder: "desc" });
 
+  // Reset to page 1 when search or filter changes (skip initial render so a
+  // bookmarked ?page=N URL survives).
+  const isFirstRender = useRef(true);
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    onPaginationChange({ pageIndex: 0, pageSize: pagination.pageSize });
+  }, [debouncedSearch, statusFilter, onPaginationChange, pagination.pageSize]);
+
+  // Search, status filter, sorting, and pagination are all server-side.
   const { data, isLoading, isError, refetch } = useRetailersQuery({
     name: debouncedSearch || undefined,
+    status: statusFilter === "all" ? undefined : statusFilter,
     sortBy: searchParams.sortBy,
     sortOrder: searchParams.sortOrder,
     page: searchParams.page,
@@ -135,28 +150,6 @@ export function RetailerListPage() {
 
   const retailers = data?.data ?? [];
   const totalPages = data?.meta.totalPages ?? 0;
-
-  // Client-side status filter (backend has no status filter param)
-  const filteredRetailers = useMemo(() => {
-    if (statusFilter === "all") return retailers;
-    return retailers.filter((r) => r.status === statusFilter);
-  }, [retailers, statusFilter]);
-
-  // Client-side sort (backend has no sorting params)
-  const sortedRetailers = useMemo(() => {
-    if (sorting.length === 0) return filteredRetailers;
-    const [sort] = sorting;
-    const key = sort.id as keyof RetailerViewModel;
-    return [...filteredRetailers].sort((a, b) => {
-      const aVal = a[key];
-      const bVal = b[key];
-      if (aVal == null && bVal == null) return 0;
-      if (aVal == null) return 1;
-      if (bVal == null) return -1;
-      const cmp = String(aVal).localeCompare(String(bVal));
-      return sort.desc ? -cmp : cmp;
-    });
-  }, [filteredRetailers, sorting]);
 
   if (isError) {
     return (
@@ -186,7 +179,12 @@ export function RetailerListPage() {
             className="pl-9"
           />
         </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
+        <Select
+          value={statusFilter}
+          onValueChange={(value) =>
+            setStatusFilter(value as RetailerStatusFilter | "all")
+          }
+        >
           <SelectTrigger className="w-[140px]">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
@@ -203,8 +201,9 @@ export function RetailerListPage() {
       {/* Data table */}
       <DataTable
         columns={columns}
-        data={sortedRetailers}
+        data={retailers}
         pageCount={totalPages}
+        totalItems={data?.meta.total}
         pageIndex={pagination.pageIndex}
         pageSize={pagination.pageSize}
         onPaginationChange={onPaginationChange}

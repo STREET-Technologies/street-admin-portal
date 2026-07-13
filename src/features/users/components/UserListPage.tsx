@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Search, Users } from "lucide-react";
@@ -20,6 +20,7 @@ import { ErrorState } from "@/components/shared/ErrorState";
 import { useTableParams } from "@/hooks/use-table-params";
 import { formatDate } from "@/lib/format-utils";
 import { useUsersQuery } from "../api/user-queries";
+import type { UserStatusFilter } from "../api/user-api";
 import type { UserViewModel } from "../types";
 
 // ---------------------------------------------------------------------------
@@ -137,7 +138,9 @@ export function UserListPage() {
   // Debounced search input
   const [searchInput, setSearchInput] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<UserStatusFilter | "all">(
+    "all",
+  );
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -146,9 +149,21 @@ export function UserListPage() {
     return () => clearTimeout(timer);
   }, [searchInput]);
 
-  // Fetch users
+  // Reset to page 1 when search or filter changes (skip initial render so a
+  // bookmarked ?page=N URL survives).
+  const isFirstRender = useRef(true);
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    onPaginationChange({ pageIndex: 0, pageSize: pagination.pageSize });
+  }, [debouncedSearch, statusFilter, onPaginationChange, pagination.pageSize]);
+
+  // Search, status filter, sorting, and pagination are all server-side.
   const { data, isLoading, isError, error, refetch } = useUsersQuery({
     search: debouncedSearch || undefined,
+    status: statusFilter === "all" ? undefined : statusFilter,
     sortBy: searchParams.sortBy,
     sortOrder: searchParams.sortOrder,
     page: searchParams.page,
@@ -157,28 +172,6 @@ export function UserListPage() {
 
   const users = data?.data ?? [];
   const pageCount = data?.meta?.totalPages ?? 0;
-
-  // Client-side status filter (backend has no status filter param)
-  const filteredUsers = useMemo(() => {
-    if (statusFilter === "all") return users;
-    return users.filter((u) => u.status === statusFilter);
-  }, [users, statusFilter]);
-
-  // Client-side sort (backend has no sorting params)
-  const sortedUsers = useMemo(() => {
-    if (sorting.length === 0) return filteredUsers;
-    const [sort] = sorting;
-    const key = sort.id as keyof UserViewModel;
-    return [...filteredUsers].sort((a, b) => {
-      const aVal = a[key];
-      const bVal = b[key];
-      if (aVal == null && bVal == null) return 0;
-      if (aVal == null) return 1;
-      if (bVal == null) return -1;
-      const cmp = String(aVal).localeCompare(String(bVal));
-      return sort.desc ? -cmp : cmp;
-    });
-  }, [filteredUsers, sorting]);
 
   const columns = useMemo(
     () =>
@@ -216,16 +209,20 @@ export function UserListPage() {
             className="pl-9"
           />
         </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
+        <Select
+          value={statusFilter}
+          onValueChange={(value) =>
+            setStatusFilter(value as UserStatusFilter | "all")
+          }
+        >
           <SelectTrigger className="w-[140px]">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All statuses</SelectItem>
             <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="inactive">Inactive</SelectItem>
-            <SelectItem value="blocked">Blocked</SelectItem>
             <SelectItem value="suspended">Suspended</SelectItem>
+            <SelectItem value="blocked">Blocked</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -233,8 +230,9 @@ export function UserListPage() {
       {/* Data table */}
       <DataTable
         columns={columns}
-        data={sortedUsers}
+        data={users}
         pageCount={pageCount}
+        totalItems={data?.meta?.total}
         pageIndex={pagination.pageIndex}
         pageSize={pagination.pageSize}
         onPaginationChange={onPaginationChange}

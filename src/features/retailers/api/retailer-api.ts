@@ -1,4 +1,4 @@
-import { api } from "@/lib/api-client";
+import { api, toQueryString } from "@/lib/api-client";
 import type { PaginatedResponse } from "@/types";
 import type { BackendVendor, RetailerListParams } from "../types";
 
@@ -10,38 +10,13 @@ import type { BackendVendor, RetailerListParams } from "../types";
  * query hooks (via TanStack Query `select`), not here.
  */
 
-/**
- * Backend envelope for GET /admin/vendors (after ResponseInterceptor).
- * Shape: { statusCode, message, data: { data: [...], meta: {...} } }
- */
-interface VendorsRawResponse {
-  data: {
-    data: BackendVendor[];
-    meta: { total: number; page: number; limit: number; totalPages: number };
-  };
-}
-
-/** Fetch a paginated list of vendors (retailers). Normalizes to PaginatedResponse. */
-export async function getRetailers(
+/** Fetch a paginated list of vendors (retailers). */
+export function getRetailers(
   params: RetailerListParams = {},
 ): Promise<PaginatedResponse<BackendVendor>> {
-  const searchParams = new URLSearchParams();
-
-  if (params.name) searchParams.set("name", params.name);
-  if (params.vendorCategory) searchParams.set("vendorCategory", params.vendorCategory);
-  if (params.sortBy) searchParams.set("sortBy", params.sortBy);
-  if (params.sortOrder) searchParams.set("sortOrder", params.sortOrder);
-  if (params.page) searchParams.set("page", String(params.page));
-  if (params.limit) searchParams.set("limit", String(params.limit));
-
-  const query = searchParams.toString();
-  const endpoint = query ? `admin/vendors?${query}` : "admin/vendors";
-
-  const raw = await api.getRaw<VendorsRawResponse>(endpoint);
-  return {
-    data: raw.data.data,
-    meta: raw.data.meta,
-  };
+  return api.getPaginated<BackendVendor>(
+    `admin/vendors${toQueryString(params)}`,
+  );
 }
 
 /** Fetch a single vendor (retailer) by ID. */
@@ -79,10 +54,10 @@ interface RawVendorOrder {
 export async function getRetailerOrders(
   retailerId: string,
 ): Promise<BackendVendorOrder[]> {
-  const data = await api.get<{ orders: RawVendorOrder[] }>(
+  const orders = await api.get<RawVendorOrder[]>(
     `admin/vendors/${retailerId}/orders`,
   );
-  return data.orders.map((raw) => ({
+  return orders.map((raw) => ({
     id: raw.id,
     orderNumber: raw.orderId ?? null,
     status: raw.status,
@@ -116,13 +91,10 @@ export interface BackendVendorStaff {
 }
 
 /** Fetch user accounts linked to a vendor (retailer staff). */
-export async function getRetailerStaff(
+export function getRetailerStaff(
   retailerId: string,
 ): Promise<BackendVendorStaff[]> {
-  const data = await api.get<{ users: BackendVendorStaff[] }>(
-    `admin/vendors/${retailerId}/users`,
-  );
-  return data.users;
+  return api.get<BackendVendorStaff[]>(`admin/vendors/${retailerId}/users`);
 }
 
 // ---------------------------------------------------------------------------

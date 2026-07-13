@@ -2,6 +2,7 @@ import { CreditCard, AlertTriangle, CheckCircle, Clock, XCircle } from "lucide-r
 import { Badge } from "@/components/ui/badge";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { ErrorState } from "@/components/shared/ErrorState";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { formatCurrency } from "@/lib/format-utils";
 import { useRetailerBillingQuery } from "../api/retailer-queries";
 
@@ -63,7 +64,15 @@ export function RetailerBillingTab({ retailerId }: RetailerBillingTabProps) {
     );
   }
 
-  if (!data) return null;
+  if (!data) {
+    return (
+      <EmptyState
+        icon={CreditCard}
+        title="No billing data"
+        description="No billing information is available for this retailer yet."
+      />
+    );
+  }
 
   const capPercent =
     data.subscription && data.subscription.cappedAmount > 0

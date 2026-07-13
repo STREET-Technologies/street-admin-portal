@@ -4,9 +4,7 @@ import type { BackendAdminUser } from "../types";
 
 /** Fetch all admin user accounts. */
 export function getAdminUsers(): Promise<BackendAdminUser[]> {
-  return api.get<{ users: BackendAdminUser[] }>("admin/admin-users").then(
-    (data) => data.users,
-  );
+  return api.get<BackendAdminUser[]>("admin/admin-users");
 }
 
 /** Update the role of an admin user. */

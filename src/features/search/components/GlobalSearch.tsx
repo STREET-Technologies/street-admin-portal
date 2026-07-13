@@ -110,6 +110,14 @@ export function GlobalSearch() {
             </div>
           )}
 
+          {/* Partial failure — results shown may be incomplete */}
+          {!isLoading && data && data.failedSources.length > 0 && (
+            <div className="border-b px-3 py-2 text-xs text-destructive">
+              Search failed for {data.failedSources.join(", ")} — results may
+              be incomplete.
+            </div>
+          )}
+
           {data?.users && data.users.length > 0 && (
             <CommandGroup heading="Users">
               {data.users.map((item) => (

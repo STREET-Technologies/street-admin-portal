@@ -41,6 +41,8 @@ export interface BackendReferralSettings {
   isActive: boolean;
   maxUsesPerCode: number | null;
   codeExpiryDays: number | null;
+  /** Read-only. Defined by CreditService on the backend, surfaced for display. */
+  creditCapGbp: number;
 }
 
 // ---------------------------------------------------------------------------

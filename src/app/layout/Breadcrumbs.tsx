@@ -19,7 +19,6 @@ import type { BackendOrder } from "@/features/orders/types";
 const segmentLabels: Record<string, string> = {
   users: "Users",
   retailers: "Retailers",
-  couriers: "Couriers",
   orders: "Orders",
   referrals: "Referral Codes",
   settings: "Settings",

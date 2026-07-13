@@ -9,7 +9,7 @@
 // Status types (string literal unions, not enums)
 // ---------------------------------------------------------------------------
 
-/** General entity status used for users, retailers, couriers. */
+/** General entity status used for users and retailers. */
 export type EntityStatus =
   | "active"
   | "inactive"
@@ -18,15 +18,22 @@ export type EntityStatus =
   | "suspended"
   | "uninstalled";
 
-/** Lifecycle status of an order. */
+/**
+ * Lifecycle status of an order. Mirrors the backend OrderStatus enum —
+ * values are UPPERCASE and must match exactly (filters are string equality).
+ */
 export type OrderStatus =
-  | "pending"
-  | "confirmed"
-  | "preparing"
-  | "ready"
-  | "in_delivery"
-  | "delivered"
-  | "cancelled";
+  | "PENDING"
+  | "AWAITING_ACCEPTANCE"
+  | "CONFIRMED"
+  | "IN_PACKING"
+  | "IN_DELIVERY"
+  | "DELIVERED"
+  | "CANCELLED"
+  | "RETURNING"
+  | "RETURNED"
+  | "PAYMENT_CANCELLED"
+  | "PAYMENT_FAILED";
 
 /** Payment status for an order or transaction. */
 export type PaymentStatus = "pending" | "paid" | "failed" | "refunded";
@@ -35,7 +42,7 @@ export type PaymentStatus = "pending" | "paid" | "failed" | "refunded";
 export type NotePriority = "low" | "medium" | "high" | "urgent";
 
 /** Top-level entity categories in the admin portal. */
-export type EntityType = "user" | "retailer" | "courier" | "order";
+export type EntityType = "user" | "retailer" | "order";
 
 // ---------------------------------------------------------------------------
 // API response shapes

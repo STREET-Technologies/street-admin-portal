@@ -23,6 +23,8 @@ export interface SearchResults {
   users: SearchResultItem[];
   retailers: SearchResultItem[];
   orders: SearchResultItem[];
+  /** Sources that failed to respond — surfaced so partial results are not silently presented as complete. */
+  failedSources: Array<"users" | "retailers" | "orders">;
 }
 
 // ---------------------------------------------------------------------------
@@ -93,5 +95,10 @@ export async function globalSearch(query: string): Promise<SearchResults> {
         })
       : [];
 
-  return { users, retailers, orders };
+  const failedSources: SearchResults["failedSources"] = [];
+  if (usersResponse.status === "rejected") failedSources.push("users");
+  if (vendorsResponse.status === "rejected") failedSources.push("retailers");
+  if (ordersResponse.status === "rejected") failedSources.push("orders");
+
+  return { users, retailers, orders, failedSources };
 }

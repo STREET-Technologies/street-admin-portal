@@ -88,8 +88,8 @@ export function useVendorOrdersQuery(
     enabled: Boolean(vendorId),
     placeholderData: keepPreviousData,
     select: (response) => ({
-      data: response.data.orders.map(toOrderViewModel),
-      meta: response.data.meta,
+      data: response.data.map(toOrderViewModel),
+      meta: response.meta,
     }),
   });
 }

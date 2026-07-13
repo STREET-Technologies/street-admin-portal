@@ -2,9 +2,7 @@ import { api } from "@/lib/api-client";
 import type { BackendAdminInvite, SendInvitePayload } from "../types";
 
 export function getPendingInvites(): Promise<BackendAdminInvite[]> {
-  return api
-    .getRaw<{ data: BackendAdminInvite[] }>("admin/admin-users/invites")
-    .then((res) => res.data);
+  return api.get<BackendAdminInvite[]>("admin/admin-users/invites");
 }
 
 export function sendInvite(payload: SendInvitePayload): Promise<void> {

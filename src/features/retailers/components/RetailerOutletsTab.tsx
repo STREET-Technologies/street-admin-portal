@@ -12,6 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { ErrorState } from "@/components/shared/ErrorState";
 import { useAdminRole } from "@/features/auth/hooks/useAdminRole";
 import {
   useRetailerOutletsQuery,
@@ -78,7 +79,7 @@ type PendingAction =
 
 export function RetailerOutletsTab({ retailerId }: RetailerOutletsTabProps) {
   const { canWrite } = useAdminRole();
-  const { data: outlets, isLoading, isError } = useRetailerOutletsQuery(retailerId);
+  const { data: outlets, isLoading, isError, refetch } = useRetailerOutletsQuery(retailerId);
   const publishMutation = useSetOutletPublishedMutation(retailerId);
   const activeMutation = useSetOutletActiveMutation(retailerId);
   const primaryMutation = useSetOutletPrimaryMutation(retailerId);
@@ -95,9 +96,11 @@ export function RetailerOutletsTab({ retailerId }: RetailerOutletsTabProps) {
 
   if (isError) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <p className="text-sm text-muted-foreground">Failed to load outlets.</p>
-      </div>
+      <ErrorState
+        title="Failed to load outlets"
+        message="There was a problem fetching this retailer's outlets. Please try again."
+        onRetry={() => void refetch()}
+      />
     );
   }
 

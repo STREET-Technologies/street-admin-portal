@@ -18,7 +18,6 @@ import { Route as AuthenticatedSettingsIndexRouteImport } from './app/routes/_au
 import { Route as AuthenticatedRetailersIndexRouteImport } from './app/routes/_authenticated/retailers/index'
 import { Route as AuthenticatedReferralsIndexRouteImport } from './app/routes/_authenticated/referrals/index'
 import { Route as AuthenticatedOrdersIndexRouteImport } from './app/routes/_authenticated/orders/index'
-import { Route as AuthenticatedCouriersIndexRouteImport } from './app/routes/_authenticated/couriers/index'
 import { Route as AuthenticatedAdminUsersIndexRouteImport } from './app/routes/_authenticated/admin-users/index'
 import { Route as AuthenticatedUsersUserIdRouteImport } from './app/routes/_authenticated/users/$userId'
 import { Route as AuthenticatedRetailersRetailerIdRouteImport } from './app/routes/_authenticated/retailers/$retailerId'
@@ -73,12 +72,6 @@ const AuthenticatedOrdersIndexRoute =
     path: '/orders/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedCouriersIndexRoute =
-  AuthenticatedCouriersIndexRouteImport.update({
-    id: '/couriers/',
-    path: '/couriers/',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
 const AuthenticatedAdminUsersIndexRoute =
   AuthenticatedAdminUsersIndexRouteImport.update({
     id: '/admin-users/',
@@ -119,7 +112,6 @@ export interface FileRoutesByFullPath {
   '/retailers/$retailerId': typeof AuthenticatedRetailersRetailerIdRoute
   '/users/$userId': typeof AuthenticatedUsersUserIdRoute
   '/admin-users/': typeof AuthenticatedAdminUsersIndexRoute
-  '/couriers/': typeof AuthenticatedCouriersIndexRoute
   '/orders/': typeof AuthenticatedOrdersIndexRoute
   '/referrals/': typeof AuthenticatedReferralsIndexRoute
   '/retailers/': typeof AuthenticatedRetailersIndexRoute
@@ -135,7 +127,6 @@ export interface FileRoutesByTo {
   '/retailers/$retailerId': typeof AuthenticatedRetailersRetailerIdRoute
   '/users/$userId': typeof AuthenticatedUsersUserIdRoute
   '/admin-users': typeof AuthenticatedAdminUsersIndexRoute
-  '/couriers': typeof AuthenticatedCouriersIndexRoute
   '/orders': typeof AuthenticatedOrdersIndexRoute
   '/referrals': typeof AuthenticatedReferralsIndexRoute
   '/retailers': typeof AuthenticatedRetailersIndexRoute
@@ -153,7 +144,6 @@ export interface FileRoutesById {
   '/_authenticated/retailers/$retailerId': typeof AuthenticatedRetailersRetailerIdRoute
   '/_authenticated/users/$userId': typeof AuthenticatedUsersUserIdRoute
   '/_authenticated/admin-users/': typeof AuthenticatedAdminUsersIndexRoute
-  '/_authenticated/couriers/': typeof AuthenticatedCouriersIndexRoute
   '/_authenticated/orders/': typeof AuthenticatedOrdersIndexRoute
   '/_authenticated/referrals/': typeof AuthenticatedReferralsIndexRoute
   '/_authenticated/retailers/': typeof AuthenticatedRetailersIndexRoute
@@ -171,7 +161,6 @@ export interface FileRouteTypes {
     | '/retailers/$retailerId'
     | '/users/$userId'
     | '/admin-users/'
-    | '/couriers/'
     | '/orders/'
     | '/referrals/'
     | '/retailers/'
@@ -187,7 +176,6 @@ export interface FileRouteTypes {
     | '/retailers/$retailerId'
     | '/users/$userId'
     | '/admin-users'
-    | '/couriers'
     | '/orders'
     | '/referrals'
     | '/retailers'
@@ -204,7 +192,6 @@ export interface FileRouteTypes {
     | '/_authenticated/retailers/$retailerId'
     | '/_authenticated/users/$userId'
     | '/_authenticated/admin-users/'
-    | '/_authenticated/couriers/'
     | '/_authenticated/orders/'
     | '/_authenticated/referrals/'
     | '/_authenticated/retailers/'
@@ -283,13 +270,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOrdersIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/couriers/': {
-      id: '/_authenticated/couriers/'
-      path: '/couriers'
-      fullPath: '/couriers/'
-      preLoaderRoute: typeof AuthenticatedCouriersIndexRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/admin-users/': {
       id: '/_authenticated/admin-users/'
       path: '/admin-users'
@@ -335,7 +315,6 @@ interface AuthenticatedRouteChildren {
   AuthenticatedRetailersRetailerIdRoute: typeof AuthenticatedRetailersRetailerIdRoute
   AuthenticatedUsersUserIdRoute: typeof AuthenticatedUsersUserIdRoute
   AuthenticatedAdminUsersIndexRoute: typeof AuthenticatedAdminUsersIndexRoute
-  AuthenticatedCouriersIndexRoute: typeof AuthenticatedCouriersIndexRoute
   AuthenticatedOrdersIndexRoute: typeof AuthenticatedOrdersIndexRoute
   AuthenticatedReferralsIndexRoute: typeof AuthenticatedReferralsIndexRoute
   AuthenticatedRetailersIndexRoute: typeof AuthenticatedRetailersIndexRoute
@@ -350,7 +329,6 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedRetailersRetailerIdRoute: AuthenticatedRetailersRetailerIdRoute,
   AuthenticatedUsersUserIdRoute: AuthenticatedUsersUserIdRoute,
   AuthenticatedAdminUsersIndexRoute: AuthenticatedAdminUsersIndexRoute,
-  AuthenticatedCouriersIndexRoute: AuthenticatedCouriersIndexRoute,
   AuthenticatedOrdersIndexRoute: AuthenticatedOrdersIndexRoute,
   AuthenticatedReferralsIndexRoute: AuthenticatedReferralsIndexRoute,
   AuthenticatedRetailersIndexRoute: AuthenticatedRetailersIndexRoute,

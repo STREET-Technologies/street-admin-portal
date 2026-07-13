@@ -42,6 +42,8 @@ interface DataTableProps<TData> {
   data: TData[];
   /** Total number of pages from the server. */
   pageCount: number;
+  /** Total number of rows from the server (meta.total). Falls back to a pageCount×pageSize estimate. */
+  totalItems?: number;
   /** Current zero-based page index. */
   pageIndex: number;
   /** Number of rows per page. */
@@ -69,6 +71,7 @@ export function DataTable<TData>({
   columns,
   data,
   pageCount,
+  totalItems,
   pageIndex,
   pageSize,
   onPaginationChange,
@@ -114,7 +117,7 @@ export function DataTable<TData>({
     );
   }
 
-  const totalRows = pageCount * pageSize;
+  const totalRows = totalItems ?? pageCount * pageSize;
   const rangeStart = pageIndex * pageSize + 1;
   const rangeEnd = Math.min((pageIndex + 1) * pageSize, totalRows);
 

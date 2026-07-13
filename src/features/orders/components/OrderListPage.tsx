@@ -273,9 +273,7 @@ export function OrderListPage() {
   });
 
   const orders = orderData?.data ?? [];
-  const totalPages = orderData?.meta
-    ? Math.ceil(orderData.meta.total / orderData.meta.limit)
-    : 0;
+  const totalPages = orderData?.meta?.totalPages ?? 0;
 
   const columns = useMemo(
     () =>
@@ -348,6 +346,7 @@ export function OrderListPage() {
         columns={columns}
         data={orders}
         pageCount={totalPages}
+        totalItems={orderData?.meta?.total}
         pageIndex={pagination.pageIndex}
         pageSize={pagination.pageSize}
         onPaginationChange={onPaginationChange}

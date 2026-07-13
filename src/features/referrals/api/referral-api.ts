@@ -1,4 +1,4 @@
-import { api } from "@/lib/api-client";
+import { api, toQueryString } from "@/lib/api-client";
 import type { PaginatedResponse } from "@/types";
 import type {
   BackendReferralCode,
@@ -11,43 +11,13 @@ import type {
 // API functions
 // ---------------------------------------------------------------------------
 
-/** Backend response shape for the referral codes list endpoint. */
-interface ReferralCodesRawResponse {
-  data: {
-    codes: BackendReferralCode[];
-    total: number;
-    page: number;
-    limit: number;
-  };
-}
-
 /** Fetch paginated list of referral codes. */
-export async function getReferralCodes(
+export function getReferralCodes(
   params: ReferralCodeListParams = {},
 ): Promise<PaginatedResponse<BackendReferralCode>> {
-  const searchParams = new URLSearchParams();
-
-  if (params.search) searchParams.set("search", params.search);
-  if (params.page) searchParams.set("page", String(params.page));
-  if (params.limit) searchParams.set("limit", String(params.limit));
-  if (params.codeType) searchParams.set("codeType", params.codeType);
-
-  const query = searchParams.toString();
-  const endpoint = query
-    ? `admin/referral-codes?${query}`
-    : "admin/referral-codes";
-
-  const raw = await api.getRaw<ReferralCodesRawResponse>(endpoint);
-  const { codes, total, page, limit } = raw.data;
-  return {
-    data: codes,
-    meta: {
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit),
-    },
-  };
+  return api.getPaginated<BackendReferralCode>(
+    `admin/referral-codes${toQueryString(params)}`,
+  );
 }
 
 /** Fetch a single referral code by ID. */

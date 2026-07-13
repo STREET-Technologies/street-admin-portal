@@ -1,4 +1,5 @@
-import { api } from "@/lib/api-client";
+import { api, toQueryString } from "@/lib/api-client";
+import type { PaginatedResponse } from "@/types";
 
 export interface AuditEntry {
   id: string;
@@ -9,33 +10,24 @@ export interface AuditEntry {
   actor: { id: string; name: string; adminRole: string } | null;
 }
 
-export interface AuditMeta {
-  total: number;
-  page: number;
-  limit: number;
-}
+export type AuditResponse = PaginatedResponse<AuditEntry>;
 
-export interface AuditResponse {
-  data: AuditEntry[];
-  meta: AuditMeta;
-}
-
-export async function getUserActivity(
+export function getUserActivity(
   userId: string,
   page = 1,
   limit = 50,
 ): Promise<AuditResponse> {
-  return api.getRaw<AuditResponse>(
-    `admin/users/${userId}/activity?page=${page}&limit=${limit}`,
+  return api.getPaginated<AuditEntry>(
+    `admin/users/${userId}/activity${toQueryString({ page, limit })}`,
   );
 }
 
-export async function getVendorActivity(
+export function getVendorActivity(
   vendorId: string,
   page = 1,
   limit = 50,
 ): Promise<AuditResponse> {
-  return api.getRaw<AuditResponse>(
-    `admin/vendors/${vendorId}/activity?page=${page}&limit=${limit}`,
+  return api.getPaginated<AuditEntry>(
+    `admin/vendors/${vendorId}/activity${toQueryString({ page, limit })}`,
   );
 }

@@ -125,9 +125,10 @@ export function ReferralSettingsCard() {
               Credit cap
             </p>
             <p className="text-sm tabular-nums">
-              {"£"}25.00{" "}
+              {"£"}
+              {settings.creditCapGbp.toFixed(2)}{" "}
               <span className="text-xs text-muted-foreground">
-                (hardcoded in CreditService)
+                (maximum credit balance per user)
               </span>
             </p>
           </div>

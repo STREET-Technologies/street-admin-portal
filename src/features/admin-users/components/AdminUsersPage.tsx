@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { ErrorState } from "@/components/shared/ErrorState";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { useAdminRole } from "@/features/auth/hooks/useAdminRole";
 import type { AdminRole } from "@/features/auth/types";
@@ -29,7 +30,7 @@ import {
 
 export function AdminUsersPage() {
   const { canWrite, isAdmin } = useAdminRole();
-  const { data: adminUsers, isLoading, refetch } = useAdminUsersQuery();
+  const { data: adminUsers, isLoading, isError, refetch } = useAdminUsersQuery();
   const { user: currentUser } = useAuth();
   const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
@@ -71,6 +72,22 @@ export function AdminUsersPage() {
         <div className="flex items-center justify-center py-12">
           <Loader2 className="size-6 animate-spin text-muted-foreground" />
         </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          title="Team"
+          description="Manage user accounts"
+        />
+        <ErrorState
+          title="Failed to load team"
+          message="There was a problem fetching admin accounts. Please try again."
+          onRetry={() => void refetch()}
+        />
       </div>
     );
   }

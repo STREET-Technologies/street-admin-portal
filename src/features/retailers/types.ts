@@ -114,9 +114,18 @@ export function toRetailerViewModel(vendor: BackendVendor): RetailerViewModel {
 // Retailer list params (maps to backend /admin/vendors query params)
 // ---------------------------------------------------------------------------
 
+/** Derived status filter (matches deriveStatus / the badge shown per row). */
+export type RetailerStatusFilter =
+  | "active"
+  | "inactive"
+  | "blocked"
+  | "uninstalled";
+
 export interface RetailerListParams {
   name?: string;
   vendorCategory?: string;
+  /** Server-side derived status filter. */
+  status?: RetailerStatusFilter;
   /** Backend allowlist: name | email | createdAt */
   sortBy?: string;
   sortOrder?: "asc" | "desc";

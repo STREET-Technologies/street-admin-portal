@@ -1,7 +1,6 @@
 import {
   Users,
   Store,
-  Truck,
   ShoppingCart,
   Tag,
   Shield,
@@ -27,7 +26,6 @@ export const navGroups: NavGroup[] = [
     items: [
       { title: "Users", icon: Users, href: "/users" },
       { title: "Retailers", icon: Store, href: "/retailers" },
-      { title: "Couriers", icon: Truck, href: "/couriers" },
     ],
   },
   {

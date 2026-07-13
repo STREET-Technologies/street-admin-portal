@@ -1,4 +1,4 @@
-import { api } from "@/lib/api-client";
+import { api, toQueryString } from "@/lib/api-client";
 import type { PaginatedResponse } from "@/types";
 import type {
   BackendUser,
@@ -11,8 +11,13 @@ import type {
 // Request params
 // ---------------------------------------------------------------------------
 
+/** Derived account status filter (matches deriveUserStatus). */
+export type UserStatusFilter = "active" | "suspended" | "blocked";
+
 export interface GetUsersParams {
   search?: string;
+  /** Server-side derived status filter. */
+  status?: UserStatusFilter;
   /** Backend allowlist: name | email | phone | createdAt */
   sortBy?: string;
   sortOrder?: "asc" | "desc";
@@ -24,40 +29,11 @@ export interface GetUsersParams {
 // API functions
 // ---------------------------------------------------------------------------
 
-/**
- * Backend envelope for GET /admin/users (after ResponseInterceptor).
- * Shape: { statusCode, message, data: { users, total, page, limit } }
- */
-interface UsersRawResponse {
-  data: { users: BackendUser[]; total: number; page: number; limit: number };
-}
-
-/** Fetch a paginated list of users. Normalizes to PaginatedResponse. */
-export async function getUsers(
+/** Fetch a paginated list of users. */
+export function getUsers(
   params: GetUsersParams = {},
 ): Promise<PaginatedResponse<BackendUser>> {
-  const searchParams = new URLSearchParams();
-
-  if (params.search) searchParams.set("search", params.search);
-  if (params.sortBy) searchParams.set("sortBy", params.sortBy);
-  if (params.sortOrder) searchParams.set("sortOrder", params.sortOrder);
-  if (params.page) searchParams.set("page", String(params.page));
-  if (params.limit) searchParams.set("limit", String(params.limit));
-
-  const query = searchParams.toString();
-  const endpoint = query ? `admin/users?${query}` : "admin/users";
-
-  const raw = await api.getRaw<UsersRawResponse>(endpoint);
-  const { users, total, page, limit } = raw.data;
-  return {
-    data: users,
-    meta: {
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit),
-    },
-  };
+  return api.getPaginated<BackendUser>(`admin/users${toQueryString(params)}`);
 }
 
 /** Fetch a single user by ID. */
@@ -85,14 +61,14 @@ interface RawUserOrder {
   [key: string]: unknown;
 }
 
-/** Fetch orders for a user. Backend returns { orders, meta }. Flattens vendor relation. */
+/** Fetch orders for a user. Flattens the vendor relation. */
 export async function getUserOrders(
   userId: string,
 ): Promise<BackendUserOrder[]> {
-  const data = await api.get<{ orders: RawUserOrder[] }>(
+  const orders = await api.get<RawUserOrder[]>(
     `admin/users/${userId}/orders`,
   );
-  return data.orders.map((raw) => ({
+  return orders.map((raw) => ({
     id: raw.id,
     orderNumber: raw.orderId ?? null,
     status: raw.status,

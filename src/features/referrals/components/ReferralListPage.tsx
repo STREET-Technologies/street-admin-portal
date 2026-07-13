@@ -264,6 +264,7 @@ export function ReferralListPage() {
         columns={columns}
         data={codes}
         pageCount={pageCount}
+        totalItems={data?.meta?.total}
         pageIndex={pagination.pageIndex}
         pageSize={pagination.pageSize}
         onPaginationChange={onPaginationChange}
