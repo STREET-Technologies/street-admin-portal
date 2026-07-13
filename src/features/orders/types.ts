@@ -33,7 +33,6 @@ export interface BackendOrder {
   // Flat fields from global orders list endpoint (raw query)
   vendorId?: string;
   vendorName?: string;
-  deliveryDetails?: Record<string, unknown> | null;
   shippingAddress?: Record<string, unknown> | null;
   paymentStatus?: string | null;
   paymentMethod?: string | null;
@@ -164,16 +163,6 @@ export interface OrderDetailViewModel extends OrderViewModel {
     method: string;
     amount: string;
     refundedAmount: string | null;
-  } | null;
-  /** Delivery / courier info from deliveryDetails JSONB */
-  delivery: {
-    status: string;
-    courierName: string | null;
-    courierPhone: string | null;
-    courierPhoto: string | null;
-    vehicleType: string | null;
-    trackingUrl: string | null;
-    estimatedDelivery: string | null;
   } | null;
   /** Shipping address from shippingAddress JSONB */
   shippingAddress: {
@@ -443,21 +432,6 @@ export function toOrderDetailViewModel(backend: BackendOrder): OrderDetailViewMo
         }
       : null;
 
-  // Delivery details from JSONB
-  const dd = backend.deliveryDetails as Record<string, unknown> | null | undefined;
-  const courier = dd?.courier as Record<string, unknown> | null | undefined;
-  const delivery = dd
-    ? {
-        status: (str(dd, "deliveryStatus") ?? str(dd, "status") ?? "unknown").toLowerCase(),
-        courierName: courier ? str(courier, "name") : null,
-        courierPhone: courier ? str(courier, "phone") : null,
-        courierPhoto: courier ? (str(courier, "pictureUrl") ?? str(courier, "photoUrl")) : null,
-        vehicleType: courier ? str(courier, "transportType") : null,
-        trackingUrl: str(dd, "trackingUrl"),
-        estimatedDelivery: str(dd, "estimatedDeliveryTime"),
-      }
-    : null;
-
   // Shipping address from JSONB
   const sa = backend.shippingAddress as Record<string, unknown> | null | undefined;
   const shippingAddress = sa
@@ -537,7 +511,6 @@ export function toOrderDetailViewModel(backend: BackendOrder): OrderDetailViewMo
     retailer,
     items,
     payment,
-    delivery,
     shippingAddress,
     pricing,
     returnStatus: backend.returnStatus ?? "NONE",

@@ -1,12 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
-import {
-  AlertTriangle,
-  ExternalLink,
-  MapPin,
-  Package,
-  Truck,
-  User,
-} from "lucide-react";
+import { AlertTriangle, MapPin, Package, User } from "lucide-react";
 import { BackButton } from "@/components/shared/BackButton";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -28,7 +21,7 @@ import { formatDateTime } from "@/lib/format-utils";
 import { useOrderDetailQuery } from "../api/order-queries";
 import { toOrderDetailViewModel } from "../types";
 import type { OrderDetailViewModel, OrderItemViewModel } from "../types";
-import { StuckDeliveryControl } from "./StuckDeliveryControl";
+import { DeliveryPanel } from "./DeliveryPanel";
 import { OrderActionsControl } from "./OrderActionsControl";
 import { ReturnsCard } from "./ReturnsCard";
 
@@ -124,21 +117,19 @@ export function OrderDetailPage({ orderId }: OrderDetailPageProps) {
       {/* Items table */}
       <ItemsSection items={orderDetail.items} />
 
-      {/* Bottom row: pricing/payment + delivery */}
+      {/* Bottom row: pricing/payment + unified delivery panel (TT-354) —
+          real courier state + reconciliation folded into one section. */}
       <div className="grid gap-x-10 gap-y-8 md:grid-cols-2">
         <PricingPaymentSection orderDetail={orderDetail} />
-        <DeliverySection orderDetail={orderDetail} />
+        <DeliveryPanel
+          orderUuid={orderDetail.id}
+          orderDisplayId={orderDetail.orderId}
+          orderStatus={orderDetail.status}
+        />
       </div>
 
       {/* Returns + refunds (TT-226) — only renders when there's a return or shipping refund */}
       <ReturnsCard orderDetail={orderDetail} />
-
-      {/* Stuck delivery resolve — renders its own card only when applicable */}
-      <StuckDeliveryControl
-        orderUuid={orderDetail.id}
-        orderDisplayId={orderDetail.orderId}
-        orderStatus={orderDetail.status}
-      />
     </div>
   );
 }
@@ -466,86 +457,3 @@ function PricingPaymentSection({
   );
 }
 
-function DeliverySection({
-  orderDetail,
-}: {
-  orderDetail: OrderDetailViewModel;
-}) {
-  const { delivery } = orderDetail;
-
-  return (
-    <section>
-      <SectionHeading>
-        <Truck className="size-4" />
-        Delivery
-      </SectionHeading>
-      <div className="mt-4 space-y-3 border-t pt-5">
-        {!delivery ? (
-          <p className="text-sm text-muted-foreground">
-            No delivery has been dispatched for this order yet.
-          </p>
-        ) : (
-          <>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Status</span>
-              <StatusBadge status={delivery.status} size="sm" />
-            </div>
-            {delivery.courierName && (
-              <div className="space-y-1">
-                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                  Courier
-                </p>
-                <div className="flex items-center gap-2">
-                  {delivery.courierPhoto && (
-                    <Avatar size="sm">
-                      <AvatarImage
-                        src={delivery.courierPhoto}
-                        alt={delivery.courierName}
-                      />
-                      <AvatarFallback>
-                        {delivery.courierName.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                  )}
-                  <span className="text-sm">{delivery.courierName}</span>
-                </div>
-              </div>
-            )}
-            {delivery.courierPhone && (
-              <CopyableField label="Courier Phone" value={delivery.courierPhone} />
-            )}
-            {delivery.vehicleType && (
-              <div className="space-y-1">
-                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                  Vehicle
-                </p>
-                <p className="text-sm capitalize">{delivery.vehicleType}</p>
-              </div>
-            )}
-            {delivery.estimatedDelivery && (
-              <div className="space-y-1">
-                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                  ETA
-                </p>
-                <p className="text-sm tabular-nums">
-                  {formatDateTime(delivery.estimatedDelivery)}
-                </p>
-              </div>
-            )}
-            {delivery.trackingUrl && (
-              <a
-                href={delivery.trackingUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
-              >
-                View tracking
-                <ExternalLink className="size-3" />
-              </a>
-            )}
-          </>
-        )}
-      </div>
-    </section>
-  );
-}

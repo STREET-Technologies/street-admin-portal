@@ -14,6 +14,15 @@ export interface ManualResolution {
   previousTopic: string | null;
 }
 
+/** Live courier state from delivery_state (TT-354). Fields are null pre-assignment. */
+export interface DeliveryCourier {
+  name: string | null;
+  phone: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  locationAt: string | null;
+}
+
 export interface DeliveryStateInfo {
   orderId: string;
   provider: string;
@@ -22,6 +31,15 @@ export interface DeliveryStateInfo {
   reconciliationAttempts: number;
   rtdbClearedAt: string | null;
   updatedAt: string;
+  /** Real courier data (TT-354) — replaced the dead deliveryDetails JSONB. */
+  courier: DeliveryCourier;
+  estimatedPickupAt: string | null;
+  estimatedDeliveryAt: string | null;
+  lastEventOccurredAt: string | null;
+  trackingUrl: string | null;
+  clientTrackingUrl: string | null;
+  pinCode: string | null;
+  podSignatureUrl: string | null;
   /** TT-166 — populated when an admin has manually resolved this order's stuck delivery. */
   latestManualResolution: ManualResolution | null;
 }
