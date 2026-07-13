@@ -324,6 +324,11 @@ function ItemsSection({ items }: { items: OrderItemViewModel[] }) {
                             SKU: {item.sku}
                           </p>
                         )}
+                        {item.packingStatus && (
+                          <p className="text-xs text-muted-foreground">
+                            Packing: {item.packingStatus}
+                          </p>
+                        )}
                         {item.returnedQuantity > 0 && (
                           <div className="mt-1 flex items-center gap-1.5 text-xs">
                             <StatusBadge

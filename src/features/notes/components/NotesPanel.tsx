@@ -59,8 +59,13 @@ function NoteCard({ note }: { note: NoteViewModel }) {
           <CardTitle className="text-sm font-semibold">
             {note.authorName}
           </CardTitle>
+          {note.authorEmail && (
+            <span className="truncate text-xs text-muted-foreground">
+              {note.authorEmail}
+            </span>
+          )}
           <PriorityBadge priority={note.priority} />
-          <span className="ml-auto text-xs text-muted-foreground">
+          <span className="ml-auto shrink-0 text-xs text-muted-foreground">
             {formatDateTime(note.createdAt)}
           </span>
         </div>

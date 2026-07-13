@@ -67,6 +67,22 @@ export function UserOverviewTab({ user }: UserOverviewTabProps) {
         <div className="mt-4 space-y-4 border-t pt-5">
           <div className="grid grid-cols-2 gap-x-6 gap-y-4">
             <EditableField
+              label="First name"
+              value={user.firstName ?? ""}
+              onSave={async (val) => {
+                await updateUser.mutateAsync({ firstName: val });
+              }}
+              disabled={!canWrite}
+            />
+            <EditableField
+              label="Last name"
+              value={user.lastName ?? ""}
+              onSave={async (val) => {
+                await updateUser.mutateAsync({ lastName: val });
+              }}
+              disabled={!canWrite}
+            />
+            <EditableField
               label="Email"
               value={user.email}
               onSave={async (val) => {
@@ -79,6 +95,14 @@ export function UserOverviewTab({ user }: UserOverviewTabProps) {
               value={user.phone}
               onSave={async (val) => {
                 await updateUser.mutateAsync({ phone: val });
+              }}
+              disabled={!canWrite}
+            />
+            <EditableField
+              label="Language"
+              value={user.language ?? ""}
+              onSave={async (val) => {
+                await updateUser.mutateAsync({ language: val });
               }}
               disabled={!canWrite}
             />
@@ -95,6 +119,22 @@ export function UserOverviewTab({ user }: UserOverviewTabProps) {
                   SSO provider
                 </p>
                 <p className="text-sm capitalize">{user.ssoProvider}</p>
+              </div>
+            )}
+            {user.status === "suspended" && user.lockedUntil && (
+              <div className="space-y-1">
+                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Suspended until
+                </p>
+                <p className="text-sm">
+                  {new Date(user.lockedUntil).toLocaleString("en-GB", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </p>
               </div>
             )}
           </div>

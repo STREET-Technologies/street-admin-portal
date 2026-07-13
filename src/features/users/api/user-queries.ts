@@ -13,8 +13,10 @@ import {
   getUserStats,
   getUserCredit,
   updateUser,
+  updateUserAddress,
   type GetUsersParams,
   type UpdateUserPayload,
+  type UpdateUserAddressPayload,
 } from "./user-api";
 import { toUserViewModel } from "../types";
 
@@ -120,6 +122,26 @@ export function useUpdateUserMutation(userId: string) {
     onSuccess: () => {
       void queryClient.invalidateQueries({
         queryKey: userKeys.detail(userId),
+      });
+    },
+  });
+}
+
+/** Update a user address and refetch the addresses list. */
+export function useUpdateUserAddressMutation(userId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      addressId,
+      data,
+    }: {
+      addressId: string;
+      data: UpdateUserAddressPayload;
+    }) => updateUserAddress(userId, addressId, data),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: userKeys.addresses(userId),
       });
     },
   });

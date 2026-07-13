@@ -82,6 +82,22 @@ export function RetailerOverviewTab({ retailer }: RetailerOverviewTabProps) {
         <h2 className="text-base font-semibold leading-none">Business details</h2>
         <div className="mt-4 grid grid-cols-2 gap-x-6 gap-y-4 border-t pt-5">
           <CopyableField label="ID" value={retailer.id} mono />
+          {retailer.uninstalledAt && (
+            <div className="space-y-1">
+              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                Uninstalled
+              </p>
+              <p className="text-sm text-destructive">
+                {new Date(retailer.uninstalledAt).toLocaleString("en-GB", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </p>
+            </div>
+          )}
           <div className="space-y-1">
             <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
               Category

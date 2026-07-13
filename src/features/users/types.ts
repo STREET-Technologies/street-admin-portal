@@ -34,6 +34,9 @@ export interface BackendUserAddress {
   country: string;
   latitude: number | null;
   longitude: number | null;
+  isDefault: boolean;
+  /** Standing delivery instructions forwarded to Stuart (TT-149). */
+  deliveryInstructions: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -74,6 +77,8 @@ export interface BackendUserOrder {
 export interface UserViewModel {
   id: string;
   name: string;
+  firstName: string | null;
+  lastName: string | null;
   email: string;
   phone: string;
   status: EntityStatus;
@@ -83,6 +88,8 @@ export interface UserViewModel {
   language: string | null;
   isTestAccount: boolean;
   isAnonymized: boolean;
+  /** Account lock expiry — drives the "suspended" status while in the future. */
+  lockedUntil: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -113,6 +120,8 @@ export function toUserViewModel(backend: BackendUser): UserViewModel {
   return {
     id: backend.id,
     name: buildDisplayName(backend.firstName, backend.lastName),
+    firstName: backend.firstName,
+    lastName: backend.lastName,
     email: backend.email ?? "No email",
     phone: backend.phone ?? "No phone",
     status: deriveUserStatus(backend),
@@ -122,6 +131,7 @@ export function toUserViewModel(backend: BackendUser): UserViewModel {
     language: backend.language,
     isTestAccount: backend.isTestAccount,
     isAnonymized: backend.isAnonymized,
+    lockedUntil: backend.lockedUntil,
     createdAt: backend.createdAt,
     updatedAt: backend.updatedAt,
   };

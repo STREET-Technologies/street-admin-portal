@@ -48,6 +48,29 @@ export async function getUserAddresses(
   return api.get<BackendUserAddress[]>(`admin/users/${userId}/addresses`);
 }
 
+/** Payload for PATCH /admin/users/:userId/addresses/:addressId. */
+export interface UpdateUserAddressPayload {
+  label?: string;
+  line1?: string;
+  line2?: string;
+  city?: string;
+  postcode?: string;
+  country?: string;
+  deliveryInstructions?: string;
+}
+
+/** Update a user address (partial update). */
+export function updateUserAddress(
+  userId: string,
+  addressId: string,
+  data: UpdateUserAddressPayload,
+): Promise<BackendUserAddress> {
+  return api.patch<BackendUserAddress>(
+    `admin/users/${userId}/addresses/${addressId}`,
+    data,
+  );
+}
+
 /** Raw order shape from backend (nested vendor relation, string amounts). */
 interface RawUserOrder {
   id: string;

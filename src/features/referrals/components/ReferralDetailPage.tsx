@@ -167,6 +167,7 @@ export function ReferralDetailPage({ referralId }: ReferralDetailPageProps) {
               <TableHeader>
                 <TableRow>
                   <TableHead>Friend</TableHead>
+                  <TableHead>Referrer</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Friend Discount</TableHead>
                   <TableHead>Referrer Reward</TableHead>
@@ -195,6 +196,24 @@ export function ReferralDetailPage({ referralId }: ReferralDetailPageProps) {
                         <span className="text-sm text-muted-foreground">
                           Unknown
                         </span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {use.referrerUserId ? (
+                        <button
+                          type="button"
+                          className="text-sm hover:underline"
+                          onClick={() =>
+                            void navigate({
+                              to: "/users/$userId",
+                              params: { userId: use.referrerUserId! },
+                            })
+                          }
+                        >
+                          {use.referrerName?.trim() || "Unknown"}
+                        </button>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">—</span>
                       )}
                     </TableCell>
                     <TableCell>

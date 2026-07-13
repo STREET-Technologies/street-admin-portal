@@ -1,9 +1,15 @@
 import { MapPin } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { CopyableField } from "@/components/shared/CopyableField";
+import { EditableField } from "@/components/shared/EditableField";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
-import { useUserAddressesQuery } from "../api/user-queries";
+import { useAdminRole } from "@/features/auth/hooks/useAdminRole";
+import {
+  useUserAddressesQuery,
+  useUpdateUserAddressMutation,
+} from "../api/user-queries";
 import type { BackendUserAddress } from "../types";
 
 interface UserAddressesTabProps {
@@ -21,9 +27,17 @@ function formatAddress(address: BackendUserAddress): string {
   return parts.join(", ");
 }
 
+/**
+ * Address text (line1/city/postcode) is deliberately NOT editable here:
+ * coordinates are set by the client app's address picker and the backend does
+ * not re-geocode on PATCH, so a text edit would silently leave the Stuart
+ * delivery pin at the old location. Only geo-safe fields are editable.
+ */
 export function UserAddressesTab({ userId }: UserAddressesTabProps) {
+  const { canWrite } = useAdminRole();
   const { data: addresses, isLoading, isError, error, refetch } =
     useUserAddressesQuery(userId);
+  const updateAddress = useUpdateUserAddressMutation(userId);
 
   if (isLoading) {
     return <LoadingState variant="card" rows={3} />;
@@ -53,7 +67,14 @@ export function UserAddressesTab({ userId }: UserAddressesTabProps) {
     <div className="grid gap-4 md:grid-cols-2">
       {addresses.map((address) => (
         <div key={address.id} className="rounded-md border bg-card p-5">
-          <h3 className="text-sm font-semibold">{address.label ?? "Address"}</h3>
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="text-sm font-semibold">{address.label ?? "Address"}</h3>
+            {address.isDefault && (
+              <Badge variant="outline" className="text-xs">
+                Default
+              </Badge>
+            )}
+          </div>
           <div className="mt-4 space-y-3">
             <CopyableField label="Full Address" value={formatAddress(address)} />
             <div className="grid grid-cols-2 gap-3">
@@ -70,6 +91,30 @@ export function UserAddressesTab({ userId }: UserAddressesTabProps) {
                 <p className="text-sm">{address.postcode}</p>
               </div>
             </div>
+            <div className="grid grid-cols-2 gap-3">
+              <EditableField
+                label="Label"
+                value={address.label ?? ""}
+                onSave={async (val) => {
+                  await updateAddress.mutateAsync({
+                    addressId: address.id,
+                    data: { label: val },
+                  });
+                }}
+                disabled={!canWrite}
+              />
+            </div>
+            <EditableField
+              label="Delivery instructions"
+              value={address.deliveryInstructions ?? ""}
+              onSave={async (val) => {
+                await updateAddress.mutateAsync({
+                  addressId: address.id,
+                  data: { deliveryInstructions: val },
+                });
+              }}
+              disabled={!canWrite}
+            />
             {address.latitude != null && address.longitude != null && (
               <div className="space-y-1">
                 <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
