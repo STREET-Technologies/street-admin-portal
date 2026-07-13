@@ -3,6 +3,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Search, Store } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Select,
   SelectContent,
@@ -38,8 +39,16 @@ const columns: ColumnDef<RetailerViewModel, unknown>[] = [
         <Link
           to="/retailers/$retailerId"
           params={{ retailerId: retailer.id }}
-          className="font-medium hover:underline"
+          className="flex items-center gap-3 font-medium hover:underline"
         >
+          <Avatar size="sm">
+            {retailer.logo && (
+              <AvatarImage src={retailer.logo} alt={retailer.name} />
+            )}
+            <AvatarFallback>
+              {retailer.name.charAt(0).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
           {retailer.name}
         </Link>
       );

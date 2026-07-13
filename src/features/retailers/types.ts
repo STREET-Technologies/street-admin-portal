@@ -56,7 +56,10 @@ export interface RetailerViewModel {
   longitude: number | null;
   description: string;
   stripeAccountId: string | null;
+  logo: string | null;
   isOnline: boolean;
+  /** Brand-level discovery gate — false hides the whole brand (TT-284/355). */
+  isActive: boolean;
   /** ISO timestamp the store uninstalled the Shopify app, or null. (TT-317) */
   uninstalledAt: string | null;
   openingHours: Record<string, unknown> | null;
@@ -102,7 +105,9 @@ export function toRetailerViewModel(vendor: BackendVendor): RetailerViewModel {
     longitude: vendor.longitude,
     description: vendor.description ?? "",
     stripeAccountId: vendor.stripeAccountId,
+    logo: vendor.logo ?? null,
     isOnline: vendor.isOnline,
+    isActive: vendor.isActive,
     uninstalledAt: vendor.uninstalledAt,
     openingHours: vendor.openingHours,
     createdAt: vendor.createdAt,

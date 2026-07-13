@@ -14,3 +14,8 @@ export async function getPlatformConfig(): Promise<PlatformConfig> {
 export async function updatePlatformConfig(data: Partial<PlatformConfig>): Promise<PlatformConfig> {
   return api.patch<PlatformConfig>("admin/config", data);
 }
+
+/** Canonical vendor category names (TT-355) — served from system_vendor_categories. */
+export function getVendorCategories(): Promise<string[]> {
+  return api.get<string[]>("config/vendor-categories");
+}

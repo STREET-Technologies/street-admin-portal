@@ -11,6 +11,14 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { EntityDetailHeader } from "@/components/shared/EntityDetailHeader";
 import { EditableField } from "@/components/shared/EditableField";
 import { LoadingState } from "@/components/shared/LoadingState";
@@ -19,6 +27,7 @@ import { formatDate } from "@/lib/format-utils";
 import {
   useRetailerQuery,
   useUpdateRetailerMutation,
+  useSetRetailerActiveMutation,
   useResyncRetailerFromShopifyMutation,
 } from "../api/retailer-queries";
 import { useAdminRole } from "@/features/auth/hooks/useAdminRole";
@@ -40,8 +49,10 @@ export function RetailerDetailPage({ retailerId }: RetailerDetailPageProps) {
   const { data: retailer, isLoading, isError, refetch } =
     useRetailerQuery(retailerId);
   const updateRetailer = useUpdateRetailerMutation(retailerId);
+  const setActive = useSetRetailerActiveMutation(retailerId);
   const resyncFromShopify = useResyncRetailerFromShopifyMutation(retailerId);
   const [isTogglingOnline, setIsTogglingOnline] = useState(false);
+  const [confirmDeactivate, setConfirmDeactivate] = useState(false);
   const [activeTab, setActiveTab] = useTabParam("overview");
 
   async function handleOnlineToggle(checked: boolean) {
@@ -53,6 +64,21 @@ export function RetailerDetailPage({ retailerId }: RetailerDetailPageProps) {
       toast.error("Failed to update online status");
     } finally {
       setIsTogglingOnline(false);
+    }
+  }
+
+  async function handleSetActive(isActive: boolean) {
+    try {
+      await setActive.mutateAsync(isActive);
+      toast.success(
+        isActive
+          ? "Brand reactivated — visible in discovery again"
+          : "Brand deactivated — hidden from discovery",
+      );
+    } catch {
+      toast.error("Failed to update brand active state");
+    } finally {
+      setConfirmDeactivate(false);
     }
   }
 
@@ -88,6 +114,7 @@ export function RetailerDetailPage({ retailerId }: RetailerDetailPageProps) {
       <EntityDetailHeader
         title={retailer.name}
         status={retailer.status}
+        avatarUrl={retailer.logo ?? undefined}
         avatarFallback={retailer.name.charAt(0).toUpperCase()}
       >
         {/* Re-sync the whole store's brand/contact/locale from Shopify. Lives
@@ -129,7 +156,72 @@ export function RetailerDetailPage({ retailerId }: RetailerDetailPageProps) {
             {retailer.isOnline ? "Online" : "Offline"}
           </Label>
         </div>
+
+        {/* Brand-level discovery gate (TT-355). Deactivating hides the whole
+            brand — every outlet — from the customer app, so it confirms first. */}
+        <div className={`flex h-8 items-center gap-2 rounded-lg border px-3 transition-colors ${retailer.isActive ? "border-border" : "border-destructive/50 bg-destructive/5"}`}>
+          {setActive.isPending && (
+            <Loader2 className="size-3.5 animate-spin text-muted-foreground" />
+          )}
+          <Switch
+            id="header-active-toggle"
+            checked={retailer.isActive}
+            onCheckedChange={(checked) => {
+              if (checked) {
+                void handleSetActive(true);
+              } else {
+                setConfirmDeactivate(true);
+              }
+            }}
+            disabled={setActive.isPending || !canWrite}
+            size="sm"
+          />
+          <Label
+            htmlFor="header-active-toggle"
+            className={`cursor-pointer text-sm font-medium transition-colors ${retailer.isActive ? "text-foreground" : "text-destructive"}`}
+          >
+            {retailer.isActive ? "Active" : "Deactivated"}
+          </Label>
+        </div>
       </EntityDetailHeader>
+
+      <Dialog
+        open={confirmDeactivate}
+        onOpenChange={(open) => {
+          if (!open) setConfirmDeactivate(false);
+        }}
+      >
+        <DialogContent showCloseButton={false}>
+          <DialogHeader>
+            <DialogTitle>Deactivate {retailer.name}?</DialogTitle>
+            <DialogDescription>
+              This hides the entire brand — all outlets — from customer
+              discovery until reactivated. The retailer keeps app access and
+              existing orders are unaffected.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setConfirmDeactivate(false)}
+              disabled={setActive.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => void handleSetActive(false)}
+              disabled={setActive.isPending}
+            >
+              {setActive.isPending ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                "Deactivate brand"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Identity block — what this retailer is + when they joined / last touched.
           Lives between the header and the tabs so it reads as part of the entity

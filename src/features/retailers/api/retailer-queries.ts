@@ -15,6 +15,7 @@ import {
   setOutletActive,
   setOutletPrimary,
   updateRetailer,
+  setRetailerActive,
   resyncRetailerFromShopify,
   createRetailerStaff,
   setRetailerStaffOutlet,
@@ -254,6 +255,21 @@ export function useUpdateRetailerMutation(retailerId: string) {
       void queryClient.invalidateQueries({
         queryKey: retailerKeys.detail(retailerId),
       });
+    },
+  });
+}
+
+/** Brand-level activate/deactivate (TT-355). Refreshes detail + lists. */
+export function useSetRetailerActiveMutation(retailerId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (isActive: boolean) => setRetailerActive(retailerId, isActive),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: retailerKeys.detail(retailerId),
+      });
+      void queryClient.invalidateQueries({ queryKey: retailerKeys.lists() });
     },
   });
 }

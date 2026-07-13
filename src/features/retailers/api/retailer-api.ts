@@ -196,6 +196,19 @@ export function updateRetailer(
 }
 
 /**
+ * Brand-level activate/deactivate (TT-355). Dedicated route — isActive is
+ * deliberately not part of the general vendor PATCH payload.
+ */
+export function setRetailerActive(
+  retailerId: string,
+  isActive: boolean,
+): Promise<BackendVendor> {
+  return api.patch<BackendVendor>(`admin/vendors/${retailerId}/active`, {
+    isActive,
+  });
+}
+
+/**
  * Re-sync a vendor's store-level brand/contact/locale from Shopify (TT-315).
  *
  * Brand-asset changes (logo, cover image) and some profile edits fire no Shopify

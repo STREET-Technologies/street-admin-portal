@@ -8,8 +8,8 @@ import {
 import { CopyableField } from "@/components/shared/CopyableField";
 import { EditableField } from "@/components/shared/EditableField";
 import { useUpdateRetailerMutation } from "../api/retailer-queries";
+import { useVendorCategoriesQuery } from "@/features/platform-config/api/platform-config-queries";
 import { useAdminRole } from "@/features/auth/hooks/useAdminRole";
-import { VENDOR_CATEGORIES } from "../constants/categories";
 import type { RetailerViewModel } from "../types";
 
 interface RetailerOverviewTabProps {
@@ -19,6 +19,11 @@ interface RetailerOverviewTabProps {
 export function RetailerOverviewTab({ retailer }: RetailerOverviewTabProps) {
   const { canWrite } = useAdminRole();
   const updateRetailer = useUpdateRetailerMutation(retailer.id);
+  // Canonical list from the backend (TT-355). Until it loads, show the
+  // retailer's current category so the select never renders empty.
+  const { data: categories } = useVendorCategoriesQuery();
+  const categoryOptions =
+    categories ?? (retailer.category ? [retailer.category] : []);
 
   return (
     <div className="grid gap-x-10 gap-y-8 md:grid-cols-2">
@@ -113,7 +118,7 @@ export function RetailerOverviewTab({ retailer }: RetailerOverviewTabProps) {
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
               <SelectContent>
-                {VENDOR_CATEGORIES.map((c) => (
+                {categoryOptions.map((c) => (
                   <SelectItem key={c} value={c}>
                     {c}
                   </SelectItem>
@@ -153,6 +158,48 @@ export function RetailerOverviewTab({ retailer }: RetailerOverviewTabProps) {
           />
         </div>
       </section>
+
+      {/* Opening hours — brand-level schedule (outlets carry their own). Read-only:
+          hours are managed by the retailer in the retail app. */}
+      {retailer.openingHours && (
+        <section>
+          <h2 className="text-base font-semibold leading-none">Opening hours</h2>
+          <div className="mt-4 space-y-1.5 border-t pt-5">
+            {WEEKDAYS.map((day) => {
+              const schedule = (
+                retailer.openingHours as Record<string, DaySchedule | undefined>
+              )[day];
+              return (
+                <div key={day} className="flex justify-between text-sm">
+                  <span className="capitalize text-muted-foreground">{day}</span>
+                  <span className="tabular-nums">
+                    {!schedule || schedule.isClosed
+                      ? "Closed"
+                      : `${schedule.openTime}–${schedule.closeTime}`}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
     </div>
   );
 }
+
+/** Matches WeeklyOpeningHours in street-backend/src/core/utils/opening-hours.utils.ts. */
+interface DaySchedule {
+  openTime: string;
+  closeTime: string;
+  isClosed: boolean;
+}
+
+const WEEKDAYS = [
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday",
+  "sunday",
+] as const;
