@@ -22,6 +22,11 @@ interface EntityDetailHeaderProps {
   avatarUrl?: string;
   /** Initials shown when no avatar image is available. */
   avatarFallback?: string;
+  /**
+   * "circle" (default) for people; "square" for brand logos — wordmarks get
+   * cropped illegible inside a circle.
+   */
+  avatarShape?: "circle" | "square";
   /** Action buttons rendered on the right side. */
   children?: ReactNode;
   className?: string;
@@ -33,6 +38,7 @@ export function EntityDetailHeader({
   status,
   avatarUrl,
   avatarFallback,
+  avatarShape = "circle",
   children,
   className,
 }: EntityDetailHeaderProps) {
@@ -44,12 +50,28 @@ export function EntityDetailHeader({
       )}
     >
       <div className="flex items-center gap-4">
-        <Avatar size="lg">
-          {avatarUrl && <AvatarImage src={avatarUrl} alt={title} />}
-          <AvatarFallback>
-            {avatarFallback ?? title.charAt(0).toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
+        {avatarShape === "square" ? (
+          <div className="flex h-12 w-16 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-white">
+            {avatarUrl ? (
+              <img
+                src={avatarUrl}
+                alt={title}
+                className="h-full w-full object-contain"
+              />
+            ) : (
+              <span className="text-lg font-semibold text-muted-foreground">
+                {avatarFallback ?? title.charAt(0).toUpperCase()}
+              </span>
+            )}
+          </div>
+        ) : (
+          <Avatar size="lg">
+            {avatarUrl && <AvatarImage src={avatarUrl} alt={title} />}
+            <AvatarFallback>
+              {avatarFallback ?? title.charAt(0).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+        )}
 
         <div className="space-y-1">
           <div className="flex items-center gap-2">

@@ -3,7 +3,6 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Search, Store } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Select,
   SelectContent,
@@ -41,14 +40,20 @@ const columns: ColumnDef<RetailerViewModel, unknown>[] = [
           params={{ retailerId: retailer.id }}
           className="flex items-center gap-3 font-medium hover:underline"
         >
-          <Avatar size="sm">
-            {retailer.logo && (
-              <AvatarImage src={retailer.logo} alt={retailer.name} />
+          {/* Square logo tile — brand wordmarks get cropped illegible in a circle. */}
+          <span className="flex h-8 w-11 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-white">
+            {retailer.logo ? (
+              <img
+                src={retailer.logo}
+                alt={retailer.name}
+                className="h-full w-full object-contain"
+              />
+            ) : (
+              <span className="text-xs font-semibold text-muted-foreground">
+                {retailer.name.charAt(0).toUpperCase()}
+              </span>
             )}
-            <AvatarFallback>
-              {retailer.name.charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
+          </span>
           {retailer.name}
         </Link>
       );

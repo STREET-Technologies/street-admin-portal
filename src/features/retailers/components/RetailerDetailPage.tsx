@@ -115,6 +115,7 @@ export function RetailerDetailPage({ retailerId }: RetailerDetailPageProps) {
         title={retailer.name}
         status={retailer.status}
         avatarUrl={retailer.logo ?? undefined}
+        avatarShape="square"
         avatarFallback={retailer.name.charAt(0).toUpperCase()}
       >
         {/* Re-sync the whole store's brand/contact/locale from Shopify. Lives
