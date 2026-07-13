@@ -22,6 +22,7 @@ import { StatusBadge } from "@/components/shared/StatusBadge";
 import { CopyButton } from "@/components/shared/CopyButton";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { useTableParams } from "@/hooks/use-table-params";
+import { useTabParam } from "@/hooks/use-tab-param";
 import { useDebounce } from "@/hooks/use-debounce";
 import { formatDate } from "@/lib/format-utils";
 import { useOrdersQuery } from "../api/order-queries";
@@ -246,9 +247,14 @@ export function OrderListPage() {
   const { pagination, sorting, onPaginationChange, onSortingChange, searchParams } =
     useTableParams({ pageSize: 20, sortBy: "createdAt", sortOrder: "desc" });
 
-  // Filter state
+  // Filter state. The tab lives in ?tab= so the dashboard (and bookmarks)
+  // can deep-link straight into a bucket like /orders?tab=stuck (TT-358).
   const [searchValue, setSearchValue] = useState("");
-  const [tabFilter, setTabFilter] = useState<TabKey>("all");
+  const [tabParam, setTabParam] = useTabParam("all");
+  const tabFilter = (
+    ORDER_TABS.some((t) => t.value === tabParam) ? tabParam : "all"
+  ) as TabKey;
+  const setTabFilter = setTabParam;
   const [paymentMethodFilter, setPaymentMethodFilter] = useState<string>("all");
   const debouncedSearch = useDebounce(searchValue, 300);
 

@@ -24,7 +24,7 @@ export function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (isAuthenticated) {
-    return <Navigate to={redirect ?? "/users"} />;
+    return <Navigate to={redirect ?? "/"} />;
   }
 
   async function handleSubmit(e: FormEvent) {

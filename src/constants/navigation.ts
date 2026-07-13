@@ -1,4 +1,5 @@
 import {
+  LayoutDashboard,
   Users,
   Store,
   ShoppingCart,
@@ -21,6 +22,10 @@ export interface NavGroup {
 }
 
 export const navGroups: NavGroup[] = [
+  {
+    label: "Overview",
+    items: [{ title: "Dashboard", icon: LayoutDashboard, href: "/" }],
+  },
   {
     label: "Customers",
     items: [

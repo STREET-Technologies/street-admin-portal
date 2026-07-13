@@ -37,7 +37,7 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="h-14 border-b border-sidebar-border flex items-center justify-center group-data-[collapsible=icon]:px-0">
-        <Link to="/users" className="block">
+        <Link to="/" className="block">
           <span className="street-logo text-xl text-secondary group-data-[collapsible=icon]:hidden">
             STREET
           </span>
@@ -60,7 +60,14 @@ export function AppSidebar() {
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton
                       asChild={!disabled}
-                      isActive={!disabled && location.pathname.startsWith(item.href)}
+                      isActive={
+                        !disabled &&
+                        // Exact match for the dashboard ("/" would prefix-match
+                        // every route); prefix match for section roots.
+                        (item.href === "/"
+                          ? location.pathname === "/"
+                          : location.pathname.startsWith(item.href))
+                      }
                       className={disabled ? "opacity-40 cursor-not-allowed pointer-events-none" : ""}
                     >
                       {disabled ? (
