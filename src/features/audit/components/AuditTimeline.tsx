@@ -2,6 +2,14 @@ import { ActivityTimeline, type TimelineEvent } from "@/components/shared/Activi
 import { type AuditEntry } from "../api/audit-api";
 
 function formatFieldName(field: string): string {
+  // Backend action audits (TT-356) send already-humanized labels that may
+  // contain spaces, dashes, or quotes (e.g. `Outlet published — Camden`).
+  // Pass those through untouched apart from a leading capital, so the camelCase
+  // splitter doesn't mangle embedded names.
+  if (/[\s"'—]/.test(field)) {
+    return field.charAt(0).toUpperCase() + field.slice(1);
+  }
+  // Single camelCase token from a field diff → "Spaced Title".
   return field
     .replace(/([A-Z])/g, " $1")
     .replace(/^./, (s) => s.toUpperCase());
