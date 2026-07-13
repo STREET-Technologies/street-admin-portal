@@ -24,6 +24,7 @@ import { formatDateTime } from "@/lib/format-utils";
 import {
   useDeliveryStateQuery,
   useResolveStuckDeliveryMutation,
+  useRtdbRepairMutations,
 } from "../api/delivery-state-queries";
 import type { StuckResolution } from "../api/delivery-state-api";
 
@@ -77,6 +78,7 @@ export function StuckDeliveryControl({
   // audit ("Resolved by X on Y: <reason>") even after the order is closed.
   const { data: deliveryState } = useDeliveryStateQuery(orderUuid);
   const mutation = useResolveStuckDeliveryMutation(orderUuid, orderDisplayId);
+  const rtdbRepair = useRtdbRepairMutations(orderUuid);
 
   // Hide entirely if there's nothing worth surfacing — never stuck and never resolved.
   if (
@@ -241,6 +243,62 @@ export function StuckDeliveryControl({
               Manually resolve
             </Button>
           )}
+
+          {/* RTDB repair tools (TT-357) — previously SSH-only. Low-risk: resync
+              rewrites the blob from delivery_state; force-clear removes the
+              order's RTDB paths (terminal orders only, server-enforced). */}
+          <div className="flex gap-2 border-t pt-3">
+            <Button
+              size="sm"
+              variant="ghost"
+              className="flex-1 text-xs text-muted-foreground"
+              disabled={rtdbRepair.resync.isPending}
+              onClick={() =>
+                rtdbRepair.resync.mutate(undefined, {
+                  onSuccess: (r) =>
+                    toast.success(
+                      r.synced ? "RTDB re-synced from delivery_state" : "Nothing to sync",
+                    ),
+                  onError: (err) =>
+                    toast.error(
+                      err instanceof Error ? err.message : "RTDB re-sync failed",
+                    ),
+                })
+              }
+            >
+              {rtdbRepair.resync.isPending ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                "Re-sync RTDB"
+              )}
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="flex-1 text-xs text-muted-foreground"
+              disabled={rtdbRepair.forceClear.isPending}
+              onClick={() =>
+                rtdbRepair.forceClear.mutate(undefined, {
+                  onSuccess: (r) =>
+                    toast.success(
+                      r.cleared.length > 0
+                        ? `Cleared ${r.cleared.length} RTDB path${r.cleared.length === 1 ? "" : "s"}`
+                        : "No RTDB paths to clear",
+                    ),
+                  onError: (err) =>
+                    toast.error(
+                      err instanceof Error ? err.message : "RTDB clear failed",
+                    ),
+                })
+              }
+            >
+              {rtdbRepair.forceClear.isPending ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                "Force-clear RTDB"
+              )}
+            </Button>
+          </div>
         </CardContent>
       </Card>
 

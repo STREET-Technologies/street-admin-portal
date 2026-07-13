@@ -83,3 +83,21 @@ export async function resolveStuckDelivery(
     body,
   );
 }
+
+/** Force re-sync of the order's delivery_state into Firebase RTDB (TT-357 — was SSH-only). */
+export function resyncRtdb(orderUuid: string): Promise<{ synced: boolean }> {
+  return api.post<{ synced: boolean }>(
+    `admin/delivery-state/${orderUuid}/resync-rtdb`,
+    {},
+  );
+}
+
+/** Delete all RTDB paths for a terminal order (TT-357 — was SSH-only). */
+export function forceClearRtdb(
+  orderUuid: string,
+): Promise<{ success: boolean; cleared: string[] }> {
+  return api.post<{ success: boolean; cleared: string[] }>(
+    `admin/delivery-state/${orderUuid}/force-clear-rtdb`,
+    {},
+  );
+}

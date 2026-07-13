@@ -2,8 +2,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getDeliveryState,
   resolveStuckDelivery,
+  resyncRtdb,
+  forceClearRtdb,
   type ResolveStuckRequest,
 } from "./delivery-state-api";
+import { cancelOrderByAdmin, refundOrderByAdmin } from "./order-api";
 import { orderKeys } from "./order-queries";
 
 // ---------------------------------------------------------------------------
@@ -57,4 +60,58 @@ export function useResolveStuckDeliveryMutation(
       });
     },
   });
+}
+
+/** Admin order cancel (TT-357). Refreshes the order detail, lists, and delivery state. */
+export function useCancelOrderMutation(
+  orderUuid: string,
+  orderDisplayId: string,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (reason: string) =>
+      cancelOrderByAdmin(orderDisplayId, reason),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: orderKeys.detailByOrderId(orderDisplayId),
+      });
+      void queryClient.invalidateQueries({ queryKey: orderKeys.lists() });
+      void queryClient.invalidateQueries({
+        queryKey: deliveryStateKeys.detail(orderUuid),
+      });
+    },
+  });
+}
+
+/** Admin ad-hoc refund (TT-357). Order status is unchanged; refresh detail anyway. */
+export function useRefundOrderMutation(orderDisplayId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (reason: string) =>
+      refundOrderByAdmin(orderDisplayId, reason),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: orderKeys.detailByOrderId(orderDisplayId),
+      });
+    },
+  });
+}
+
+/** RTDB repair tools (TT-357) — previously SSH-only. */
+export function useRtdbRepairMutations(orderUuid: string) {
+  const queryClient = useQueryClient();
+  const invalidate = () =>
+    void queryClient.invalidateQueries({
+      queryKey: deliveryStateKeys.detail(orderUuid),
+    });
+
+  const resync = useMutation({
+    mutationFn: () => resyncRtdb(orderUuid),
+    onSuccess: invalidate,
+  });
+  const forceClear = useMutation({
+    mutationFn: () => forceClearRtdb(orderUuid),
+    onSuccess: invalidate,
+  });
+  return { resync, forceClear };
 }

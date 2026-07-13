@@ -60,6 +60,45 @@ export async function getOrderByOrderId(
   return api.get<BackendOrder>(`admin/orders/${orderId}`);
 }
 
+// ---------------------------------------------------------------------------
+// Admin order actions (TT-357)
+// ---------------------------------------------------------------------------
+
+export interface AdminCancelResult {
+  orderId: string;
+  status: string;
+  /** Which pipeline handled it: in_delivery (Stuart + synthetic event) or pre_dispatch. */
+  path: "in_delivery" | "pre_dispatch";
+  stuartCancelOutcome: "ok" | "failed" | "skipped";
+}
+
+export interface AdminRefundResult {
+  orderId: string;
+  refundId: string;
+  amount: number;
+  currency: string;
+}
+
+/** Cancel an order and refund the customer. Reason is mandatory (5-500 chars). */
+export function cancelOrderByAdmin(
+  orderId: string,
+  reason: string,
+): Promise<AdminCancelResult> {
+  return api.post<AdminCancelResult>(`admin/orders/${orderId}/cancel`, {
+    reason,
+  });
+}
+
+/** Full goodwill refund in Shopify without changing the order status. ADMIN role only. */
+export function refundOrderByAdmin(
+  orderId: string,
+  reason: string,
+): Promise<AdminRefundResult> {
+  return api.post<AdminRefundResult>(`admin/orders/${orderId}/refund`, {
+    reason,
+  });
+}
+
 /** Fetch orders for a specific vendor (admin endpoint). */
 export function getOrdersByVendor(
   params: GetOrdersByVendorParams,

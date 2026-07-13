@@ -29,6 +29,7 @@ import { useOrderDetailQuery } from "../api/order-queries";
 import { toOrderDetailViewModel } from "../types";
 import type { OrderDetailViewModel, OrderItemViewModel } from "../types";
 import { StuckDeliveryControl } from "./StuckDeliveryControl";
+import { OrderActionsControl } from "./OrderActionsControl";
 import { ReturnsCard } from "./ReturnsCard";
 
 interface OrderDetailPageProps {
@@ -99,7 +100,14 @@ export function OrderDetailPage({ orderId }: OrderDetailPageProps) {
         subtitle={`Placed by ${orderDetail.customerName}`}
         status={orderDetail.displayStatus.toLowerCase()}
         avatarFallback="#"
-      />
+      >
+        <OrderActionsControl
+          orderUuid={orderDetail.id}
+          orderDisplayId={orderDetail.orderId}
+          orderStatus={orderDetail.status}
+          paymentStatus={orderDetail.paymentStatus ?? ""}
+        />
+      </EntityDetailHeader>
 
       {/* Top row: order summary + customer & shipping */}
       <div className="grid gap-x-10 gap-y-8 md:grid-cols-2">
