@@ -244,6 +244,21 @@ export interface OrderItemViewModel {
  * UI purposes — a returned order should show as RETURNED in the pill, not
  * DELIVERED. Declined/cancelled returns fall through to the original status.
  */
+/**
+ * Render optionValues as "Regular / 4" regardless of stored shape:
+ * plain strings, or {value} objects from the variant_option_values relation.
+ * Returns null when nothing renderable so callers can fall through to "--".
+ */
+export function formatOptionValues(optionValues: unknown): string | null {
+  if (!Array.isArray(optionValues)) return null;
+  const parts = optionValues
+    .map((v) =>
+      typeof v === "string" ? v : ((v as { value?: unknown })?.value ?? null),
+    )
+    .filter((v): v is string => typeof v === "string" && v.length > 0);
+  return parts.length ? parts.join(" / ") : null;
+}
+
 export function deriveDisplayStatus(
   orderStatus: string | undefined,
   returnStatus: string | undefined,
@@ -346,13 +361,10 @@ function toItemViewModel(
     id: item.id ?? `item-${index}`,
     productName: (meta?.productName as string) ?? `Product ${item.productId.slice(0, 8)}`,
     // metadata.title duplicates the product name; variantTitle is the real
-    // variant (e.g. "Large"). optionValues is the fallback for older orders.
-    variant:
-      (meta?.variantTitle as string) ??
-      (Array.isArray(meta?.optionValues)
-        ? (meta.optionValues as string[]).join(" / ")
-        : null) ??
-      "--",
+    // variant (e.g. "Large"). optionValues is the fallback when the item was
+    // never enriched — stored either as plain strings (oldest orders) or as
+    // {value, option: {name}} objects (variant_option_values shape).
+    variant: (meta?.variantTitle as string) ?? formatOptionValues(meta?.optionValues) ?? "--",
     variantId:
       (meta?.shopifyVariantId as string) ??
       (item.variantId != null ? String(item.variantId) : null),
