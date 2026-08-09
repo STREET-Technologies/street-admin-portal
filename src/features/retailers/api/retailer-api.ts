@@ -1,6 +1,8 @@
 import { api, toQueryString } from "@/lib/api-client";
-import type { PaginatedResponse } from "@/types";
+import type { AddressValidationVerdict, PaginatedResponse } from "@/types";
 import type { BackendVendor, RetailerListParams } from "../types";
+
+export type { AddressValidationVerdict };
 
 /**
  * Retailer API layer.
