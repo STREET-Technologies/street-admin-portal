@@ -3,6 +3,7 @@ import { Loader2, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -11,6 +12,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { useAdminRole } from "@/features/auth/hooks/useAdminRole";
@@ -20,7 +26,21 @@ import {
   useSetOutletActiveMutation,
   useSetOutletPrimaryMutation,
 } from "../api/retailer-queries";
-import type { AdminOutlet } from "../api/retailer-api";
+import type { AdminOutlet, AddressValidationVerdict } from "../api/retailer-api";
+
+// Explains the courier-bookability failure and how to fix it (TT-397).
+// Only 'invalid_postcode' and 'postcode_mismatch' warrant a warning — never
+// alarm on 'valid', 'unknown', or null (unverified).
+const ADDRESS_VERDICT_COPY: Record<string, string> = {
+  invalid_postcode:
+    "Postcode does not exist or was terminated — Stuart deliveries from this outlet will fail. Correct the address in the store's Shopify admin; it re-checks on the next sync.",
+  postcode_mismatch:
+    "Street and postcode don't match — Stuart deliveries from this outlet may fail. Correct the address in the store's Shopify admin; it re-checks on the next sync.",
+};
+
+function getAddressWarning(verdict: AddressValidationVerdict): string | null {
+  return verdict != null ? (ADDRESS_VERDICT_COPY[verdict] ?? null) : null;
+}
 
 // ---------------------------------------------------------------------------
 // Confirm dialog — used for both "set as primary" and "unpublish primary"
@@ -223,6 +243,7 @@ export function RetailerOutletsTab({ retailerId }: RetailerOutletsTabProps) {
             const isThisPrimaryPending =
               isPrimaryMutationPending &&
               primaryMutation.variables === outlet.id;
+            const addressWarning = getAddressWarning(outlet.addressValidationVerdict);
 
             return (
               <div key={outlet.id} className="rounded-md border bg-card p-5">
@@ -258,6 +279,19 @@ export function RetailerOutletsTab({ retailerId }: RetailerOutletsTabProps) {
                       >
                         NO COORDINATES
                       </span>
+                    )}
+
+                    {addressWarning && (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Badge variant="destructive" className="cursor-default">
+                            Address not courier-bookable
+                          </Badge>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-64">
+                          {addressWarning}
+                        </TooltipContent>
+                      </Tooltip>
                     )}
                   </div>
 
