@@ -1,4 +1,4 @@
-import type { EntityStatus } from "@/types";
+import type { AddressValidationVerdict, EntityStatus } from "@/types";
 
 // ---------------------------------------------------------------------------
 // Backend shapes (what the API returns)
@@ -37,6 +37,10 @@ export interface BackendUserAddress {
   isDefault: boolean;
   /** Standing delivery instructions forwarded to Stuart (TT-149). */
   deliveryInstructions: string | null;
+  /** Courier-bookability verdict for this address (TT-428). */
+  addressValidationVerdict: AddressValidationVerdict;
+  /** When the verdict was last computed. Null if never validated. */
+  addressValidatedAt: string | null;
   createdAt: string;
   updatedAt: string;
 }

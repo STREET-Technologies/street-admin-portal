@@ -1,6 +1,8 @@
 import { api, toQueryString } from "@/lib/api-client";
-import type { PaginatedResponse } from "@/types";
+import type { AddressValidationVerdict, PaginatedResponse } from "@/types";
 import type { BackendVendor, RetailerListParams } from "../types";
+
+export type { AddressValidationVerdict };
 
 /**
  * Retailer API layer.
@@ -228,14 +230,6 @@ export function resyncRetailerFromShopify(
 // ---------------------------------------------------------------------------
 // Outlets
 // ---------------------------------------------------------------------------
-
-/** Result of the backend's address validation check against the courier provider (TT-397). */
-export type AddressValidationVerdict =
-  | "valid"
-  | "invalid_postcode"
-  | "postcode_mismatch"
-  | "unknown"
-  | null;
 
 /** Outlet (Shopify location) linked to a vendor. */
 export interface AdminOutlet {

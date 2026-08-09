@@ -41,6 +41,19 @@ export type PaymentStatus = "pending" | "paid" | "failed" | "refunded";
 /** Priority level for admin notes attached to entities. */
 export type NotePriority = "low" | "medium" | "high" | "urgent";
 
+/**
+ * Result of the backend's address validation check against the courier
+ * provider (TT-397). Shared across outlet addresses (retailers) and saved
+ * addresses (users, TT-428) — both surface the same courier-bookability
+ * verdict on an address.
+ */
+export type AddressValidationVerdict =
+  | "valid"
+  | "invalid_postcode"
+  | "postcode_mismatch"
+  | "unknown"
+  | null;
+
 /** Top-level entity categories in the admin portal. */
 export type EntityType = "user" | "retailer" | "order";
 
