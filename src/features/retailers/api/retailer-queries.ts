@@ -49,8 +49,13 @@ export const retailerKeys = {
     [...retailerKeys.detail(id), "orders"] as const,
   staff: (id: string) =>
     [...retailerKeys.detail(id), "staff"] as const,
-  billing: (id: string, billingStatus?: string | null) =>
-    [...retailerKeys.detail(id), "billing", billingStatus ?? "all"] as const,
+  billing: (id: string, billingStatus?: string | null, page = 1) =>
+    [
+      ...retailerKeys.detail(id),
+      "billing",
+      billingStatus ?? "all",
+      page,
+    ] as const,
   outlets: (id: string) =>
     [...retailerKeys.detail(id), "outlets"] as const,
 };
@@ -113,10 +118,11 @@ export function useRetailerStaffQuery(retailerId: string) {
 export function useRetailerBillingQuery(
   retailerId: string,
   billingStatus?: string | null,
+  page = 1,
 ) {
   return useQuery({
-    queryKey: retailerKeys.billing(retailerId, billingStatus),
-    queryFn: () => getRetailerBilling(retailerId, billingStatus),
+    queryKey: retailerKeys.billing(retailerId, billingStatus, page),
+    queryFn: () => getRetailerBilling(retailerId, billingStatus, page),
     placeholderData: keepPreviousData,
     enabled: Boolean(retailerId),
   });
