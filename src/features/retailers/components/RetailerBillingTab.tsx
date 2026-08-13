@@ -6,8 +6,15 @@ import {
   CheckCircle,
   Clock,
   XCircle,
+  ChevronRight,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import {
   Table,
   TableBody,
@@ -64,18 +71,29 @@ function ChargeWorkings({ entry }: { entry: RetailerBillingLedgerEntry }) {
     );
   }
 
+  // Collapsed by default (TT-446): the arithmetic matters when a figure is
+  // being questioned, not on every row of a 25-row page. The summary line
+  // carries the commission, which is the part usually being scanned for.
   return (
-    <span className="text-xs text-muted-foreground tabular-nums">
-      {formatCurrency(entry.productTotal)}
-      {entry.commissionPercentage !== null &&
-        ` × ${entry.commissionPercentage}%`}{" "}
-      = {formatCurrency(entry.commissionAmount)} commission
-      {entry.expectedDeliveryFee !== null &&
-        ` + ${formatCurrency(entry.expectedDeliveryFee)} delivery`}
-      {entry.discountAbsorbed
-        ? ` − ${formatCurrency(entry.discountAbsorbed)} STREET credit`
-        : ""}
-    </span>
+    <Collapsible>
+      <CollapsibleTrigger className="group/workings flex items-center gap-1 text-left text-xs text-muted-foreground hover:text-foreground">
+        <ChevronRight className="size-3 shrink-0 transition-transform group-data-[state=open]/workings:rotate-90" />
+        <span className="tabular-nums">
+          {formatCurrency(entry.commissionAmount)} commission
+        </span>
+      </CollapsibleTrigger>
+      <CollapsibleContent className="pt-1 pl-4 text-xs text-muted-foreground tabular-nums">
+        {formatCurrency(entry.productTotal)}
+        {entry.commissionPercentage !== null &&
+          ` × ${entry.commissionPercentage}%`}{" "}
+        = {formatCurrency(entry.commissionAmount)}
+        {entry.expectedDeliveryFee !== null &&
+          ` + ${formatCurrency(entry.expectedDeliveryFee)} delivery`}
+        {entry.discountAbsorbed
+          ? ` − ${formatCurrency(entry.discountAbsorbed)} STREET credit`
+          : ""}
+      </CollapsibleContent>
+    </Collapsible>
   );
 }
 
@@ -359,18 +377,20 @@ export function RetailerBillingTab({ retailerId }: RetailerBillingTabProps) {
                       {capPercent.toFixed(1)}%
                     </span>
                   </div>
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-                    <div
-                      className={`h-full rounded-full transition-all ${
-                        capPercent >= 90
-                          ? "bg-red-500"
-                          : capPercent >= 70
-                            ? "bg-yellow-500"
-                            : "bg-green-500"
-                      }`}
-                      style={{ width: `${capPercent}%` }}
-                    />
-                  </div>
+                  {/* Shared Progress rather than a hand-rolled pair of divs
+                      (TT-446). The indicator keeps the threshold colours:
+                      approaching the cap is the whole point of the bar. */}
+                  <Progress
+                    value={capPercent}
+                    aria-label="Spending cap consumed"
+                    indicatorClassName={
+                      capPercent >= 90
+                        ? "bg-red-500"
+                        : capPercent >= 70
+                          ? "bg-yellow-500"
+                          : "bg-green-500"
+                    }
+                  />
                 </div>
               )}
             </div>
