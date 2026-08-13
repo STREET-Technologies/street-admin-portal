@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { CreditCard, AlertTriangle, CheckCircle, Clock, XCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -67,11 +68,15 @@ function StatTile({
   label,
   value,
   highlight,
+  selected,
+  onSelect,
 }: {
   icon: React.ElementType;
   label: string;
   value: number;
   highlight?: "warn" | "danger";
+  selected: boolean;
+  onSelect: () => void;
 }) {
   const iconClass =
     highlight === "danger"
@@ -81,18 +86,27 @@ function StatTile({
         : "text-muted-foreground";
 
   return (
-    <div className="flex items-center gap-3 rounded-md border p-4">
+    <button
+      type="button"
+      onClick={onSelect}
+      aria-pressed={selected}
+      className={`flex items-center gap-3 rounded-md border p-4 text-left transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+        selected ? "border-primary bg-muted/50 ring-1 ring-primary" : ""
+      }`}
+    >
       <Icon className={`size-5 shrink-0 ${iconClass}`} />
       <div>
         <p className="text-xs uppercase tracking-wider text-muted-foreground">{label}</p>
         <p className="text-2xl font-semibold tabular-nums">{value}</p>
       </div>
-    </div>
+    </button>
   );
 }
 
 export function RetailerBillingTab({ retailerId }: RetailerBillingTabProps) {
   const { data, isLoading, isError, refetch } = useRetailerBillingQuery(retailerId);
+  const [statusFilter, setStatusFilter] =
+    useState<RetailerBillingLedgerEntry["billingStatus"] | null>(null);
 
   if (isLoading) return <LoadingState variant="page" />;
 
@@ -115,6 +129,13 @@ export function RetailerBillingTab({ retailerId }: RetailerBillingTabProps) {
       />
     );
   }
+
+  const toggleFilter = (status: RetailerBillingLedgerEntry["billingStatus"]) =>
+    setStatusFilter((current) => (current === status ? null : status));
+
+  const visibleLedger = statusFilter
+    ? data.ledger.filter((entry) => entry.billingStatus === statusFilter)
+    : data.ledger;
 
   const capPercent =
     data.subscription && data.subscription.cappedAmount > 0
@@ -184,29 +205,77 @@ export function RetailerBillingTab({ retailerId }: RetailerBillingTabProps) {
         </div>
       </section>
 
-      {/* Order billing stats — flat section */}
+      {/* Order billing stats — flat section, doubles as the ledger filter */}
       <section>
         <h2 className="text-base font-semibold leading-none">Order Billing Breakdown</h2>
+        <p className="mt-1.5 text-xs text-muted-foreground">
+          Select a status to filter the ledger below.
+        </p>
         <div className="mt-4 grid grid-cols-2 gap-3 border-t pt-5 sm:grid-cols-4">
-          <StatTile icon={CheckCircle} label="Charged" value={data.orders.charged} />
-          <StatTile icon={Clock} label="Pending" value={data.orders.pending} highlight={data.orders.pending > 0 ? "warn" : undefined} />
-          <StatTile icon={XCircle} label="Failed" value={data.orders.failed} highlight={data.orders.failed > 0 ? "danger" : undefined} />
-          <StatTile icon={AlertTriangle} label="Skipped" value={data.orders.skipped} />
+          <StatTile
+            icon={CheckCircle}
+            label="Charged"
+            value={data.orders.charged}
+            selected={statusFilter === "charged"}
+            onSelect={() => toggleFilter("charged")}
+          />
+          <StatTile
+            icon={Clock}
+            label="Pending"
+            value={data.orders.pending}
+            highlight={data.orders.pending > 0 ? "warn" : undefined}
+            selected={statusFilter === "pending"}
+            onSelect={() => toggleFilter("pending")}
+          />
+          <StatTile
+            icon={XCircle}
+            label="Failed"
+            value={data.orders.failed}
+            highlight={data.orders.failed > 0 ? "danger" : undefined}
+            selected={statusFilter === "failed"}
+            onSelect={() => toggleFilter("failed")}
+          />
+          <StatTile
+            icon={AlertTriangle}
+            label="Skipped"
+            value={data.orders.skipped}
+            selected={statusFilter === "skipped"}
+            onSelect={() => toggleFilter("skipped")}
+          />
         </div>
       </section>
 
       {/* Per-order charge ledger — flat section */}
       <section>
-        <h2 className="text-base font-semibold leading-none">Charge Ledger</h2>
+        <div className="flex items-baseline justify-between gap-4">
+          <h2 className="text-base font-semibold capitalize leading-none">
+            {statusFilter ? `Charge Ledger — ${statusFilter}` : "Charge Ledger"}
+          </h2>
+          {statusFilter && (
+            <button
+              type="button"
+              onClick={() => setStatusFilter(null)}
+              className="text-xs text-primary hover:underline"
+            >
+              Clear filter
+            </button>
+          )}
+        </div>
         <p className="mt-1.5 text-xs text-muted-foreground">
-          {data.ledgerTotal > data.ledger.length
-            ? `Showing the ${data.ledger.length} most recent of ${data.ledgerTotal} orders.`
-            : `${data.ledgerTotal} order${data.ledgerTotal === 1 ? "" : "s"}.`}{" "}
+          {statusFilter
+            ? `Showing ${visibleLedger.length} ${statusFilter} within the ${data.ledger.length} most recent orders (${data.orders[statusFilter]} ${statusFilter} in total).`
+            : data.ledgerTotal > data.ledger.length
+              ? `Showing the ${data.ledger.length} most recent of ${data.ledgerTotal} orders.`
+              : `${data.ledgerTotal} order${data.ledgerTotal === 1 ? "" : "s"}.`}{" "}
           Expected is derived from the order's pricing snapshot; charged is what Shopify was billed.
         </p>
         <div className="mt-4 border-t pt-5">
-          {data.ledger.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No orders to bill yet.</p>
+          {visibleLedger.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              {statusFilter
+                ? `No ${statusFilter} orders within the ${data.ledger.length} most recent.`
+                : "No orders to bill yet."}
+            </p>
           ) : (
             <Table>
               <TableHeader>
@@ -219,7 +288,7 @@ export function RetailerBillingTab({ retailerId }: RetailerBillingTabProps) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {data.ledger.map((entry) => {
+                {visibleLedger.map((entry) => {
                   const mismatch =
                     entry.billingAmount !== null &&
                     entry.expectedCharge !== null &&
