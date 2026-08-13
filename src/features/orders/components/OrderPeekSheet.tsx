@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { Link } from "@tanstack/react-router";
 import { ExternalLink } from "lucide-react";
 import {
@@ -68,6 +69,8 @@ function Section({
  * the row still links straight to it, as does the header action here.
  */
 export function OrderPeekSheet({ order, onOpenChange }: OrderPeekSheetProps) {
+  const bodyRef = useRef<HTMLDivElement>(null);
+
   // Only fetches once a row is open (the hook is disabled on an empty id).
   const { data: backendOrder, isLoading } = useOrderDetailQuery(
     order?.orderId ?? "",
@@ -78,10 +81,28 @@ export function OrderPeekSheet({ order, onOpenChange }: OrderPeekSheetProps) {
 
   return (
     <Sheet open={Boolean(order)} onOpenChange={onOpenChange}>
-      <SheetContent className="flex w-full flex-col gap-0 overflow-y-auto sm:max-w-md">
+      <SheetContent
+        // Radix focuses the first focusable child on open, which is the copy
+        // button — the panel opened wearing a focus ring that stayed until you
+        // clicked elsewhere. Send focus to the body wrapper instead: still
+        // inside the panel, so the focus trap and Esc behave, but nothing
+        // looks pressed. The ref goes on our own div because SheetContent is
+        // a plain function component and React 18 would drop a ref on it.
+        onOpenAutoFocus={(e) => {
+          e.preventDefault();
+          bodyRef.current?.focus();
+        }}
+        className="flex w-full flex-col gap-0 overflow-y-auto sm:max-w-md"
+      >
         {order && (
-          <>
-            <SheetHeader className="space-y-0 pb-4">
+          <div
+            ref={bodyRef}
+            tabIndex={-1}
+            className="flex min-h-full flex-col focus:outline-none"
+          >
+            {/* pr-10 clears the close button, which sits absolute at top-4
+                right-4 — without it the status badge collides with the X. */}
+            <SheetHeader className="space-y-1 pr-10 pb-5">
               <div className="flex items-center gap-2">
                 <SheetTitle className="font-mono text-sm">
                   {order.orderId}
@@ -203,7 +224,7 @@ export function OrderPeekSheet({ order, onOpenChange }: OrderPeekSheetProps) {
                 </div>
               )}
             </div>
-          </>
+          </div>
         )}
       </SheetContent>
     </Sheet>
