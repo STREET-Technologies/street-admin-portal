@@ -64,6 +64,20 @@ const columns: ColumnDef<BackendVendorOrder>[] = [
     ),
   },
   {
+    // TT-449 — which branch took the order. Without it a multi-outlet
+    // retailer's list gave no way to tell them apart short of opening each
+    // order. Blank on orders that predate outlet attribution (TT-366).
+    accessorKey: "outletName",
+    header: "Outlet",
+    enableSorting: false,
+    cell: ({ row }) =>
+      row.original.outletName ? (
+        <span className="text-sm">{row.original.outletName}</span>
+      ) : (
+        <span className="text-xs text-muted-foreground">—</span>
+      ),
+  },
+  {
     accessorKey: "status",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Status" />

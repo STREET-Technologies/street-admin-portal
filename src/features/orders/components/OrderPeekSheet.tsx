@@ -113,7 +113,9 @@ export function OrderPeekSheet({ order, onOpenChange }: OrderPeekSheetProps) {
                 </span>
               </div>
               <SheetDescription className="text-xs">
-                {order.retailerName ?? "Unknown retailer"} ·{" "}
+                {order.retailerName ?? "Unknown retailer"}
+                {/* Branch, when the order carries one (TT-449). */}
+                {order.outletName ? ` · ${order.outletName}` : ""} ·{" "}
                 {formatDate(order.createdAt)}
               </SheetDescription>
             </SheetHeader>

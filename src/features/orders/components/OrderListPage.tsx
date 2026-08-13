@@ -30,6 +30,7 @@ import { StatusBadge } from "@/components/shared/StatusBadge";
 import { CopyButton } from "@/components/shared/CopyButton";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { DateRangeFilter } from "@/components/shared/DateRangeFilter";
+import { RetailerFilter } from "@/components/shared/RetailerFilter";
 import { useTableParams } from "@/hooks/use-table-params";
 import { useSearchParamState } from "@/hooks/use-search-param";
 import { useTabParam } from "@/hooks/use-tab-param";
@@ -160,21 +161,32 @@ function createColumns(
       accessorKey: "retailerName",
       header: "Retailer",
       enableSorting: false,
-      cell: ({ row }) =>
-        row.original.retailerId ? (
-          <Link
-            to="/retailers/$retailerId"
-            params={{ retailerId: row.original.retailerId }}
-            className="text-sm font-medium hover:underline"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {row.original.retailerName ?? "--"}
-          </Link>
-        ) : (
-          <span className="text-sm text-muted-foreground">
-            {row.original.retailerName ?? "--"}
-          </span>
-        ),
+      cell: ({ row }) => (
+        <div>
+          {row.original.retailerId ? (
+            <Link
+              to="/retailers/$retailerId"
+              params={{ retailerId: row.original.retailerId }}
+              className="text-sm font-medium hover:underline"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {row.original.retailerName ?? "--"}
+            </Link>
+          ) : (
+            <span className="text-sm text-muted-foreground">
+              {row.original.retailerName ?? "--"}
+            </span>
+          )}
+          {/* Branch under the brand (TT-449) — a multi-outlet retailer was
+              otherwise indistinguishable without opening each order. Sits in
+              this column rather than a ninth one; the table is dense enough. */}
+          {row.original.outletName && (
+            <p className="text-xs text-muted-foreground">
+              {row.original.outletName}
+            </p>
+          )}
+        </div>
+      ),
     },
     {
       accessorKey: "status",
@@ -346,6 +358,10 @@ export function OrderListPage() {
   // Read straight from the URL — DateRangeFilter owns writing them (TT-447).
   const [dateFrom] = useSearchParamState("dateFrom");
   const [dateTo] = useSearchParamState("dateTo");
+  const [vendorId, setVendorId] = useSearchParamState("vendorId");
+
+  const resetToFirstPage = () =>
+    onPaginationChange({ pageIndex: 0, pageSize: pagination.pageSize });
 
   const tabParams = tabToQueryParams(tabFilter);
 
@@ -364,6 +380,7 @@ export function OrderListPage() {
       paymentMethodFilter !== "all" ? paymentMethodFilter : undefined,
     dateFrom,
     dateTo,
+    vendorId,
     sortBy: searchParams.sortBy,
     sortOrder: searchParams.sortOrder,
     page: searchParams.page,
@@ -445,13 +462,19 @@ export function OrderListPage() {
           </SelectContent>
         </Select>
 
+        {/* Retailer (TT-448). Composes with the tabs, search and dates —
+            the retailer's own Orders tab drops all three. */}
+        <RetailerFilter
+          value={vendorId}
+          onChange={(next) => {
+            setVendorId(next);
+            resetToFirstPage();
+          }}
+        />
+
         {/* Changing the range changes the result set, so page 3 of the old
             range is meaningless against the new one. */}
-        <DateRangeFilter
-          onChange={() =>
-            onPaginationChange({ pageIndex: 0, pageSize: pagination.pageSize })
-          }
-        />
+        <DateRangeFilter onChange={resetToFirstPage} />
       </div>
 
       {/* Data table */}

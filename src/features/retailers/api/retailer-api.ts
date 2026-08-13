@@ -34,6 +34,8 @@ export interface BackendVendorOrder {
   totalAmount: number | null;
   customerName: string | null;
   customerEmail: string | null;
+  /** Branch the order belongs to (TT-449). Null on pre-TT-366 orders. */
+  outletName: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -42,6 +44,7 @@ export interface BackendVendorOrder {
 interface RawVendorOrder {
   id: string;
   orderId: string;
+  outlet?: { id: string; name: string } | null;
   status: string;
   totalAmount: string | number | null;
   customerName?: string | null;
@@ -73,8 +76,10 @@ export async function getRetailerOrders(
     totalAmount: raw.totalAmount != null ? Number(raw.totalAmount) : null,
     customerName:
       raw.customerName ??
-      ([raw.user?.firstName, raw.user?.lastName].filter(Boolean).join(" ") || null),
+      ([raw.user?.firstName, raw.user?.lastName].filter(Boolean).join(" ") ||
+        null),
     customerEmail: raw.customerEmail ?? raw.user?.email ?? null,
+    outletName: raw.outlet?.name ?? null,
     createdAt: raw.createdAt,
     updatedAt: raw.updatedAt,
   }));
@@ -131,10 +136,7 @@ export function createRetailerStaff(
   retailerId: string,
   data: CreateStaffPayload,
 ): Promise<CreateStaffResult> {
-  return api.post<CreateStaffResult>(
-    `admin/vendors/${retailerId}/staff`,
-    data,
-  );
+  return api.post<CreateStaffResult>(`admin/vendors/${retailerId}/staff`, data);
 }
 
 /** Assign or clear a staff account's outlet (null = owner/HQ) (TT-285). */
@@ -264,9 +266,7 @@ export interface AdminOutlet {
  * Backend: GET /admin/vendors/:id/outlets → { data: AdminOutlet[] }
  * api.get unwraps the { data } envelope automatically → AdminOutlet[].
  */
-export function getRetailerOutlets(
-  retailerId: string,
-): Promise<AdminOutlet[]> {
+export function getRetailerOutlets(retailerId: string): Promise<AdminOutlet[]> {
   return api.get<AdminOutlet[]>(`admin/vendors/${retailerId}/outlets`);
 }
 

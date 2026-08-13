@@ -43,8 +43,12 @@ function formatReason(reason: string): string {
 
 export function OrderDetailPage({ orderId }: OrderDetailPageProps) {
   const navigate = useNavigate();
-  const { data: backendOrder, isLoading, isError, refetch } =
-    useOrderDetailQuery(orderId);
+  const {
+    data: backendOrder,
+    isLoading,
+    isError,
+    refetch,
+  } = useOrderDetailQuery(orderId);
 
   if (isLoading) {
     return <LoadingState variant="page" />;
@@ -190,6 +194,17 @@ function OrderSummarySection({
             )}
           </div>
         )}
+        {/* TT-449 — the branch, not just the brand. Only rendered when the
+            order carries one: orders predating outlet attribution (TT-366)
+            genuinely have none, and an empty row would imply otherwise. */}
+        {orderDetail.outletName && (
+          <div className="space-y-1">
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              Outlet
+            </p>
+            <p className="text-sm font-medium">{orderDetail.outletName}</p>
+          </div>
+        )}
         {/* Only surface payment status when it's *not* the assumed "Paid". For
             paid orders this row stays hidden (noise); for pending/failed/refunded
             it sits inline with the other order metadata. */}
@@ -321,7 +336,9 @@ function ItemsSection({ items }: { items: OrderItemViewModel[] }) {
                         )}
                       </span>
                       <div>
-                        <p className="text-sm font-medium">{item.productName}</p>
+                        <p className="text-sm font-medium">
+                          {item.productName}
+                        </p>
                         {item.returnedQuantity > 0 && (
                           <div className="mt-1 flex items-center gap-1.5 text-xs">
                             <StatusBadge
@@ -458,4 +475,3 @@ function PricingPaymentSection({
     </section>
   );
 }
-

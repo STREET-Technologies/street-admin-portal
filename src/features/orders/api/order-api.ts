@@ -28,6 +28,8 @@ export interface GetOrdersParams {
    */
   dateFrom?: string;
   dateTo?: string;
+  /** Retailer (vendor) UUID (TT-448). Composes with every other filter. */
+  vendorId?: string;
   /** Backend allowlist: orderId | customerName | totalAmount | createdAt */
   sortBy?: string;
   sortOrder?: "asc" | "desc";
