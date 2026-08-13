@@ -1,5 +1,12 @@
 import { Link } from "@tanstack/react-router";
-import { AlertTriangle, ArrowRight, Clock, RotateCcw } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowRight,
+  Clock,
+  CreditCard,
+  MapPin,
+  RotateCcw,
+} from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { ErrorState } from "@/components/shared/ErrorState";
@@ -25,6 +32,12 @@ function formatGBP(amount: number): string {
 export function DashboardPage() {
   const { data: stats, isLoading, isError, refetch } = useDashboardStatsQuery();
   const attentionItems = getAttentionItems(stats);
+  // Every channel counts toward showing the section — an un-geocoded outlet
+  // with no order problems is still something to act on.
+  const hasAttention =
+    attentionItems.length > 0 ||
+    (stats?.attention.outlets.length ?? 0) > 0 ||
+    (stats?.attention.unbookableUserAddresses ?? 0) > 0;
 
   if (isError) {
     return (
@@ -47,13 +60,58 @@ export function DashboardPage() {
           Nothing to act on means no heading, no border, no "all clear" line
           taking up the middle of the page: the section's presence IS the
           signal, so a quiet dashboard is genuinely quiet. */}
-      {!isLoading && attentionItems.length > 0 && (
+      {!isLoading && hasAttention && (
         <section>
           <h2 className="text-base font-semibold leading-none">
             Needs attention
           </h2>
           <div className="mt-4 space-y-2 border-t pt-5">
             <AttentionRail items={attentionItems} />
+
+            {/* Outlet faults link to the owning retailer, since the portal
+                has no global outlets screen — a bare count would be a dead
+                end. Each row names the branch and what is wrong with it. */}
+            {stats?.attention.outlets.map((outlet) => (
+              <Link
+                key={outlet.outletId}
+                to="/retailers/$retailerId"
+                params={{ retailerId: outlet.vendorId }}
+                search={{ tab: "outlets" }}
+                className="flex items-center gap-3 rounded-md border border-red-300 bg-red-50/50 px-4 py-3 transition-colors hover:bg-muted/50 dark:border-red-900 dark:bg-red-950/20"
+              >
+                <MapPin className="size-4 shrink-0 text-red-600" />
+                <span className="text-sm">
+                  <span className="font-semibold">{outlet.vendorName}</span> ·{" "}
+                  {outlet.outletName}
+                  <span className="text-muted-foreground">
+                    {" — "}
+                    {outlet.reason === "no_coordinates"
+                      ? "no coordinates, invisible in discovery"
+                      : "address not courier-bookable, deliveries will fail"}
+                  </span>
+                </span>
+                <ArrowRight className="ml-auto size-4 text-muted-foreground" />
+              </Link>
+            ))}
+
+            {/* Customer addresses Stuart will refuse. No filtered destination
+                exists yet, so this states the count without pretending to
+                link somewhere useful. */}
+            {(stats?.attention.unbookableUserAddresses ?? 0) > 0 && (
+              <p className="flex items-center gap-3 rounded-md border bg-muted/40 px-4 py-3 text-sm">
+                <MapPin className="size-4 shrink-0 text-muted-foreground" />
+                <span>
+                  <span className="font-semibold tabular-nums">
+                    {stats?.attention.unbookableUserAddresses}
+                  </span>{" "}
+                  customer addresses not courier-bookable
+                  <span className="text-muted-foreground">
+                    {" "}
+                    — deliveries to them will fail
+                  </span>
+                </span>
+              </p>
+            )}
           </div>
         </section>
       )}
@@ -136,7 +194,8 @@ interface AttentionItem {
   count: number;
   label: string;
   description: string;
-  tab: string;
+  /** Orders-list query that shows exactly these rows. */
+  search: { tab?: string; billingStatus?: string };
   icon: React.ElementType;
   tone: "critical" | "warning";
 }
@@ -153,7 +212,7 @@ function getAttentionItems(stats: DashboardStats | undefined): AttentionItem[] {
       count: stats.orders.stuck,
       label: "stuck deliveries",
       description: "reconciliation gave up — resolve manually",
-      tab: "stuck",
+      search: { tab: "stuck" },
       icon: AlertTriangle,
       tone: "critical",
     },
@@ -161,7 +220,7 @@ function getAttentionItems(stats: DashboardStats | undefined): AttentionItem[] {
       count: stats.orders.awaitingAcceptance,
       label: "awaiting acceptance",
       description: "waiting on the retailer",
-      tab: "new",
+      search: { tab: "new" },
       icon: Clock,
       tone: "warning",
     },
@@ -169,9 +228,17 @@ function getAttentionItems(stats: DashboardStats | undefined): AttentionItem[] {
       count: stats.orders.pendingReturns,
       label: "returns in progress",
       description: "opened or on the way back to the store",
-      tab: "returned",
+      search: { tab: "returned" },
       icon: RotateCcw,
       tone: "warning",
+    },
+    {
+      count: stats.attention.failedBilling,
+      label: "failed charges",
+      description: "Shopify rejected the commission charge",
+      search: { billingStatus: "failed" },
+      icon: CreditCard,
+      tone: "critical",
     },
   ];
   return items.filter((item) => item.count > 0);
@@ -184,7 +251,7 @@ function AttentionRail({ items }: { items: AttentionItem[] }) {
         <Link
           key={item.label}
           to="/orders"
-          search={{ tab: item.tab }}
+          search={item.search}
           className={`flex items-center gap-3 rounded-md border px-4 py-3 transition-colors hover:bg-muted/50 ${
             item.tone === "critical"
               ? "border-red-300 bg-red-50/50 dark:border-red-900 dark:bg-red-950/20"
