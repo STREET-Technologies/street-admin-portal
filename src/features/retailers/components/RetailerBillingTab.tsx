@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { CreditCard, AlertTriangle, CheckCircle, Clock, XCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -193,8 +194,9 @@ function StatTile({
 export function RetailerBillingTab({ retailerId }: RetailerBillingTabProps) {
   const [statusFilter, setStatusFilter] =
     useState<RetailerBillingLedgerEntry["billingStatus"] | null>(null);
+  const [page, setPage] = useState(1);
   const { data, isLoading, isError, refetch, isFetching } =
-    useRetailerBillingQuery(retailerId, statusFilter);
+    useRetailerBillingQuery(retailerId, statusFilter, page);
 
   if (isLoading) return <LoadingState variant="page" />;
 
@@ -218,13 +220,21 @@ export function RetailerBillingTab({ retailerId }: RetailerBillingTabProps) {
     );
   }
 
-  const toggleFilter = (status: RetailerBillingLedgerEntry["billingStatus"]) =>
+  // Changing the filter changes the row set, so page 2 of the old filter is
+  // meaningless against the new one — always land back on page 1.
+  const toggleFilter = (status: RetailerBillingLedgerEntry["billingStatus"]) => {
     setStatusFilter((current) => (current === status ? null : status));
+    setPage(1);
+  };
 
-  // The ledger is filtered server-side, so it holds the 50 most recent orders
-  // OF THAT STATUS rather than a slice of the 50 most recent overall.
+  const clearFilter = () => {
+    setStatusFilter(null);
+    setPage(1);
+  };
+
+  // Filtered and paginated server-side.
   const visibleLedger = data.ledger;
-  const filteredTotal = statusFilter ? data.orders[statusFilter] : null;
+  const { page: currentPage, total: pageTotal, totalPages } = data.ledgerPage;
 
   const capPercent =
     data.subscription && data.subscription.cappedAmount > 0
@@ -325,7 +335,7 @@ export function RetailerBillingTab({ retailerId }: RetailerBillingTabProps) {
           {statusFilter && (
             <button
               type="button"
-              onClick={() => setStatusFilter(null)}
+              onClick={clearFilter}
               className="text-xs text-primary hover:underline"
             >
               Clear filter
@@ -333,21 +343,23 @@ export function RetailerBillingTab({ retailerId }: RetailerBillingTabProps) {
           )}
         </div>
         <p className="mt-1.5 text-xs text-muted-foreground">
-          {statusFilter && filteredTotal !== null
-            ? filteredTotal > visibleLedger.length
-              ? `Showing the ${visibleLedger.length} most recent of ${filteredTotal} ${statusFilter} orders.`
-              : `${filteredTotal} ${statusFilter} order${filteredTotal === 1 ? "" : "s"}.`
-            : data.ledgerTotal > visibleLedger.length
-              ? `Showing the ${visibleLedger.length} most recent of ${data.ledgerTotal} orders.`
-              : `${data.ledgerTotal} order${data.ledgerTotal === 1 ? "" : "s"}.`}{" "}
+          {pageTotal === 0
+            ? statusFilter
+              ? `No ${statusFilter} orders.`
+              : "No orders."
+            : `${pageTotal} ${statusFilter ?? ""} order${pageTotal === 1 ? "" : "s"}${
+                totalPages > 1 ? `, page ${currentPage} of ${totalPages}` : ""
+              }.`}{" "}
           Expected is derived from the order's pricing snapshot; charged is what Shopify was billed.
         </p>
         <div className={`mt-4 border-t pt-5 ${isFetching ? "opacity-60" : ""}`}>
           {visibleLedger.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              {statusFilter
-                ? `No ${statusFilter} orders.`
-                : "No orders to bill yet."}
+              {pageTotal > 0
+                ? "No orders on this page."
+                : statusFilter
+                  ? `No ${statusFilter} orders.`
+                  : "No orders to bill yet."}
             </p>
           ) : (
             <Table>
@@ -443,6 +455,36 @@ export function RetailerBillingTab({ retailerId }: RetailerBillingTabProps) {
                 })}
               </TableBody>
             </Table>
+          )}
+
+          {/* Also shown when the page overshot the range, so Previous is
+              still reachable rather than stranding an empty list. */}
+          {(totalPages > 1 || currentPage > 1) && (
+            <div className="mt-4 flex items-center justify-between border-t pt-3">
+              <p className="text-xs text-muted-foreground">
+                Page {currentPage} of {totalPages}
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage <= 1 || isFetching}
+                >
+                  Previous
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    setPage((p) => Math.min(totalPages, p + 1))
+                  }
+                  disabled={currentPage >= totalPages || isFetching}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
           )}
         </div>
       </section>

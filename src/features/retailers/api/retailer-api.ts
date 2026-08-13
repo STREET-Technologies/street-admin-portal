@@ -347,16 +347,25 @@ export interface RetailerBillingHealth {
     skipped: number;
     chargedAmount: number;
   };
-  /** Most recent orders only — `ledgerTotal` is the true count. */
+  /** One page of orders — see `ledgerPage` for where it sits. */
   ledger: RetailerBillingLedgerEntry[];
+  /** Every order for this retailer, regardless of filter. */
   ledgerTotal: number;
+  ledgerPage: {
+    page: number;
+    limit: number;
+    /** Rows matching the current filter, not all orders. */
+    total: number;
+    totalPages: number;
+  };
 }
 
 export function getRetailerBilling(
   retailerId: string,
   billingStatus?: string | null,
+  page?: number,
 ): Promise<RetailerBillingHealth> {
   return api.get<RetailerBillingHealth>(
-    `admin/vendors/${retailerId}/billing${toQueryString({ billingStatus })}`,
+    `admin/vendors/${retailerId}/billing${toQueryString({ billingStatus, page })}`,
   );
 }
