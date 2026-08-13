@@ -115,6 +115,14 @@ function SubscriptionStatusBadge({ status }: { status: string | null }) {
 }
 
 /**
+ * Where the cap bar changes colour. Marks are drawn at these positions so the
+ * threshold is readable from position as well as hue — green/amber/red is the
+ * hardest trio for colour vision deficiency, and this bar is the one place the
+ * portal leans on it.
+ */
+const CAP_THRESHOLDS = [70, 90] as const;
+
+/**
  * The four billing statuses, with support-facing copy. Only `failed` is ever
  * a fault — `skipped` is the normal resting state for an order that was
  * cancelled, missed or abandoned, and reads as a problem without this.
@@ -379,18 +387,46 @@ export function RetailerBillingTab({ retailerId }: RetailerBillingTabProps) {
                   </div>
                   {/* Shared Progress rather than a hand-rolled pair of divs
                       (TT-446). The indicator keeps the threshold colours:
-                      approaching the cap is the whole point of the bar. */}
-                  <Progress
-                    value={capPercent}
-                    aria-label="Spending cap consumed"
-                    indicatorClassName={
-                      capPercent >= 90
-                        ? "bg-red-500"
-                        : capPercent >= 70
-                          ? "bg-yellow-500"
-                          : "bg-green-500"
-                    }
-                  />
+                      approaching the cap is the whole point of the bar.
+                      The 70/90 marks give position as a second channel, so
+                      the thresholds do not rely on telling green from amber
+                      from red. They sit at fixed percentages because the
+                      track is normalised against the cap — a retailer
+                      changing their cap in Shopify moves the fill, never
+                      the marks. */}
+                  <div className="relative">
+                    <Progress
+                      value={capPercent}
+                      aria-label="Spending cap consumed"
+                      indicatorClassName={
+                        capPercent >= 90
+                          ? "bg-red-500"
+                          : capPercent >= 70
+                            ? "bg-yellow-500"
+                            : "bg-green-500"
+                      }
+                    />
+                    {CAP_THRESHOLDS.map((threshold) => (
+                      <span
+                        key={threshold}
+                        aria-hidden
+                        title={`${threshold}% of cap`}
+                        className="absolute top-0 h-2 w-px bg-background/80"
+                        style={{ left: `${threshold}%` }}
+                      />
+                    ))}
+                  </div>
+                  <div className="relative h-3 text-[11px] text-muted-foreground">
+                    {CAP_THRESHOLDS.map((threshold) => (
+                      <span
+                        key={threshold}
+                        className="absolute -translate-x-1/2 tabular-nums"
+                        style={{ left: `${threshold}%` }}
+                      >
+                        {threshold}%
+                      </span>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
