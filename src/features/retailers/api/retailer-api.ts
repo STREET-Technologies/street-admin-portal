@@ -312,6 +312,27 @@ export function setOutletPrimary(
 // Billing health
 // ---------------------------------------------------------------------------
 
+/**
+ * Mirrors BillingLedgerEntry in street-backend
+ * (src/modules/v1/billing/interfaces/commission.interface.ts) — change together.
+ */
+export interface RetailerBillingLedgerEntry {
+  orderId: string;
+  createdAt: string;
+  billingStatus: "pending" | "charged" | "failed" | "skipped";
+  /** What Shopify was actually charged. Null until billed, and on legacy rows. */
+  billingAmount: number | null;
+  billingChargedAt: string | null;
+  /** Failure message when failed, skip reason when skipped — overloaded field. */
+  billingError: string | null;
+  discountAbsorbed: number | null;
+  productTotal: number | null;
+  commissionPercentage: number | null;
+  commissionAmount: number | null;
+  expectedDeliveryFee: number | null;
+  expectedCharge: number | null;
+}
+
 export interface RetailerBillingHealth {
   shopDomain: string | null;
   subscription: {
@@ -327,6 +348,9 @@ export interface RetailerBillingHealth {
     skipped: number;
     chargedAmount: number;
   };
+  /** Most recent orders only — `ledgerTotal` is the true count. */
+  ledger: RetailerBillingLedgerEntry[];
+  ledgerTotal: number;
 }
 
 export function getRetailerBilling(

@@ -1,13 +1,55 @@
+import { Link } from "@tanstack/react-router";
 import { CreditCard, AlertTriangle, CheckCircle, Clock, XCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { formatCurrency } from "@/lib/format-utils";
+import { formatCurrency, formatDate } from "@/lib/format-utils";
 import { useRetailerBillingQuery } from "../api/retailer-queries";
+import type { RetailerBillingLedgerEntry } from "../api/retailer-api";
 
 interface RetailerBillingTabProps {
   retailerId: string;
+}
+
+function BillingStatusBadge({ status }: { status: RetailerBillingLedgerEntry["billingStatus"] }) {
+  if (status === "charged")
+    return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Charged</Badge>;
+  if (status === "failed") return <Badge variant="destructive">Failed</Badge>;
+  if (status === "pending")
+    return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">Pending</Badge>;
+  return <Badge variant="secondary">Skipped</Badge>;
+}
+
+/**
+ * The arithmetic behind the charge, from the order's own pricingBreakdown
+ * snapshot: commission on the product total, plus the delivery recovery fee,
+ * less any STREET-absorbed discount.
+ */
+function ChargeWorkings({ entry }: { entry: RetailerBillingLedgerEntry }) {
+  if (entry.commissionAmount === null) {
+    return <span className="text-xs text-muted-foreground">No pricing breakdown recorded</span>;
+  }
+
+  return (
+    <span className="text-xs text-muted-foreground tabular-nums">
+      {formatCurrency(entry.productTotal)}
+      {entry.commissionPercentage !== null && ` × ${entry.commissionPercentage}%`} ={" "}
+      {formatCurrency(entry.commissionAmount)} commission
+      {entry.expectedDeliveryFee !== null && ` + ${formatCurrency(entry.expectedDeliveryFee)} delivery`}
+      {entry.discountAbsorbed
+        ? ` − ${formatCurrency(entry.discountAbsorbed)} STREET credit`
+        : ""}
+    </span>
+  );
 }
 
 function SubscriptionStatusBadge({ status }: { status: string | null }) {
@@ -150,6 +192,94 @@ export function RetailerBillingTab({ retailerId }: RetailerBillingTabProps) {
           <StatTile icon={Clock} label="Pending" value={data.orders.pending} highlight={data.orders.pending > 0 ? "warn" : undefined} />
           <StatTile icon={XCircle} label="Failed" value={data.orders.failed} highlight={data.orders.failed > 0 ? "danger" : undefined} />
           <StatTile icon={AlertTriangle} label="Skipped" value={data.orders.skipped} />
+        </div>
+      </section>
+
+      {/* Per-order charge ledger — flat section */}
+      <section>
+        <h2 className="text-base font-semibold leading-none">Charge Ledger</h2>
+        <p className="mt-1.5 text-xs text-muted-foreground">
+          {data.ledgerTotal > data.ledger.length
+            ? `Showing the ${data.ledger.length} most recent of ${data.ledgerTotal} orders.`
+            : `${data.ledgerTotal} order${data.ledgerTotal === 1 ? "" : "s"}.`}{" "}
+          Expected is derived from the order's pricing snapshot; charged is what Shopify was billed.
+        </p>
+        <div className="mt-4 border-t pt-5">
+          {data.ledger.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No orders to bill yet.</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Order</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Breakdown</TableHead>
+                  <TableHead className="text-right">Expected</TableHead>
+                  <TableHead className="text-right">Charged</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {data.ledger.map((entry) => {
+                  const mismatch =
+                    entry.billingAmount !== null &&
+                    entry.expectedCharge !== null &&
+                    Math.abs(entry.billingAmount - entry.expectedCharge) > 0.01;
+
+                  return (
+                    <TableRow key={entry.orderId}>
+                      <TableCell className="align-top">
+                        <Link
+                          to="/orders/$orderId"
+                          params={{ orderId: entry.orderId }}
+                          className="font-mono text-xs font-medium text-primary hover:underline"
+                        >
+                          {entry.orderId}
+                        </Link>
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                          {formatDate(entry.createdAt)}
+                        </p>
+                      </TableCell>
+                      <TableCell className="align-top">
+                        <BillingStatusBadge status={entry.billingStatus} />
+                        {entry.billingError && (
+                          <p className="mt-1 max-w-[16rem] text-xs text-muted-foreground">
+                            {entry.billingError}
+                          </p>
+                        )}
+                      </TableCell>
+                      <TableCell className="align-top">
+                        <ChargeWorkings entry={entry} />
+                      </TableCell>
+                      <TableCell className="align-top text-right text-sm tabular-nums">
+                        {entry.expectedCharge === null ? "—" : formatCurrency(entry.expectedCharge)}
+                      </TableCell>
+                      <TableCell className="align-top text-right">
+                        <span
+                          className={`text-sm font-medium tabular-nums ${
+                            mismatch ? "text-yellow-600" : ""
+                          }`}
+                        >
+                          {entry.billingAmount === null
+                            ? "—"
+                            : formatCurrency(entry.billingAmount)}
+                        </span>
+                        {mismatch && (
+                          <p className="mt-0.5 text-xs text-yellow-600">
+                            Differs from expected
+                          </p>
+                        )}
+                        {entry.billingChargedAt && (
+                          <p className="mt-0.5 text-xs text-muted-foreground">
+                            {formatDate(entry.billingChargedAt)}
+                          </p>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          )}
         </div>
       </section>
     </div>
