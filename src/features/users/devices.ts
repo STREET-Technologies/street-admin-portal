@@ -28,11 +28,13 @@ export interface DeviceGroup {
   deviceId: string | null;
   /** True when any registration for this device is still live. */
   isActive: boolean;
-  /** App version from the newest registration that reported one. */
-  appVersion: string | null;
-  /** OS version from the newest registration that reported one. */
-  osVersion: string | null;
-  /** Newest lastUsedAt across the group, falling back to createdAt. */
+  /**
+   * Newest lastUsedAt across the group, falling back to createdAt.
+   *
+   * Sorts the list; deliberately NOT displayed on the device row — the
+   * registration table's own Last used column says it per registration,
+   * which is the more precise answer to the same question.
+   */
   lastSeenAt: string | null;
   /** First time this device ever registered. */
   firstSeenAt: string;
@@ -108,8 +110,6 @@ export function groupDevices(rows: BackendUserDevice[]): DeviceGroup[] {
         platform: row.platform,
         deviceId: row.deviceId,
         isActive: row.isActive,
-        appVersion: readAppVersion(row.metadata),
-        osVersion: readOsVersion(row.metadata),
         lastSeenAt: seenAt,
         firstSeenAt: row.createdAt,
         registrations: [row],
@@ -135,15 +135,6 @@ export function groupDevices(rows: BackendUserDevice[]): DeviceGroup[] {
     // phone or an upgraded app should read as it is today, not as it was.
     const newest = group.registrations[0];
     group.name = newest.deviceName ?? platformLabel(newest.platform);
-    // Newest-first order means find() takes the most recent registration that
-    // reported one. Older builds sent no metadata at all (TT-455), so this is
-    // frequently the only row carrying either value.
-    group.appVersion =
-      group.registrations.map((r) => readAppVersion(r.metadata)).find(Boolean) ??
-      null;
-    group.osVersion =
-      group.registrations.map((r) => readOsVersion(r.metadata)).find(Boolean) ??
-      null;
   }
 
   return [...groups.values()].sort((a, b) => {

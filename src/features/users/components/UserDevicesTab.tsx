@@ -113,43 +113,30 @@ function DeviceRow({ group }: { group: DeviceGroup }) {
 
   return (
     <Collapsible defaultOpen={false}>
-      {/* Two lines: what the device IS on top, what identifies it beneath.
-          The identity line lives here rather than inside the panel so the
-          device is fully described without expanding anything — and at text-xs,
-          because a 36-character UUID set at body size dominated everything
-          around it. */}
-      <CollapsibleTrigger className="group/device flex w-full items-center gap-3 px-4 py-4 text-left transition-colors hover:bg-muted/50">
+      {/* Identity only, on one line: which device this is and since when.
+          Its OS, app version and last-used date are the Active row of the
+          table below, stated more precisely and already lined up in columns —
+          repeating them here was the same facts twice in a worse format. */}
+      <CollapsibleTrigger className="group/device flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-muted/50">
         <Icon className="size-4 shrink-0 text-muted-foreground" />
-        <div className="min-w-0 flex-1">
-          {/* Line 1 = what it is and how it is doing. Line 2 = how to identify
-              it and its dates. Last seen sits on line 2 with the other dates:
-              on line 1 it made a long meta string longer and crowded the name. */}
-          <div className="flex items-center gap-3">
-            <span className="shrink-0 text-sm font-medium">{group.name}</span>
-            <StatusBadge
-              status={group.isActive ? "active" : "inactive"}
-              size="sm"
-              className="shrink-0"
-            />
-            <span className="min-w-0 truncate text-sm text-muted-foreground">
-              {platformDisplay(group.platform, group.osVersion)}
-              {group.appVersion && <> · v{group.appVersion}</>}
-            </span>
-            <span className="ml-auto shrink-0 text-sm text-muted-foreground tabular-nums">
-              {count} {count === 1 ? "registration" : "registrations"}
-            </span>
-          </div>
-          <p className="mt-1.5 truncate text-xs text-muted-foreground">
-            {group.deviceId && (
-              <>
-                <span className="font-mono">{group.deviceId}</span>
-                {" · "}
-              </>
-            )}
-            First registered {formatDate(group.firstSeenAt)}
-            {group.lastSeenAt && <> · Last seen {formatDate(group.lastSeenAt)}</>}
-          </p>
-        </div>
+        <span className="shrink-0 text-sm font-medium">{group.name}</span>
+        <StatusBadge
+          status={group.isActive ? "active" : "inactive"}
+          size="sm"
+          className="shrink-0"
+        />
+        <span className="min-w-0 truncate text-xs text-muted-foreground">
+          {group.deviceId && (
+            <>
+              <span className="font-mono">{group.deviceId}</span>
+              {" · "}
+            </>
+          )}
+          First registered {formatDate(group.firstSeenAt)}
+        </span>
+        <span className="ml-auto shrink-0 text-sm text-muted-foreground tabular-nums">
+          {count} {count === 1 ? "registration" : "registrations"}
+        </span>
         <ChevronRight className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]/device:rotate-90" />
       </CollapsibleTrigger>
 
@@ -195,8 +182,12 @@ function DeviceRow({ group }: { group: DeviceGroup }) {
                     <span className="text-muted-foreground">
                       {version ? `v${version}` : ""}
                     </span>
+                    {/* Always the platform, with the version when we have it.
+                        The device row no longer names the platform, so a
+                        pre-TT-455 row with no metadata must still say whether
+                        this was an iPhone or an Android. */}
                     <span className="text-muted-foreground">
-                      {os ? platformDisplay(reg.platform, os) : ""}
+                      {platformDisplay(reg.platform, os)}
                     </span>
                     {/* The whole token, clipped by the column rather than by
                         a hard slice — it gets whatever width is spare, and

@@ -151,52 +151,20 @@ describe("groupDevices", () => {
     expect(groupDevices([row({ deviceName: null })])[0].name).toBe("iOS device");
   });
 
-  it("takes the app version from the newest registration that has one", () => {
-    // Older builds sent no metadata at all (TT-455 added it), so the newest
-    // row is frequently the only one carrying a version.
+  it("keeps versions on the registrations, not on the group", () => {
+    // The device row shows identity only; OS and app version are columns of
+    // the registration table, where each row states its own. Hoisting a
+    // "current" version onto the group would restate the Active row.
     const groups = groupDevices([
-      row({
-        id: "old",
-        metadata: { appVersion: "1.2.0" },
-        lastUsedAt: "2026-08-01T00:00:00.000Z",
-      }),
-      row({
-        id: "new",
-        metadata: { appVersion: "1.4.0" },
-        lastUsedAt: "2026-08-09T00:00:00.000Z",
-      }),
+      row({ metadata: { appVersion: "1.4.0", osVersion: "15" } }),
     ]);
 
-    expect(groups[0].appVersion).toBe("1.4.0");
-  });
-
-  it("takes the OS version from the newest registration that has one", () => {
-    const groups = groupDevices([
-      row({
-        id: "old",
-        metadata: { osVersion: "14" },
-        lastUsedAt: "2026-08-01T00:00:00.000Z",
-      }),
-      row({
-        id: "new",
-        metadata: { osVersion: "15" },
-        lastUsedAt: "2026-08-09T00:00:00.000Z",
-      }),
-    ]);
-
-    expect(groups[0].osVersion).toBe("15");
-  });
-
-  it("carries the OS version even when the app version is missing", () => {
-    // The two are independent keys; one absent must not suppress the other.
-    const groups = groupDevices([row({ metadata: { osVersion: "18.2" } })]);
-
-    expect(groups[0].osVersion).toBe("18.2");
-    expect(groups[0].appVersion).toBe(null);
-  });
-
-  it("leaves OS null on pre-TT-455 rows", () => {
-    expect(groupDevices([row({ metadata: null })])[0].osVersion).toBe(null);
+    expect(groups[0]).not.toHaveProperty("appVersion");
+    expect(groups[0]).not.toHaveProperty("osVersion");
+    expect(groups[0].registrations[0].metadata).toEqual({
+      appVersion: "1.4.0",
+      osVersion: "15",
+    });
   });
 
   it("survives a user with no registrations", () => {
