@@ -1,11 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import {
-  AlertTriangle,
-  ArrowRight,
-  CheckCircle2,
-  Clock,
-  RotateCcw,
-} from "lucide-react";
+import { AlertTriangle, ArrowRight, Clock, RotateCcw } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { ErrorState } from "@/components/shared/ErrorState";
@@ -30,6 +24,7 @@ function formatGBP(amount: number): string {
 
 export function DashboardPage() {
   const { data: stats, isLoading, isError, refetch } = useDashboardStatsQuery();
+  const attentionItems = getAttentionItems(stats);
 
   if (isError) {
     return (
@@ -48,34 +43,45 @@ export function DashboardPage() {
     <div className="space-y-8">
       <PageHeader title="Dashboard" description="Platform overview" />
 
+      {/* Needs attention — first, and only when there is something.
+          Nothing to act on means no heading, no border, no "all clear" line
+          taking up the middle of the page: the section's presence IS the
+          signal, so a quiet dashboard is genuinely quiet. */}
+      {!isLoading && attentionItems.length > 0 && (
+        <section>
+          <h2 className="text-base font-semibold leading-none">
+            Needs attention
+          </h2>
+          <div className="mt-4 space-y-2 border-t pt-5">
+            <AttentionRail items={attentionItems} />
+          </div>
+        </section>
+      )}
+
       {/* Orders + GMV */}
       <section>
         <h2 className="text-base font-semibold leading-none">Orders</h2>
         <div className="mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-md border bg-border lg:grid-cols-4">
-          <Stat label="Orders today" value={stats?.orders.today} isLoading={isLoading} />
+          <Stat
+            label="Orders today"
+            value={stats?.orders.today}
+            isLoading={isLoading}
+          />
           <Stat
             label="GMV today"
             value={stats ? formatGBP(stats.orders.gmvTodayGbp) : undefined}
             isLoading={isLoading}
           />
-          <Stat label="Orders · 7 days" value={stats?.orders.week} isLoading={isLoading} />
+          <Stat
+            label="Orders · 7 days"
+            value={stats?.orders.week}
+            isLoading={isLoading}
+          />
           <Stat
             label="GMV · 7 days"
             value={stats ? formatGBP(stats.orders.gmvWeekGbp) : undefined}
             isLoading={isLoading}
           />
-        </div>
-      </section>
-
-      {/* Needs attention */}
-      <section>
-        <h2 className="text-base font-semibold leading-none">Needs attention</h2>
-        <div className="mt-4 space-y-2 border-t pt-5">
-          {isLoading ? (
-            <Skeleton className="h-12 w-full" />
-          ) : (
-            <AttentionRail stats={stats!} />
-          )}
         </div>
       </section>
 
@@ -85,7 +91,11 @@ export function DashboardPage() {
         <div className="mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-md border bg-border lg:grid-cols-4">
           <Stat
             label="Retailers live"
-            value={stats ? `${stats.vendors.active}/${stats.vendors.total}` : undefined}
+            value={
+              stats
+                ? `${stats.vendors.active}/${stats.vendors.total}`
+                : undefined
+            }
             hint={
               stats && stats.vendors.offline > 0
                 ? `${stats.vendors.offline} offline`
@@ -102,7 +112,11 @@ export function DashboardPage() {
             }
             isLoading={isLoading}
           />
-          <Stat label="Customers" value={stats?.users.total} isLoading={isLoading} />
+          <Stat
+            label="Customers"
+            value={stats?.users.total}
+            isLoading={isLoading}
+          />
           <Stat
             label="New this week"
             value={stats?.users.newThisWeek}
@@ -118,15 +132,30 @@ export function DashboardPage() {
 // Needs-attention rail
 // ---------------------------------------------------------------------------
 
-function AttentionRail({ stats }: { stats: DashboardStats }) {
-  const items = [
+interface AttentionItem {
+  count: number;
+  label: string;
+  description: string;
+  tab: string;
+  icon: React.ElementType;
+  tone: "critical" | "warning";
+}
+
+/**
+ * The things a support person can act on right now, each one already
+ * non-zero. Returns an empty array when the platform is quiet, which is what
+ * removes the whole section from the dashboard.
+ */
+function getAttentionItems(stats: DashboardStats | undefined): AttentionItem[] {
+  if (!stats) return [];
+  const items: AttentionItem[] = [
     {
       count: stats.orders.stuck,
       label: "stuck deliveries",
       description: "reconciliation gave up — resolve manually",
       tab: "stuck",
       icon: AlertTriangle,
-      tone: "critical" as const,
+      tone: "critical",
     },
     {
       count: stats.orders.awaitingAcceptance,
@@ -134,7 +163,7 @@ function AttentionRail({ stats }: { stats: DashboardStats }) {
       description: "waiting on the retailer",
       tab: "new",
       icon: Clock,
-      tone: "warning" as const,
+      tone: "warning",
     },
     {
       count: stats.orders.pendingReturns,
@@ -142,19 +171,13 @@ function AttentionRail({ stats }: { stats: DashboardStats }) {
       description: "opened or on the way back to the store",
       tab: "returned",
       icon: RotateCcw,
-      tone: "warning" as const,
+      tone: "warning",
     },
-  ].filter((item) => item.count > 0);
+  ];
+  return items.filter((item) => item.count > 0);
+}
 
-  if (items.length === 0) {
-    return (
-      <p className="flex items-center gap-2 py-2 text-sm text-muted-foreground">
-        <CheckCircle2 className="size-4 text-green-600" />
-        All clear — nothing needs attention right now.
-      </p>
-    );
-  }
-
+function AttentionRail({ items }: { items: AttentionItem[] }) {
   return (
     <>
       {items.map((item) => (
@@ -170,7 +193,9 @@ function AttentionRail({ stats }: { stats: DashboardStats }) {
         >
           <item.icon
             className={`size-4 shrink-0 ${
-              item.tone === "critical" ? "text-red-600" : "text-muted-foreground"
+              item.tone === "critical"
+                ? "text-red-600"
+                : "text-muted-foreground"
             }`}
           />
           <span className="text-sm">
