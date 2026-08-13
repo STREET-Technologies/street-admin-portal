@@ -105,7 +105,7 @@ export function UserDevicesTab({ userId }: { userId: string }) {
  * rows — declaring the widths twice is how a table quietly stops lining up.
  */
 const REG_GRID =
-  "grid grid-cols-[7rem_11rem_11rem_minmax(9rem,1fr)_8rem_11rem] gap-x-4";
+  "grid grid-cols-[6.5rem_11rem_11rem_12rem_8rem_minmax(10rem,1fr)] gap-x-4";
 
 function DeviceRow({ group }: { group: DeviceGroup }) {
   const Icon = group.platform === "web" ? Monitor : Smartphone;
@@ -118,10 +118,13 @@ function DeviceRow({ group }: { group: DeviceGroup }) {
           device is fully described without expanding anything — and at text-xs,
           because a 36-character UUID set at body size dominated everything
           around it. */}
-      <CollapsibleTrigger className="group/device flex w-full items-center gap-2.5 px-4 py-3 text-left transition-colors hover:bg-muted/50">
+      <CollapsibleTrigger className="group/device flex w-full items-center gap-3 px-4 py-4 text-left transition-colors hover:bg-muted/50">
         <Icon className="size-4 shrink-0 text-muted-foreground" />
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2.5">
+          {/* Line 1 = what it is and how it is doing. Line 2 = how to identify
+              it and its dates. Last seen sits on line 2 with the other dates:
+              on line 1 it made a long meta string longer and crowded the name. */}
+          <div className="flex items-center gap-3">
             <span className="shrink-0 text-sm font-medium">{group.name}</span>
             <StatusBadge
               status={group.isActive ? "active" : "inactive"}
@@ -131,20 +134,20 @@ function DeviceRow({ group }: { group: DeviceGroup }) {
             <span className="min-w-0 truncate text-sm text-muted-foreground">
               {platformDisplay(group.platform, group.osVersion)}
               {group.appVersion && <> · v{group.appVersion}</>}
-              {group.lastSeenAt && (
-                <> · Last seen {formatDate(group.lastSeenAt)}</>
-              )}
             </span>
             <span className="ml-auto shrink-0 text-sm text-muted-foreground tabular-nums">
               {count} {count === 1 ? "registration" : "registrations"}
             </span>
           </div>
-          <p className="mt-0.5 truncate text-xs text-muted-foreground">
+          <p className="mt-1.5 truncate text-xs text-muted-foreground">
             {group.deviceId && (
-              <span className="font-mono">{group.deviceId}</span>
+              <>
+                <span className="font-mono">{group.deviceId}</span>
+                {" · "}
+              </>
             )}
-            {group.deviceId && " · "}
             First registered {formatDate(group.firstSeenAt)}
+            {group.lastSeenAt && <> · Last seen {formatDate(group.lastSeenAt)}</>}
           </p>
         </div>
         <ChevronRight className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]/device:rotate-90" />
@@ -162,7 +165,7 @@ function DeviceRow({ group }: { group: DeviceGroup }) {
               <span>Last used</span>
               <span>App</span>
               <span>OS</span>
-              <span className="text-right">Token</span>
+              <span>Token</span>
             </div>
             <div className="divide-y divide-border/60">
               {group.registrations.map((reg) => {
@@ -195,11 +198,19 @@ function DeviceRow({ group }: { group: DeviceGroup }) {
                     <span className="text-muted-foreground">
                       {os ? platformDisplay(reg.platform, os) : ""}
                     </span>
-                    <span className="flex items-center justify-end gap-1">
-                      <span className="font-mono text-xs text-muted-foreground">
-                        {reg.token.slice(0, 12)}…
+                    {/* The whole token, clipped by the column rather than by
+                        a hard slice — it gets whatever width is spare, and
+                        the leading characters are what you compare against a
+                        device anyway. */}
+                    <span className="flex min-w-0 items-center gap-1">
+                      <span className="truncate font-mono text-xs text-muted-foreground">
+                        {reg.token}
                       </span>
-                      <CopyButton value={reg.token} label="Copy FCM token" />
+                      <CopyButton
+                        value={reg.token}
+                        label="Copy FCM token"
+                        className="shrink-0"
+                      />
                     </span>
                   </div>
                 );
