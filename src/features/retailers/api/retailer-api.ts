@@ -231,14 +231,6 @@ export function resyncRetailerFromShopify(
 // Outlets
 // ---------------------------------------------------------------------------
 
-/** Result of the backend's address validation check against the courier provider (TT-397). */
-export type AddressValidationVerdict =
-  | "valid"
-  | "invalid_postcode"
-  | "postcode_mismatch"
-  | "unknown"
-  | null;
-
 /** Outlet (Shopify location) linked to a vendor. */
 export interface AdminOutlet {
   id: string;
