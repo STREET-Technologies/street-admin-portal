@@ -8,6 +8,7 @@ import {
   MapPin,
   RotateCcw,
   Store,
+  UserRound,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -25,8 +26,15 @@ import type { DashboardStats } from "../api/dashboard-api";
  * deep-links into the pre-filtered orders tabs. Numbers refresh every 60s.
  *
  * Styling follows the portal's flat tile pattern (bordered grid, hairline
- * dividers, muted labels, tabular numerals) — status color appears only on
- * the attention rail, always paired with an icon and label.
+ * dividers, muted labels, tabular numerals).
+ *
+ * Colour rule: emphasis marks URGENCY, never which table a row came from.
+ * Everything under "Needs attention" needs attention — the heading already
+ * says so, and tinting most of it just restates that while making the panel
+ * shout. Only a stuck delivery keeps an accent, because a customer is
+ * actively waiting on it; every other fault is latent and reads in the
+ * neutral card. Category is carried by the icon and the wording, so nothing
+ * here depends on telling two colours apart.
  */
 
 function formatGBP(amount: number): string {
@@ -183,8 +191,8 @@ interface FaultEntry {
 interface FaultGroupData {
   title: string;
   consequence: string;
+  /** Distinct per category — the icon, not colour, says which fault it is. */
   icon: React.ElementType;
-  tone: "critical" | "warning";
   entries: FaultEntry[];
 }
 
@@ -212,21 +220,18 @@ function getFaultGroups(stats: DashboardStats | undefined): FaultGroupData[] {
       title: "Retailer address not courier-bookable",
       consequence: "Stuart will refuse to book collections from these branches",
       icon: Store,
-      tone: "critical",
       entries: outletsBy("address_unbookable"),
     },
     {
       title: "Geo location missing",
       consequence: "these branches are invisible in customer discovery",
       icon: MapPin,
-      tone: "critical",
       entries: outletsBy("no_coordinates"),
     },
     {
       title: "Customer address not courier-bookable",
       consequence: "deliveries to these customers will fail",
-      icon: MapPin,
-      tone: "warning",
+      icon: UserRound,
       entries: stats.attention.userAddresses.map((a) => ({
         id: a.addressId,
         owner: a.customerName,
@@ -277,7 +282,7 @@ function getAttentionItems(stats: DashboardStats | undefined): AttentionItem[] {
       description: "Shopify rejected the commission charge",
       search: { billingStatus: "failed" },
       icon: CreditCard,
-      tone: "critical",
+      tone: "warning",
     },
   ];
   return items.filter((item) => item.count > 0);
@@ -292,23 +297,13 @@ function getAttentionItems(stats: DashboardStats | undefined): AttentionItem[] {
  * cannot bury the others.
  */
 function FaultGroup({ group }: { group: FaultGroupData }) {
-  const critical = group.tone === "critical";
-
   return (
     <Collapsible
-      defaultOpen={group.entries.length <= 5}
-      className={`rounded-md border ${
-        critical
-          ? "border-red-300 bg-red-50/50 dark:border-red-900 dark:bg-red-950/20"
-          : "border-border bg-muted/40"
-      }`}
+      defaultOpen={false}
+      className="rounded-md border border-border bg-muted/40"
     >
       <CollapsibleTrigger className="group/fault flex w-full items-center gap-3 px-4 py-3 text-left">
-        <group.icon
-          className={`size-4 shrink-0 ${
-            critical ? "text-red-600" : "text-muted-foreground"
-          }`}
-        />
+        <group.icon className="size-4 shrink-0 text-muted-foreground" />
         <span className="text-sm">
           <span className="font-semibold tabular-nums">
             {group.entries.length}
