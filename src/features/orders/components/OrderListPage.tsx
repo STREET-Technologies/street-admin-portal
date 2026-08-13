@@ -31,6 +31,7 @@ import { CopyButton } from "@/components/shared/CopyButton";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { DateRangeFilter } from "@/components/shared/DateRangeFilter";
 import { RetailerFilter } from "@/components/shared/RetailerFilter";
+import { OutletFilter } from "@/components/shared/OutletFilter";
 import { useTableParams } from "@/hooks/use-table-params";
 import { useSearchParamState } from "@/hooks/use-search-param";
 import { useTabParam } from "@/hooks/use-tab-param";
@@ -359,6 +360,7 @@ export function OrderListPage() {
   const [dateFrom] = useSearchParamState("dateFrom");
   const [dateTo] = useSearchParamState("dateTo");
   const [vendorId, setVendorId] = useSearchParamState("vendorId");
+  const [outletId, setOutletId] = useSearchParamState("outletId");
 
   const resetToFirstPage = () =>
     onPaginationChange({ pageIndex: 0, pageSize: pagination.pageSize });
@@ -381,6 +383,7 @@ export function OrderListPage() {
     dateFrom,
     dateTo,
     vendorId,
+    outletId,
     sortBy: searchParams.sortBy,
     sortOrder: searchParams.sortOrder,
     page: searchParams.page,
@@ -468,6 +471,21 @@ export function OrderListPage() {
           value={vendorId}
           onChange={(next) => {
             setVendorId(next);
+            // An outlet belongs to exactly one retailer, so carrying the old
+            // selection across would filter on a branch the new retailer does
+            // not own and return nothing — reading as a bug, not a filter.
+            setOutletId(undefined);
+            resetToFirstPage();
+          }}
+        />
+
+        {/* Only appears once a retailer with more than one branch is picked
+            (TT-450). */}
+        <OutletFilter
+          retailerId={vendorId}
+          value={outletId}
+          onChange={(next) => {
+            setOutletId(next);
             resetToFirstPage();
           }}
         />

@@ -30,6 +30,8 @@ export interface GetOrdersParams {
   dateTo?: string;
   /** Retailer (vendor) UUID (TT-448). Composes with every other filter. */
   vendorId?: string;
+  /** Outlet UUID (TT-450). Meant to accompany vendorId — an outlet has one. */
+  outletId?: string;
   /** Backend allowlist: orderId | customerName | totalAmount | createdAt */
   sortBy?: string;
   sortOrder?: "asc" | "desc";
