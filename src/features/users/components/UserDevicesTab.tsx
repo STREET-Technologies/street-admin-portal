@@ -106,23 +106,23 @@ function DeviceRow({ group }: { group: DeviceGroup }) {
 
   return (
     <Collapsible defaultOpen={false}>
-      <CollapsibleTrigger className="group/device flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/50">
+      {/* Single inline row. The device name, its state and everything known
+          about it read left to right; stacking the detail underneath left a
+          wide empty row and pushed the detail down into small type. */}
+      <CollapsibleTrigger className="group/device flex w-full items-center gap-2.5 px-4 py-3 text-left transition-colors hover:bg-muted/50">
         <Icon className="size-4 shrink-0 text-muted-foreground" />
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="truncate text-sm font-medium">{group.name}</span>
-            <StatusBadge
-              status={group.isActive ? "active" : "inactive"}
-              size="sm"
-            />
-          </div>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            {platformDisplay(group.platform, group.osVersion)}
-            {group.appVersion && <> · v{group.appVersion}</>}
-            {group.lastSeenAt && <> · Last seen {formatDate(group.lastSeenAt)}</>}
-          </p>
-        </div>
-        <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
+        <span className="shrink-0 text-sm font-medium">{group.name}</span>
+        <StatusBadge
+          status={group.isActive ? "active" : "inactive"}
+          size="sm"
+          className="shrink-0"
+        />
+        <span className="min-w-0 truncate text-sm text-muted-foreground">
+          {platformDisplay(group.platform, group.osVersion)}
+          {group.appVersion && <> · v{group.appVersion}</>}
+          {group.lastSeenAt && <> · Last seen {formatDate(group.lastSeenAt)}</>}
+        </span>
+        <span className="ml-auto shrink-0 text-sm text-muted-foreground tabular-nums">
           {count} {count === 1 ? "registration" : "registrations"}
         </span>
         <ChevronRight className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]/device:rotate-90" />
@@ -131,7 +131,7 @@ function DeviceRow({ group }: { group: DeviceGroup }) {
       <CollapsibleContent>
         <div className="border-t bg-muted/30 px-4 py-3">
           {group.deviceId && (
-            <p className="mb-3 text-xs text-muted-foreground">
+            <p className="mb-3 text-sm text-muted-foreground">
               Device ID{" "}
               <span className="font-mono break-all">{group.deviceId}</span> ·
               First registered {formatDate(group.firstSeenAt)}
@@ -147,7 +147,7 @@ function DeviceRow({ group }: { group: DeviceGroup }) {
               return (
                 <li
                   key={reg.id}
-                  className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs"
+                  className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm"
                 >
                   <span
                     className={
