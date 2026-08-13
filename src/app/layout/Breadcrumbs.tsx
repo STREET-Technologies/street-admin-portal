@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Link, useLocation } from "@tanstack/react-router";
-import { useQueryClient } from "@tanstack/react-query";
+import { skipToken, useQuery } from "@tanstack/react-query";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -9,11 +9,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import type { BackendUser } from "@/features/users/types";
-import { toUserViewModel } from "@/features/users/types";
-import type { BackendVendor } from "@/features/retailers/types";
-import { toRetailerViewModel } from "@/features/retailers/types";
-import type { BackendOrder } from "@/features/orders/types";
+import { LABEL_RESOLVERS } from "./breadcrumb-labels";
 
 /** Map URL segments to display labels. */
 const segmentLabels: Record<string, string> = {
@@ -33,40 +29,30 @@ function formatSegment(segment: string): string {
   );
 }
 
-/** Attempt to resolve a human-readable label for an ID segment from the query cache. */
+/**
+ * Resolve a human-readable label for an ID segment from the query cache.
+ *
+ * Subscribes via useQuery rather than reading queryClient.getQueryData: that
+ * is a one-shot snapshot taken during render, so on a first visit — when the
+ * detail query is still in flight and the cache is empty — the crumb fell back
+ * to the raw UUID and never re-rendered once the data landed. It only looked
+ * correct on a second visit because the cache was warm by then.
+ *
+ * queryFn is skipToken, so this never fetches: the detail page owns fetching,
+ * this only observes whatever it puts in the cache.
+ */
 function useResolvedLabel(segment: string, prevSegment: string | undefined): string {
-  const queryClient = useQueryClient();
+  const resolver = prevSegment ? LABEL_RESOLVERS[prevSegment] : undefined;
 
-  if (prevSegment === "users") {
-    // TanStack Query caches the raw BackendUser (the `select` in useUserQuery
-    // only transforms what components see, not what's stored). Apply the
-    // ViewModel transform here so we get the combined "First Last" name.
-    const userRaw = queryClient.getQueryData<BackendUser>([
-      "users",
-      "detail",
-      segment,
-    ]);
-    if (userRaw) {
-      const view = toUserViewModel(userRaw);
-      if (view.name) return view.name;
-    }
-  }
+  const { data } = useQuery({
+    queryKey: resolver?.queryKey(segment) ?? ["breadcrumb", "unresolved", segment],
+    queryFn: skipToken,
+    staleTime: Infinity,
+  });
 
-  if (prevSegment === "retailers") {
-    const retailerRaw = queryClient.getQueryData<BackendVendor>([
-      "retailers",
-      "detail",
-      segment,
-    ]);
-    if (retailerRaw) {
-      const view = toRetailerViewModel(retailerRaw);
-      if (view.name) return view.name;
-    }
-  }
-
-  if (prevSegment === "orders") {
-    const order = queryClient.getQueryData<BackendOrder>(["orders", "detail", "byOrderId", segment]);
-    if (order?.orderId) return order.orderId;
+  if (resolver && data !== undefined) {
+    const label = resolver.toLabel(data as never);
+    if (label) return label;
   }
 
   return formatSegment(segment);
