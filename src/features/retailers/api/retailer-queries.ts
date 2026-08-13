@@ -49,8 +49,8 @@ export const retailerKeys = {
     [...retailerKeys.detail(id), "orders"] as const,
   staff: (id: string) =>
     [...retailerKeys.detail(id), "staff"] as const,
-  billing: (id: string) =>
-    [...retailerKeys.detail(id), "billing"] as const,
+  billing: (id: string, billingStatus?: string | null) =>
+    [...retailerKeys.detail(id), "billing", billingStatus ?? "all"] as const,
   outlets: (id: string) =>
     [...retailerKeys.detail(id), "outlets"] as const,
 };
@@ -106,10 +106,18 @@ export function useRetailerStaffQuery(retailerId: string) {
   });
 }
 
-export function useRetailerBillingQuery(retailerId: string) {
+/**
+ * Billing health. `billingStatus` narrows the per-order ledger server-side;
+ * the status counts always span every order, filtered or not.
+ */
+export function useRetailerBillingQuery(
+  retailerId: string,
+  billingStatus?: string | null,
+) {
   return useQuery({
-    queryKey: retailerKeys.billing(retailerId),
-    queryFn: () => getRetailerBilling(retailerId),
+    queryKey: retailerKeys.billing(retailerId, billingStatus),
+    queryFn: () => getRetailerBilling(retailerId, billingStatus),
+    placeholderData: keepPreviousData,
     enabled: Boolean(retailerId),
   });
 }

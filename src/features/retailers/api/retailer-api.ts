@@ -355,6 +355,9 @@ export interface RetailerBillingHealth {
 
 export function getRetailerBilling(
   retailerId: string,
+  billingStatus?: string | null,
 ): Promise<RetailerBillingHealth> {
-  return api.get<RetailerBillingHealth>(`admin/vendors/${retailerId}/billing`);
+  return api.get<RetailerBillingHealth>(
+    `admin/vendors/${retailerId}/billing${toQueryString({ billingStatus })}`,
+  );
 }
