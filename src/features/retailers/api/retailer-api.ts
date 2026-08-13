@@ -319,10 +319,17 @@ export function setOutletPrimary(
 export interface RetailerBillingLedgerEntry {
   orderId: string;
   createdAt: string;
+  /** Order lifecycle status — context for the billing status. */
+  orderStatus: string;
+  /** Reason for the order's own status, e.g. "All items out of stock". */
+  statusReason: string | null;
+  paymentStatus: string;
   billingStatus: "pending" | "charged" | "failed" | "skipped";
   /** What Shopify was actually charged. Null until billed, and on legacy rows. */
   billingAmount: number | null;
   billingChargedAt: string | null;
+  /** Set only when Shopify actually raised a usage charge. */
+  billingUsageRecordId: string | null;
   /** Failure message when failed, skip reason when skipped — overloaded field. */
   billingError: string | null;
   discountAbsorbed: number | null;

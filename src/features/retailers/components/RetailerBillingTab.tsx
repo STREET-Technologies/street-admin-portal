@@ -103,6 +103,42 @@ const BILLING_STATUSES: {
   },
 ];
 
+/**
+ * `billingError` sometimes holds a raw Shopify cancel token rather than prose
+ * — "inventory" on its own tells support nothing. Translate the known tokens
+ * and leave anything else (already a sentence) as written.
+ */
+const REASON_TEXT: Record<string, string> = {
+  inventory: "Retailer cancelled — item out of stock",
+  customer: "Cancelled at the customer's request",
+  declined: "Payment was declined",
+  fraud: "Cancelled as suspected fraud",
+  other: "Cancelled — no reason given",
+};
+
+function readableReason(reason: string | null): string | null {
+  if (!reason) return null;
+  return REASON_TEXT[reason.trim().toLowerCase()] ?? reason;
+}
+
+/** Fallback context when an order carries no reason of its own. */
+const ORDER_STATUS_TEXT: Record<string, string> = {
+  PENDING_PAYMENT: "Awaiting payment",
+  AWAITING_ACCEPTANCE: "Awaiting retailer acceptance",
+  CONFIRMED: "Accepted, not yet delivered",
+  READY_FOR_DELIVERY: "Ready for the courier",
+  IN_DELIVERY: "Out for delivery",
+  DELIVERED: "Delivered",
+  COMPLETED: "Completed",
+  CANCELLED: "Order cancelled",
+  PAYMENT_CANCELLED: "Cancelled before payment completed",
+  PAYMENT_FAILED: "Payment failed",
+  MISSED: "Retailer never accepted",
+  REJECTED: "Retailer rejected the order",
+  RETURNING: "Being returned",
+  RETURNED: "Returned",
+};
+
 function StatTile({
   icon: Icon,
   label,
@@ -331,6 +367,20 @@ export function RetailerBillingTab({ retailerId }: RetailerBillingTabProps) {
                     entry.expectedCharge !== null &&
                     Math.abs(entry.billingAmount - entry.expectedCharge) > 0.01;
 
+                  // A Shopify usage record proves money was billed, whatever
+                  // the billing status now says. Without this the row reads
+                  // as "never chargeable" on an order that was charged.
+                  const billedThenSkipped =
+                    entry.billingStatus === "skipped" &&
+                    Boolean(entry.billingUsageRecordId);
+
+                  // Cancelling an order the customer already paid for refunds
+                  // them in Shopify (TT-418) — worth stating outright, since
+                  // the retailer was still charged commission on it.
+                  const customerRefunded =
+                    entry.orderStatus === "CANCELLED" &&
+                    entry.paymentStatus === "PAID";
+
                   return (
                     <TableRow key={entry.orderId}>
                       <TableCell className="align-top">
@@ -347,9 +397,17 @@ export function RetailerBillingTab({ retailerId }: RetailerBillingTabProps) {
                       </TableCell>
                       <TableCell className="align-top">
                         <BillingStatusBadge status={entry.billingStatus} />
-                        {entry.billingError && (
-                          <p className="mt-1 max-w-[16rem] text-xs text-muted-foreground">
-                            {entry.billingError}
+                        <p className="mt-1 max-w-[18rem] text-xs text-muted-foreground">
+                          {readableReason(entry.billingError) ??
+                            entry.statusReason ??
+                            ORDER_STATUS_TEXT[entry.orderStatus] ??
+                            entry.orderStatus}
+                          {customerRefunded && " · Customer refunded"}
+                        </p>
+                        {billedThenSkipped && (
+                          <p className="mt-1 max-w-[18rem] text-xs text-yellow-600">
+                            Charged before the order was cancelled. The
+                            commission was not reversed.
                           </p>
                         )}
                       </TableCell>
