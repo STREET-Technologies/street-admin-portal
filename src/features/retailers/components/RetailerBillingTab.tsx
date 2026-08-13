@@ -1,8 +1,20 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { CreditCard, AlertTriangle, CheckCircle, Clock, XCircle } from "lucide-react";
+import {
+  CreditCard,
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  XCircle,
+  ChevronRight,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import {
   Table,
   TableBody,
@@ -14,7 +26,9 @@ import {
 import { LoadingState } from "@/components/shared/LoadingState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { TablePagination } from "@/components/shared/TablePagination";
 import { formatCurrency, formatDate } from "@/lib/format-utils";
+import { useTableParams } from "@/hooks/use-table-params";
 import { useRetailerBillingQuery } from "../api/retailer-queries";
 import type { RetailerBillingLedgerEntry } from "../api/retailer-api";
 
@@ -22,12 +36,24 @@ interface RetailerBillingTabProps {
   retailerId: string;
 }
 
-function BillingStatusBadge({ status }: { status: RetailerBillingLedgerEntry["billingStatus"] }) {
+function BillingStatusBadge({
+  status,
+}: {
+  status: RetailerBillingLedgerEntry["billingStatus"];
+}) {
   if (status === "charged")
-    return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Charged</Badge>;
+    return (
+      <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
+        Charged
+      </Badge>
+    );
   if (status === "failed") return <Badge variant="destructive">Failed</Badge>;
   if (status === "pending")
-    return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">Pending</Badge>;
+    return (
+      <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">
+        Pending
+      </Badge>
+    );
   return <Badge variant="secondary">Skipped</Badge>;
 }
 
@@ -38,31 +64,63 @@ function BillingStatusBadge({ status }: { status: RetailerBillingLedgerEntry["bi
  */
 function ChargeWorkings({ entry }: { entry: RetailerBillingLedgerEntry }) {
   if (entry.commissionAmount === null) {
-    return <span className="text-xs text-muted-foreground">No pricing breakdown recorded</span>;
+    return (
+      <span className="text-xs text-muted-foreground">
+        No pricing breakdown recorded
+      </span>
+    );
   }
 
+  // Collapsed by default (TT-446): the arithmetic matters when a figure is
+  // being questioned, not on every row of a 25-row page. The summary line
+  // carries the commission, which is the part usually being scanned for.
   return (
-    <span className="text-xs text-muted-foreground tabular-nums">
-      {formatCurrency(entry.productTotal)}
-      {entry.commissionPercentage !== null && ` × ${entry.commissionPercentage}%`} ={" "}
-      {formatCurrency(entry.commissionAmount)} commission
-      {entry.expectedDeliveryFee !== null && ` + ${formatCurrency(entry.expectedDeliveryFee)} delivery`}
-      {entry.discountAbsorbed
-        ? ` − ${formatCurrency(entry.discountAbsorbed)} STREET credit`
-        : ""}
-    </span>
+    <Collapsible>
+      <CollapsibleTrigger className="group/workings flex items-center gap-1 text-left text-xs text-muted-foreground hover:text-foreground">
+        <ChevronRight className="size-3 shrink-0 transition-transform group-data-[state=open]/workings:rotate-90" />
+        <span className="tabular-nums">
+          {formatCurrency(entry.commissionAmount)} commission
+        </span>
+      </CollapsibleTrigger>
+      <CollapsibleContent className="pt-1 pl-4 text-xs text-muted-foreground tabular-nums">
+        {formatCurrency(entry.productTotal)}
+        {entry.commissionPercentage !== null &&
+          ` × ${entry.commissionPercentage}%`}{" "}
+        = {formatCurrency(entry.commissionAmount)}
+        {entry.expectedDeliveryFee !== null &&
+          ` + ${formatCurrency(entry.expectedDeliveryFee)} delivery`}
+        {entry.discountAbsorbed
+          ? ` − ${formatCurrency(entry.discountAbsorbed)} STREET credit`
+          : ""}
+      </CollapsibleContent>
+    </Collapsible>
   );
 }
 
 function SubscriptionStatusBadge({ status }: { status: string | null }) {
   if (!status) return <Badge variant="secondary">Unknown</Badge>;
   const upper = status.toUpperCase();
-  if (upper === "ACTIVE") return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Active</Badge>;
-  if (upper === "CANCELLED") return <Badge variant="destructive">Cancelled</Badge>;
+  if (upper === "ACTIVE")
+    return (
+      <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
+        Active
+      </Badge>
+    );
+  if (upper === "CANCELLED")
+    return <Badge variant="destructive">Cancelled</Badge>;
   if (upper === "PENDING") return <Badge variant="secondary">Pending</Badge>;
-  if (upper === "DECLINED") return <Badge variant="destructive">Declined</Badge>;
+  if (upper === "DECLINED")
+    return <Badge variant="destructive">Declined</Badge>;
   return <Badge variant="secondary">{status}</Badge>;
 }
+
+/**
+ * Where the cap bar changes colour. Marks are drawn at these positions so the
+ * threshold is readable from position as well as hue — green/amber/red is the
+ * hardest trio for colour vision deficiency, and this bar is the one place the
+ * portal leans on it.
+ */
+const CAP_THRESHOLDS = [70, 90] as const;
 
 /**
  * The four billing statuses, with support-facing copy. Only `failed` is ever
@@ -192,11 +250,21 @@ function StatTile({
 }
 
 export function RetailerBillingTab({ retailerId }: RetailerBillingTabProps) {
-  const [statusFilter, setStatusFilter] =
-    useState<RetailerBillingLedgerEntry["billingStatus"] | null>(null);
-  const [page, setPage] = useState(1);
+  const [statusFilter, setStatusFilter] = useState<
+    RetailerBillingLedgerEntry["billingStatus"] | null
+  >(null);
+  // Prefixed so the ledger's paging does not collide with the Orders tab's
+  // on the same route (TT-445).
+  const { pagination, onPaginationChange, searchParams } = useTableParams({
+    prefix: "billing",
+  });
   const { data, isLoading, isError, refetch, isFetching } =
-    useRetailerBillingQuery(retailerId, statusFilter, page);
+    useRetailerBillingQuery(
+      retailerId,
+      statusFilter,
+      searchParams.page,
+      searchParams.limit,
+    );
 
   if (isLoading) return <LoadingState variant="page" />;
 
@@ -222,25 +290,30 @@ export function RetailerBillingTab({ retailerId }: RetailerBillingTabProps) {
 
   // Changing the filter changes the row set, so page 2 of the old filter is
   // meaningless against the new one — always land back on page 1.
-  const toggleFilter = (status: RetailerBillingLedgerEntry["billingStatus"]) => {
+  const resetToFirstPage = () =>
+    onPaginationChange({ pageIndex: 0, pageSize: pagination.pageSize });
+
+  const toggleFilter = (
+    status: RetailerBillingLedgerEntry["billingStatus"],
+  ) => {
     setStatusFilter((current) => (current === status ? null : status));
-    setPage(1);
+    resetToFirstPage();
   };
 
   const clearFilter = () => {
     setStatusFilter(null);
-    setPage(1);
+    resetToFirstPage();
   };
 
   // Filtered and paginated server-side.
   const visibleLedger = data.ledger;
-  const { page: currentPage, total: pageTotal, totalPages } = data.ledgerPage;
+  const { total: pageTotal } = data.ledgerPage;
 
   const capPercent =
     data.subscription && data.subscription.cappedAmount > 0
       ? Math.min(
           100,
-          ((data.orders.chargedAmount / data.subscription.cappedAmount) * 100),
+          (data.orders.chargedAmount / data.subscription.cappedAmount) * 100,
         )
       : null;
 
@@ -262,40 +335,97 @@ export function RetailerBillingTab({ retailerId }: RetailerBillingTabProps) {
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1">
-                <p className="text-xs uppercase tracking-wider text-muted-foreground">Status</p>
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                  Status
+                </p>
                 <SubscriptionStatusBadge status={data.subscription.status} />
               </div>
               <div className="space-y-1">
-                <p className="text-xs uppercase tracking-wider text-muted-foreground">Shop domain</p>
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                  Shop domain
+                </p>
                 <p className="text-sm font-medium">{data.shopDomain ?? "—"}</p>
               </div>
               <div className="space-y-1">
-                <p className="text-xs uppercase tracking-wider text-muted-foreground">Spending cap</p>
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                  Spending cap
+                </p>
                 <p className="text-sm font-medium tabular-nums">
-                  {formatCurrency(data.subscription.cappedAmount, data.subscription.billingCurrency)}
+                  {formatCurrency(
+                    data.subscription.cappedAmount,
+                    data.subscription.billingCurrency,
+                  )}
                 </p>
               </div>
               <div className="space-y-1">
-                <p className="text-xs uppercase tracking-wider text-muted-foreground">Currency</p>
-                <p className="text-sm font-medium">{data.subscription.billingCurrency ?? "—"}</p>
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                  Currency
+                </p>
+                <p className="text-sm font-medium">
+                  {data.subscription.billingCurrency ?? "—"}
+                </p>
               </div>
               {capPercent !== null && (
                 <div className="col-span-2 space-y-1.5">
                   <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>Cap consumed ({formatCurrency(data.orders.chargedAmount, data.subscription!.billingCurrency)} of {formatCurrency(data.subscription!.cappedAmount, data.subscription!.billingCurrency)})</span>
-                    <span className="tabular-nums">{capPercent.toFixed(1)}%</span>
+                    <span>
+                      Cap consumed (
+                      {formatCurrency(
+                        data.orders.chargedAmount,
+                        data.subscription!.billingCurrency,
+                      )}{" "}
+                      of{" "}
+                      {formatCurrency(
+                        data.subscription!.cappedAmount,
+                        data.subscription!.billingCurrency,
+                      )}
+                      )
+                    </span>
+                    <span className="tabular-nums">
+                      {capPercent.toFixed(1)}%
+                    </span>
                   </div>
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-                    <div
-                      className={`h-full rounded-full transition-all ${
+                  {/* Shared Progress rather than a hand-rolled pair of divs
+                      (TT-446). The indicator keeps the threshold colours:
+                      approaching the cap is the whole point of the bar.
+                      The 70/90 marks give position as a second channel, so
+                      the thresholds do not rely on telling green from amber
+                      from red. They sit at fixed percentages because the
+                      track is normalised against the cap — a retailer
+                      changing their cap in Shopify moves the fill, never
+                      the marks. */}
+                  <div className="relative">
+                    <Progress
+                      value={capPercent}
+                      aria-label="Spending cap consumed"
+                      indicatorClassName={
                         capPercent >= 90
                           ? "bg-red-500"
                           : capPercent >= 70
                             ? "bg-yellow-500"
                             : "bg-green-500"
-                      }`}
-                      style={{ width: `${capPercent}%` }}
+                      }
                     />
+                    {CAP_THRESHOLDS.map((threshold) => (
+                      <span
+                        key={threshold}
+                        aria-hidden
+                        title={`${threshold}% of cap`}
+                        className="absolute top-0 h-2 w-px bg-background/80"
+                        style={{ left: `${threshold}%` }}
+                      />
+                    ))}
+                  </div>
+                  <div className="relative h-3 text-[11px] text-muted-foreground">
+                    {CAP_THRESHOLDS.map((threshold) => (
+                      <span
+                        key={threshold}
+                        className="absolute -translate-x-1/2 tabular-nums"
+                        style={{ left: `${threshold}%` }}
+                      >
+                        {threshold}%
+                      </span>
+                    ))}
                   </div>
                 </div>
               )}
@@ -306,7 +436,9 @@ export function RetailerBillingTab({ retailerId }: RetailerBillingTabProps) {
 
       {/* Order billing stats — flat section, doubles as the ledger filter */}
       <section>
-        <h2 className="text-base font-semibold leading-none">Order Billing Breakdown</h2>
+        <h2 className="text-base font-semibold leading-none">
+          Order Billing Breakdown
+        </h2>
         <p className="mt-1.5 text-xs text-muted-foreground">
           Select a status to filter the ledger below.
         </p>
@@ -343,14 +475,9 @@ export function RetailerBillingTab({ retailerId }: RetailerBillingTabProps) {
           )}
         </div>
         <p className="mt-1.5 text-xs text-muted-foreground">
-          {pageTotal === 0
-            ? statusFilter
-              ? `No ${statusFilter} orders.`
-              : "No orders."
-            : `${pageTotal} ${statusFilter ?? ""} order${pageTotal === 1 ? "" : "s"}${
-                totalPages > 1 ? `, page ${currentPage} of ${totalPages}` : ""
-              }.`}{" "}
-          Expected is derived from the order's pricing snapshot; charged is what Shopify was billed.
+          {/* Row counts and page position come from TablePagination below. */}
+          Expected is derived from the order's pricing snapshot; charged is what
+          Shopify was billed.
         </p>
         <div className={`mt-4 border-t pt-5 ${isFetching ? "opacity-60" : ""}`}>
           {visibleLedger.length === 0 ? (
@@ -427,7 +554,9 @@ export function RetailerBillingTab({ retailerId }: RetailerBillingTabProps) {
                         <ChargeWorkings entry={entry} />
                       </TableCell>
                       <TableCell className="align-top text-right text-sm tabular-nums">
-                        {entry.expectedCharge === null ? "—" : formatCurrency(entry.expectedCharge)}
+                        {entry.expectedCharge === null
+                          ? "—"
+                          : formatCurrency(entry.expectedCharge)}
                       </TableCell>
                       <TableCell className="align-top text-right">
                         <span
@@ -457,35 +586,15 @@ export function RetailerBillingTab({ retailerId }: RetailerBillingTabProps) {
             </Table>
           )}
 
-          {/* Also shown when the page overshot the range, so Previous is
-              still reachable rather than stranding an empty list. */}
-          {(totalPages > 1 || currentPage > 1) && (
-            <div className="mt-4 flex items-center justify-between border-t pt-3">
-              <p className="text-xs text-muted-foreground">
-                Page {currentPage} of {totalPages}
-              </p>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={currentPage <= 1 || isFetching}
-                >
-                  Previous
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    setPage((p) => Math.min(totalPages, p + 1))
-                  }
-                  disabled={currentPage >= totalPages || isFetching}
-                >
-                  Next
-                </Button>
-              </div>
-            </div>
-          )}
+          <div className="mt-4 border-t pt-3">
+            <TablePagination
+              pageIndex={pagination.pageIndex}
+              pageSize={pagination.pageSize}
+              total={pageTotal}
+              onPaginationChange={onPaginationChange}
+              isFetching={isFetching}
+            />
+          </div>
         </div>
       </section>
     </div>

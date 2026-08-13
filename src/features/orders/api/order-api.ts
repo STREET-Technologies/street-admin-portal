@@ -21,6 +21,17 @@ export interface GetOrdersParams {
    * Returned tab. Values: REQUESTED | IN_PROGRESS | PARTIAL | COMPLETE.
    */
   returnStatus?: string;
+  /**
+   * Inclusive date bounds as YYYY-MM-DD (TT-447). Read as London calendar
+   * dates server-side, so send the day the user picked — never a UTC-shifted
+   * one.
+   */
+  dateFrom?: string;
+  dateTo?: string;
+  /** Retailer (vendor) UUID (TT-448). Composes with every other filter. */
+  vendorId?: string;
+  /** Outlet UUID (TT-450). Meant to accompany vendorId — an outlet has one. */
+  outletId?: string;
   /** Backend allowlist: orderId | customerName | totalAmount | createdAt */
   sortBy?: string;
   sortOrder?: "asc" | "desc";

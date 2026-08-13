@@ -34,6 +34,8 @@ export interface BackendVendorOrder {
   totalAmount: number | null;
   customerName: string | null;
   customerEmail: string | null;
+  /** Branch the order belongs to (TT-449). Null on pre-TT-366 orders. */
+  outletName: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -42,6 +44,7 @@ export interface BackendVendorOrder {
 interface RawVendorOrder {
   id: string;
   orderId: string;
+  outlet?: { id: string; name: string } | null;
   status: string;
   totalAmount: string | number | null;
   customerName?: string | null;
@@ -52,25 +55,35 @@ interface RawVendorOrder {
   [key: string]: unknown;
 }
 
-/** Fetch orders belonging to a specific vendor (retailer). Flattens user relation. */
+/**
+ * Fetch a page of orders for a vendor (retailer). Flattens user relation.
+ *
+ * Page and limit are explicit: the endpoint defaults to limit=10, so omitting
+ * them silently returned the 10 most recent orders and the tab rendered them
+ * as if that were everything (TT-445).
+ */
 export async function getRetailerOrders(
   retailerId: string,
-): Promise<BackendVendorOrder[]> {
-  const orders = await api.get<RawVendorOrder[]>(
-    `admin/vendors/${retailerId}/orders`,
+  params: { page?: number; limit?: number; outletId?: string } = {},
+): Promise<PaginatedResponse<BackendVendorOrder>> {
+  const { data, meta } = await api.getPaginated<RawVendorOrder>(
+    `admin/vendors/${retailerId}/orders${toQueryString(params)}`,
   );
-  return orders.map((raw) => ({
+  const orders = data.map((raw) => ({
     id: raw.id,
     orderNumber: raw.orderId ?? null,
     status: raw.status,
     totalAmount: raw.totalAmount != null ? Number(raw.totalAmount) : null,
     customerName:
       raw.customerName ??
-      ([raw.user?.firstName, raw.user?.lastName].filter(Boolean).join(" ") || null),
+      ([raw.user?.firstName, raw.user?.lastName].filter(Boolean).join(" ") ||
+        null),
     customerEmail: raw.customerEmail ?? raw.user?.email ?? null,
+    outletName: raw.outlet?.name ?? null,
     createdAt: raw.createdAt,
     updatedAt: raw.updatedAt,
   }));
+  return { data: orders, meta };
 }
 
 // ---------------------------------------------------------------------------
@@ -123,10 +136,7 @@ export function createRetailerStaff(
   retailerId: string,
   data: CreateStaffPayload,
 ): Promise<CreateStaffResult> {
-  return api.post<CreateStaffResult>(
-    `admin/vendors/${retailerId}/staff`,
-    data,
-  );
+  return api.post<CreateStaffResult>(`admin/vendors/${retailerId}/staff`, data);
 }
 
 /** Assign or clear a staff account's outlet (null = owner/HQ) (TT-285). */
@@ -256,9 +266,7 @@ export interface AdminOutlet {
  * Backend: GET /admin/vendors/:id/outlets → { data: AdminOutlet[] }
  * api.get unwraps the { data } envelope automatically → AdminOutlet[].
  */
-export function getRetailerOutlets(
-  retailerId: string,
-): Promise<AdminOutlet[]> {
+export function getRetailerOutlets(retailerId: string): Promise<AdminOutlet[]> {
   return api.get<AdminOutlet[]>(`admin/vendors/${retailerId}/outlets`);
 }
 
@@ -364,8 +372,9 @@ export function getRetailerBilling(
   retailerId: string,
   billingStatus?: string | null,
   page?: number,
+  limit?: number,
 ): Promise<RetailerBillingHealth> {
   return api.get<RetailerBillingHealth>(
-    `admin/vendors/${retailerId}/billing${toQueryString({ billingStatus, page })}`,
+    `admin/vendors/${retailerId}/billing${toQueryString({ billingStatus, page, limit })}`,
   );
 }

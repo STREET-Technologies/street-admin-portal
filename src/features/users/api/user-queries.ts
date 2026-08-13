@@ -31,7 +31,8 @@ export const userKeys = {
   details: () => [...userKeys.all, "detail"] as const,
   detail: (id: string) => [...userKeys.details(), id] as const,
   addresses: (id: string) => [...userKeys.detail(id), "addresses"] as const,
-  orders: (id: string) => [...userKeys.detail(id), "orders"] as const,
+  orders: (id: string, params: { page?: number; limit?: number } = {}) =>
+    [...userKeys.detail(id), "orders", params] as const,
   devices: (id: string) => [...userKeys.detail(id), "devices"] as const,
   stats: (id: string) => [...userKeys.all, "stats", id] as const,
   credit: (id: string) => [...userKeys.detail(id), "credit"] as const,
@@ -74,10 +75,14 @@ export function useUserAddressesQuery(userId: string) {
 }
 
 /** User orders list. */
-export function useUserOrdersQuery(userId: string) {
+export function useUserOrdersQuery(
+  userId: string,
+  params: { page?: number; limit?: number } = {},
+) {
   return useQuery({
-    queryKey: userKeys.orders(userId),
-    queryFn: () => getUserOrders(userId),
+    queryKey: userKeys.orders(userId, params),
+    queryFn: () => getUserOrders(userId, params),
+    placeholderData: keepPreviousData,
     enabled: !!userId,
   });
 }

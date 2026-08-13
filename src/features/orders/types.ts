@@ -30,9 +30,16 @@ export interface BackendOrder {
     storeName: string;
     logo?: string;
   } | null;
+  /** Relation, present on the detail + retailer-tab responses (TT-449). */
+  outlet?: {
+    id: string;
+    name: string;
+  } | null;
   // Flat fields from global orders list endpoint (raw query)
   vendorId?: string;
   vendorName?: string;
+  outletId?: string | null;
+  outletName?: string | null;
   shippingAddress?: Record<string, unknown> | null;
   paymentStatus?: string | null;
   paymentMethod?: string | null;
@@ -121,6 +128,13 @@ export interface OrderViewModel {
   // Enriched fields for detail view
   retailerName?: string;
   retailerId?: string;
+  /**
+   * Branch the order was placed against (TT-449). Null on orders predating
+   * outlet attribution (TT-366), which is a real gap in the data rather
+   * than a missing field.
+   */
+  outletName?: string | null;
+  outletId?: string | null;
   userId?: string;
   paymentStatus?: string;
   /**
@@ -302,8 +316,7 @@ export function toOrderViewModel(backend: BackendOrder): OrderViewModel {
       ? `${backend.user.firstName} ${backend.user.lastName}`.trim()
       : "Unknown");
 
-  const email =
-    backend.customerEmail ?? backend.user?.email ?? "No email";
+  const email = backend.customerEmail ?? backend.user?.email ?? "No email";
 
   const returnStatus = backend.returnStatus ?? "NONE";
   const displayStatus = deriveDisplayStatus(backend.status, returnStatus);
@@ -315,12 +328,17 @@ export function toOrderViewModel(backend: BackendOrder): OrderViewModel {
     customerEmail: email,
     status: backend.status?.toLowerCase() ?? "unknown",
     totalAmount: formatGBP(backend.totalAmount),
-    totalAmountRaw: typeof backend.totalAmount === "string" ? parseFloat(backend.totalAmount) : backend.totalAmount,
+    totalAmountRaw:
+      typeof backend.totalAmount === "string"
+        ? parseFloat(backend.totalAmount)
+        : backend.totalAmount,
     itemCount: backend.itemCount ?? backend.orderItems?.length ?? 0,
     createdAt: backend.createdAt,
     reconciliationAttempts: backend.reconciliationAttempts ?? 0,
     retailerName: backend.vendor?.storeName ?? backend.vendorName,
     retailerId: backend.vendor?.id ?? backend.vendorId,
+    outletName: backend.outlet?.name ?? backend.outletName ?? null,
+    outletId: backend.outlet?.id ?? backend.outletId ?? null,
     userId: backend.user?.id ?? backend.customerId ?? undefined,
     paymentStatus: backend.paymentStatus?.toLowerCase(),
     returnStatus,
@@ -333,7 +351,10 @@ export function toOrderViewModel(backend: BackendOrder): OrderViewModel {
 // ---------------------------------------------------------------------------
 
 /** Safely extract a string from a Record. */
-function str(obj: Record<string, unknown> | null | undefined, key: string): string | null {
+function str(
+  obj: Record<string, unknown> | null | undefined,
+  key: string,
+): string | null {
   if (!obj) return null;
   const val = obj[key];
   return typeof val === "string" ? val : null;
@@ -355,16 +376,22 @@ function toItemViewModel(
   const imageUrl = images?.[0]?.src ?? null;
 
   // Packing status lives in packingState.status
-  const packingState = meta?.packingState as Record<string, unknown> | undefined;
+  const packingState = meta?.packingState as
+    | Record<string, unknown>
+    | undefined;
 
   return {
     id: item.id ?? `item-${index}`,
-    productName: (meta?.productName as string) ?? `Product ${item.productId.slice(0, 8)}`,
+    productName:
+      (meta?.productName as string) ?? `Product ${item.productId.slice(0, 8)}`,
     // metadata.title duplicates the product name; variantTitle is the real
     // variant (e.g. "Large"). optionValues is the fallback when the item was
     // never enriched — stored either as plain strings (oldest orders) or as
     // {value, option: {name}} objects (variant_option_values shape).
-    variant: (meta?.variantTitle as string) ?? formatOptionValues(meta?.optionValues) ?? "--",
+    variant:
+      (meta?.variantTitle as string) ??
+      formatOptionValues(meta?.optionValues) ??
+      "--",
     variantId:
       (meta?.shopifyVariantId as string) ??
       (item.variantId != null ? String(item.variantId) : null),
@@ -380,7 +407,9 @@ function toItemViewModel(
 }
 
 /** Transform a BackendOrder into an OrderDetailViewModel for the detail page. */
-export function toOrderDetailViewModel(backend: BackendOrder): OrderDetailViewModel {
+export function toOrderDetailViewModel(
+  backend: BackendOrder,
+): OrderDetailViewModel {
   const base = toOrderViewModel(backend);
 
   // Customer
@@ -408,7 +437,11 @@ export function toOrderDetailViewModel(backend: BackendOrder): OrderDetailViewMo
   >();
   for (const r of backend.returns ?? []) {
     const status = (r.status ?? "").toUpperCase();
-    if (status === "DECLINED" || status === "CANCELLED" || status === "CANCELED") {
+    if (
+      status === "DECLINED" ||
+      status === "CANCELLED" ||
+      status === "CANCELED"
+    ) {
       continue;
     }
     for (const line of r.lineItems ?? []) {
@@ -457,7 +490,10 @@ export function toOrderDetailViewModel(backend: BackendOrder): OrderDetailViewMo
       : null;
 
   // Shipping address from JSONB
-  const sa = backend.shippingAddress as Record<string, unknown> | null | undefined;
+  const sa = backend.shippingAddress as
+    | Record<string, unknown>
+    | null
+    | undefined;
   const shippingAddress = sa
     ? {
         line1: str(sa, "address1") ?? str(sa, "line1") ?? "Unknown",
@@ -469,10 +505,13 @@ export function toOrderDetailViewModel(backend: BackendOrder): OrderDetailViewMo
     : null;
 
   // Pricing breakdown from JSONB
-  const pb = backend.pricingBreakdown as Record<string, unknown> | null | undefined;
+  const pb = backend.pricingBreakdown as
+    | Record<string, unknown>
+    | null
+    | undefined;
   const isShopifyOrder =
     !!backend.shopifyOrderId ||
-    backend.paymentMethod === 'shopify_checkout' ||
+    backend.paymentMethod === "shopify_checkout" ||
     pb?.shopifyCheckout === true;
   // TT-326 — customer discount lives in pricingBreakdown.discount (also
   // backfilled onto historical orders). Only surface it when non-zero.

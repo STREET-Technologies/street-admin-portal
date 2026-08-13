@@ -1,17 +1,25 @@
 import { useCallback, useMemo } from "react";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import type { SortingState, OnChangeFn } from "@tanstack/react-table";
+import { DEFAULT_PAGE_SIZE } from "@/lib/pagination";
 
 /**
  * Syncs TanStack Table pagination + sorting state with URL search params
  * via TanStack Router. Users can bookmark filtered/sorted/paged views.
  *
- * URL params: ?page=1&limit=20&sortBy=name&sortOrder=asc
+ * URL params: ?page=1&limit=25&sortBy=name&sortOrder=asc
+ *
+ * Page size defaults to DEFAULT_PAGE_SIZE — don't pass `pageSize` unless a
+ * table genuinely needs to differ, or it becomes a second definition of
+ * something lib/pagination.ts already owns (TT-445).
  *
  * Usage:
  * ```ts
  * const { pagination, sorting, onPaginationChange, onSortingChange } =
- *   useTableParams({ pageSize: 20, sortBy: "createdAt", sortOrder: "desc" });
+ *   useTableParams({ sortBy: "createdAt", sortOrder: "desc" });
+ *
+ * // Two tables on one route must not share ?page:
+ * const billing = useTableParams({ prefix: "billing" }); // ?billingPage=2
  * ```
  */
 
@@ -19,13 +27,20 @@ interface TableParamsDefaults {
   pageSize?: number;
   sortBy?: string;
   sortOrder?: "asc" | "desc";
+  /**
+   * Namespaces the URL params so two tables on one route do not fight over
+   * `?page`. The retailer detail page carries both an Orders tab and a
+   * Billing tab; without a prefix, paging one moves the other.
+   * `prefix: "billing"` gives ?billingPage, ?billingLimit, and so on.
+   */
+  prefix?: string;
 }
 
-interface SearchParams {
-  page?: number;
-  limit?: number;
-  sortBy?: string;
-  sortOrder?: "asc" | "desc";
+type SearchParams = Record<string, unknown>;
+
+/** `page` unprefixed, `billingPage` with prefix "billing". */
+function paramName(prefix: string | undefined, key: string): string {
+  return prefix ? `${prefix}${key[0].toUpperCase()}${key.slice(1)}` : key;
 }
 
 interface TableParamsReturn {
@@ -52,7 +67,12 @@ interface TableParamsReturn {
 export function useTableParams(
   defaults: TableParamsDefaults = {},
 ): TableParamsReturn {
-  const { pageSize: defaultPageSize = 20, sortBy: defaultSortBy, sortOrder: defaultSortOrder } = defaults;
+  const {
+    pageSize: defaultPageSize = DEFAULT_PAGE_SIZE,
+    sortBy: defaultSortBy,
+    sortOrder: defaultSortOrder,
+    prefix,
+  } = defaults;
 
   // Read current search params from URL (strict: false = works from any route)
   const search = useSearch({ strict: false }) as SearchParams;
@@ -60,10 +80,16 @@ export function useTableParams(
   // The `search` updater type for a route-agnostic navigate (see casts below).
   type NavigateSearch = NonNullable<Parameters<typeof navigate>[0]>["search"];
 
-  const page = search.page ?? 1;
-  const limit = search.limit ?? defaultPageSize;
-  const sortBy = search.sortBy ?? defaultSortBy;
-  const sortOrder = search.sortOrder ?? defaultSortOrder;
+  const pageKey = paramName(prefix, "page");
+  const limitKey = paramName(prefix, "limit");
+  const sortByKey = paramName(prefix, "sortBy");
+  const sortOrderKey = paramName(prefix, "sortOrder");
+
+  const page = (search[pageKey] as number | undefined) ?? 1;
+  const limit = (search[limitKey] as number | undefined) ?? defaultPageSize;
+  const sortBy = (search[sortByKey] as string | undefined) ?? defaultSortBy;
+  const sortOrder =
+    (search[sortOrderKey] as "asc" | "desc" | undefined) ?? defaultSortOrder;
 
   const pagination = useMemo(
     () => ({ pageIndex: page - 1, pageSize: limit }),
@@ -71,10 +97,7 @@ export function useTableParams(
   );
 
   const sorting: SortingState = useMemo(
-    () =>
-      sortBy
-        ? [{ id: sortBy, desc: sortOrder === "desc" }]
-        : [],
+    () => (sortBy ? [{ id: sortBy, desc: sortOrder === "desc" }] : []),
     [sortBy, sortOrder],
   );
 
@@ -85,13 +108,13 @@ export function useTableParams(
       void navigate({
         search: ((prev: SearchParams) => ({
           ...prev,
-          page: next.pageIndex + 1,
-          limit: next.pageSize,
+          [pageKey]: next.pageIndex + 1,
+          [limitKey]: next.pageSize,
         })) as NavigateSearch,
         replace: true,
       });
     },
-    [navigate],
+    [navigate, pageKey, limitKey],
   );
 
   const onSortingChange: OnChangeFn<SortingState> = useCallback(
@@ -104,14 +127,18 @@ export function useTableParams(
       void navigate({
         search: ((prev: SearchParams) => ({
           ...prev,
-          page: 1,
-          sortBy: nextSort?.id,
-          sortOrder: nextSort ? (nextSort.desc ? "desc" : "asc") : undefined,
+          [pageKey]: 1,
+          [sortByKey]: nextSort?.id,
+          [sortOrderKey]: nextSort
+            ? nextSort.desc
+              ? "desc"
+              : "asc"
+            : undefined,
         })) as NavigateSearch,
         replace: true,
       });
     },
-    [navigate, sorting],
+    [navigate, sorting, pageKey, sortByKey, sortOrderKey],
   );
 
   const searchParams = useMemo(

@@ -4,13 +4,13 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useAdminRole } from "@/features/auth/hooks/useAdminRole";
 import {
   useCancelOrderMutation,
@@ -137,20 +137,26 @@ export function OrderActionsControl({
         </Button>
       )}
 
-      <Dialog open={pendingAction !== null} onOpenChange={(open) => !open && closeDialog()}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
+      {/* AlertDialog, not Dialog: both branches move money and cannot be
+          undone. It is modal against outside-click and Escape, so a stray
+          click cannot dismiss a half-typed reason (TT-446). */}
+      <AlertDialog
+        open={pendingAction !== null}
+        onOpenChange={(open) => !open && closeDialog()}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
               {pendingAction === "cancel"
                 ? `Cancel order ${orderDisplayId}?`
                 : `Refund order ${orderDisplayId}?`}
-            </DialogTitle>
-            <DialogDescription>
+            </AlertDialogTitle>
+            <AlertDialogDescription>
               {pendingAction === "cancel"
                 ? "The customer is refunded (or the authorization voided), the Shopify order is cancelled, and any active courier job is cancelled. This cannot be undone."
                 : "Creates a full refund in Shopify without changing the order status. Use for goodwill refunds on completed orders. This cannot be undone."}
-            </DialogDescription>
-          </DialogHeader>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
 
           <div className="space-y-1.5">
             <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
@@ -172,8 +178,15 @@ export function OrderActionsControl({
             </p>
           </div>
 
-          <DialogFooter>
-            <Button variant="outline" onClick={closeDialog} disabled={isPending}>
+          <AlertDialogFooter>
+            {/* Plain buttons, not AlertDialogCancel/Action: those close the
+                dialog on click, which would dismiss it mid-request and lose
+                the typed reason. Closing stays under closeDialog's control. */}
+            <Button
+              variant="outline"
+              onClick={closeDialog}
+              disabled={isPending}
+            >
               Keep order
             </Button>
             <Button
@@ -189,9 +202,9 @@ export function OrderActionsControl({
                 "Create refund"
               )}
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

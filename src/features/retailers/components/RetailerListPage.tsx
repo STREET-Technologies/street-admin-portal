@@ -139,7 +139,7 @@ export function RetailerListPage() {
   const debouncedSearch = useDebounce(searchValue, 300);
 
   const { pagination, sorting, onPaginationChange, onSortingChange, searchParams } =
-    useTableParams({ pageSize: 20, sortBy: "createdAt", sortOrder: "desc" });
+    useTableParams({ sortBy: "createdAt", sortOrder: "desc" });
 
   // Reset to page 1 when search or filter changes (skip initial render so a
   // bookmarked ?page=N URL survives).

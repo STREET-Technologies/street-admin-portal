@@ -23,7 +23,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { TablePagination } from "@/components/shared/TablePagination";
 import { formatDate, formatCurrency } from "@/lib/format-utils";
+import { useTableParams } from "@/hooks/use-table-params";
 import { useUserOrdersQuery } from "../api/user-queries";
 import type { BackendUserOrder } from "../types";
 
@@ -105,8 +107,17 @@ const columns: ColumnDef<BackendUserOrder>[] = [
 ];
 
 export function UserOrdersTab({ userId }: UserOrdersTabProps) {
-  const { data: orders = [], isLoading, isError, error, refetch } =
-    useUserOrdersQuery(userId);
+  const { pagination, onPaginationChange, searchParams } = useTableParams({
+    prefix: "orders",
+  });
+  const { data, isLoading, isError, error, refetch, isFetching } =
+    useUserOrdersQuery(userId, {
+      page: searchParams.page,
+      limit: searchParams.limit,
+    });
+  const orders = data?.data ?? [];
+  const total = data?.meta.total ?? 0;
+
   const [sorting, setSorting] = useState<SortingState>([]);
   const navigate = useNavigate();
 
@@ -131,7 +142,9 @@ export function UserOrdersTab({ userId }: UserOrdersTabProps) {
     );
   }
 
-  if (orders.length === 0) {
+  // Server total, not the current page: an overshot page is empty while the
+  // user still has orders, and the pager must stay reachable.
+  if (total === 0) {
     return (
       <EmptyState
         icon={ShoppingBag}
@@ -142,49 +155,59 @@ export function UserOrdersTab({ userId }: UserOrdersTabProps) {
   }
 
   return (
-    <div className="rounded-lg border">
-      <Table>
-        <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => (
-                <TableHead key={header.id}>
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )}
-                </TableHead>
-              ))}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {table.getRowModel().rows.map((row) => (
-            <TableRow
-              key={row.id}
-              className="cursor-pointer"
-              onClick={(e) => {
-                const target = e.target as HTMLElement;
-                if (target.closest("button") || target.closest("a")) return;
-                void navigate({
-                  to: "/orders/$orderId",
-                  params: {
-                    orderId: row.original.orderNumber ?? row.original.id,
-                  },
-                });
-              }}
-            >
-              {row.getVisibleCells().map((cell) => (
-                <TableCell key={cell.id}>
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </TableCell>
-              ))}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+    <div className="space-y-4">
+      <div className="rounded-lg border">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
+                  </TableHead>
+                ))}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows.map((row) => (
+              <TableRow
+                key={row.id}
+                className="cursor-pointer"
+                onClick={(e) => {
+                  const target = e.target as HTMLElement;
+                  if (target.closest("button") || target.closest("a")) return;
+                  void navigate({
+                    to: "/orders/$orderId",
+                    params: {
+                      orderId: row.original.orderNumber ?? row.original.id,
+                    },
+                  });
+                }}
+              >
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell key={cell.id}>
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      <TablePagination
+        pageIndex={pagination.pageIndex}
+        pageSize={pagination.pageSize}
+        total={total}
+        onPaginationChange={onPaginationChange}
+        isFetching={isFetching}
+      />
     </div>
   );
 }

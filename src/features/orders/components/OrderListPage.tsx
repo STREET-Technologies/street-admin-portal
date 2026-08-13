@@ -1,7 +1,15 @@
 import { useState, useMemo } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Search, ShoppingCart } from "lucide-react";
+import { Search, ShoppingCart, MoreHorizontal } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -21,11 +29,16 @@ import { DataTableColumnHeader } from "@/components/shared/DataTableColumnHeader
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { CopyButton } from "@/components/shared/CopyButton";
 import { ErrorState } from "@/components/shared/ErrorState";
+import { DateRangeFilter } from "@/components/shared/DateRangeFilter";
+import { RetailerFilter } from "@/components/shared/RetailerFilter";
+import { OutletFilter } from "@/components/shared/OutletFilter";
 import { useTableParams } from "@/hooks/use-table-params";
+import { useSearchParamState } from "@/hooks/use-search-param";
 import { useTabParam } from "@/hooks/use-tab-param";
 import { useDebounce } from "@/hooks/use-debounce";
 import { formatDate } from "@/lib/format-utils";
 import { useOrdersQuery } from "../api/order-queries";
+import { OrderPeekSheet } from "./OrderPeekSheet";
 import type { OrderViewModel } from "../types";
 
 // ---------------------------------------------------------------------------
@@ -54,9 +67,11 @@ const ORDER_TABS: Array<{ value: TabKey; label: string }> = [
   { value: "cancelled", label: "Cancelled" },
 ];
 
-function tabToQueryParams(
-  tab: TabKey,
-): { status?: string; stuck?: boolean; returnStatus?: string } {
+function tabToQueryParams(tab: TabKey): {
+  status?: string;
+  stuck?: boolean;
+  returnStatus?: string;
+} {
   switch (tab) {
     case "all":
       return {};
@@ -98,6 +113,7 @@ const PAYMENT_METHOD_OPTIONS = [
 
 function createColumns(
   onRowClick: (orderId: string) => void,
+  onPeek: (order: OrderViewModel) => void,
 ): ColumnDef<OrderViewModel, unknown>[] {
   return [
     {
@@ -146,21 +162,32 @@ function createColumns(
       accessorKey: "retailerName",
       header: "Retailer",
       enableSorting: false,
-      cell: ({ row }) =>
-        row.original.retailerId ? (
-          <Link
-            to="/retailers/$retailerId"
-            params={{ retailerId: row.original.retailerId }}
-            className="text-sm font-medium hover:underline"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {row.original.retailerName ?? "--"}
-          </Link>
-        ) : (
-          <span className="text-sm text-muted-foreground">
-            {row.original.retailerName ?? "--"}
-          </span>
-        ),
+      cell: ({ row }) => (
+        <div>
+          {row.original.retailerId ? (
+            <Link
+              to="/retailers/$retailerId"
+              params={{ retailerId: row.original.retailerId }}
+              className="text-sm font-medium hover:underline"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {row.original.retailerName ?? "--"}
+            </Link>
+          ) : (
+            <span className="text-sm text-muted-foreground">
+              {row.original.retailerName ?? "--"}
+            </span>
+          )}
+          {/* Branch under the brand (TT-449) — a multi-outlet retailer was
+              otherwise indistinguishable without opening each order. Sits in
+              this column rather than a ninth one; the table is dense enough. */}
+          {row.original.outletName && (
+            <p className="text-xs text-muted-foreground">
+              {row.original.outletName}
+            </p>
+          )}
+        </div>
+      ),
     },
     {
       accessorKey: "status",
@@ -180,7 +207,8 @@ function createColumns(
       cell: ({ row }) => {
         // TT-166 — "stuck delivery" indicator. Hidden for healthy orders.
         const attempts = row.original.reconciliationAttempts;
-        if (attempts === 0) return <span className="text-xs text-muted-foreground">—</span>;
+        if (attempts === 0)
+          return <span className="text-xs text-muted-foreground">—</span>;
         const isStuck = attempts >= 12;
         return (
           <span
@@ -206,7 +234,9 @@ function createColumns(
         <DataTableColumnHeader column={column} title="Total" />
       ),
       cell: ({ row }) => (
-        <span className="text-sm font-medium tabular-nums">{row.original.totalAmount}</span>
+        <span className="text-sm font-medium tabular-nums">
+          {row.original.totalAmount}
+        </span>
       ),
       sortingFn: (rowA, rowB) => {
         const a = rowA.original.totalAmountRaw ?? 0;
@@ -235,7 +265,71 @@ function createColumns(
         </span>
       ),
     },
+    {
+      id: "actions",
+      header: () => <span className="sr-only">Actions</span>,
+      enableSorting: false,
+      cell: ({ row }) => (
+        <OrderRowActions
+          order={row.original}
+          onPeek={() => onPeek(row.original)}
+          onOpen={() => onRowClick(row.original.orderId)}
+        />
+      ),
+    },
   ];
+}
+
+/**
+ * Row-level actions (TT-446). Destructive actions deliberately stay out of
+ * here: cancel and refund require a written reason, so they live in the peek
+ * panel and the detail page where that dialog is. This menu is for getting
+ * to the order and lifting identifiers out of it.
+ */
+function OrderRowActions({
+  order,
+  onPeek,
+  onOpen,
+}: {
+  order: OrderViewModel;
+  onPeek: () => void;
+  onOpen: () => void;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label={`Actions for order ${order.orderId}`}
+          // The row itself opens the peek; without this the menu click would
+          // trigger that too and the panel would fight the dropdown.
+          onClick={(e) => e.stopPropagation()}
+        >
+          <MoreHorizontal className="size-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+        <DropdownMenuItem onSelect={onPeek}>Quick view</DropdownMenuItem>
+        <DropdownMenuItem onSelect={onOpen}>Open full page</DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          onSelect={() => void navigator.clipboard.writeText(order.orderId)}
+        >
+          Copy order ID
+        </DropdownMenuItem>
+        {order.customerEmail && (
+          <DropdownMenuItem
+            onSelect={() =>
+              void navigator.clipboard.writeText(order.customerEmail)
+            }
+          >
+            Copy customer email
+          </DropdownMenuItem>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -244,8 +338,13 @@ function createColumns(
 
 export function OrderListPage() {
   const navigate = useNavigate();
-  const { pagination, sorting, onPaginationChange, onSortingChange, searchParams } =
-    useTableParams({ pageSize: 20, sortBy: "createdAt", sortOrder: "desc" });
+  const {
+    pagination,
+    sorting,
+    onPaginationChange,
+    onSortingChange,
+    searchParams,
+  } = useTableParams({ sortBy: "createdAt", sortOrder: "desc" });
 
   // Filter state. The tab lives in ?tab= so the dashboard (and bookmarks)
   // can deep-link straight into a bucket like /orders?tab=stuck (TT-358).
@@ -257,6 +356,14 @@ export function OrderListPage() {
   const setTabFilter = setTabParam;
   const [paymentMethodFilter, setPaymentMethodFilter] = useState<string>("all");
   const debouncedSearch = useDebounce(searchValue, 300);
+  // Read straight from the URL — DateRangeFilter owns writing them (TT-447).
+  const [dateFrom] = useSearchParamState("dateFrom");
+  const [dateTo] = useSearchParamState("dateTo");
+  const [vendorId, setVendorId] = useSearchParamState("vendorId");
+  const [outletId, setOutletId] = useSearchParamState("outletId");
+
+  const resetToFirstPage = () =>
+    onPaginationChange({ pageIndex: 0, pageSize: pagination.pageSize });
 
   const tabParams = tabToQueryParams(tabFilter);
 
@@ -271,7 +378,12 @@ export function OrderListPage() {
     status: tabParams.status,
     stuck: tabParams.stuck,
     returnStatus: tabParams.returnStatus,
-    paymentMethod: paymentMethodFilter !== "all" ? paymentMethodFilter : undefined,
+    paymentMethod:
+      paymentMethodFilter !== "all" ? paymentMethodFilter : undefined,
+    dateFrom,
+    dateTo,
+    vendorId,
+    outletId,
     sortBy: searchParams.sortBy,
     sortOrder: searchParams.sortOrder,
     page: searchParams.page,
@@ -281,11 +393,18 @@ export function OrderListPage() {
   const orders = orderData?.data ?? [];
   const totalPages = orderData?.meta?.totalPages ?? 0;
 
+  // The row the peek panel is showing. Holds the list row itself so the panel
+  // opens populated rather than waiting on the detail fetch.
+  const [peekOrder, setPeekOrder] = useState<OrderViewModel | null>(null);
+
   const columns = useMemo(
     () =>
-      createColumns((orderId) => {
-        void navigate({ to: "/orders/$orderId", params: { orderId } });
-      }),
+      createColumns(
+        (orderId) => {
+          void navigate({ to: "/orders/$orderId", params: { orderId } });
+        },
+        (order) => setPeekOrder(order),
+      ),
     [navigate],
   );
 
@@ -307,10 +426,7 @@ export function OrderListPage() {
       <PageHeader title="Orders" description="Track and manage orders" />
 
       {/* Status tabs — bucket orders by canonical state */}
-      <Tabs
-        value={tabFilter}
-        onValueChange={(v) => setTabFilter(v as TabKey)}
-      >
+      <Tabs value={tabFilter} onValueChange={(v) => setTabFilter(v as TabKey)}>
         <UnderlineTabsList>
           {ORDER_TABS.map((tab) => (
             <UnderlineTabsTrigger key={tab.value} value={tab.value}>
@@ -333,7 +449,10 @@ export function OrderListPage() {
         </div>
 
         {/* Payment method filter */}
-        <Select value={paymentMethodFilter} onValueChange={setPaymentMethodFilter}>
+        <Select
+          value={paymentMethodFilter}
+          onValueChange={setPaymentMethodFilter}
+        >
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Payment type" />
           </SelectTrigger>
@@ -345,6 +464,35 @@ export function OrderListPage() {
             ))}
           </SelectContent>
         </Select>
+
+        {/* Retailer (TT-448). Composes with the tabs, search and dates —
+            the retailer's own Orders tab drops all three. */}
+        <RetailerFilter
+          value={vendorId}
+          onChange={(next) => {
+            setVendorId(next);
+            // An outlet belongs to exactly one retailer, so carrying the old
+            // selection across would filter on a branch the new retailer does
+            // not own and return nothing — reading as a bug, not a filter.
+            setOutletId(undefined);
+            resetToFirstPage();
+          }}
+        />
+
+        {/* Only appears once a retailer with more than one branch is picked
+            (TT-450). */}
+        <OutletFilter
+          retailerId={vendorId}
+          value={outletId}
+          onChange={(next) => {
+            setOutletId(next);
+            resetToFirstPage();
+          }}
+        />
+
+        {/* Changing the range changes the result set, so page 3 of the old
+            range is meaningless against the new one. */}
+        <DateRangeFilter onChange={resetToFirstPage} />
       </div>
 
       {/* Data table */}
@@ -361,8 +509,15 @@ export function OrderListPage() {
         isLoading={isLoading}
         emptyMessage="No orders found"
         emptyIcon={ShoppingCart}
-        onRowClick={(order) => {
-          void navigate({ to: "/orders/$orderId", params: { orderId: order.orderId } });
+        // Row background opens the peek; the Order ID cell still navigates to
+        // the full page, so both routes exist without a modifier key (TT-446).
+        onRowClick={(order) => setPeekOrder(order)}
+      />
+
+      <OrderPeekSheet
+        order={peekOrder}
+        onOpenChange={(open) => {
+          if (!open) setPeekOrder(null);
         }}
       />
     </div>
