@@ -7,7 +7,7 @@ import { DEFAULT_PAGE_SIZE } from "@/lib/pagination";
  * Syncs TanStack Table pagination + sorting state with URL search params
  * via TanStack Router. Users can bookmark filtered/sorted/paged views.
  *
- * URL params: ?page=1&limit=25&sortBy=name&sortOrder=asc
+ * URL params: ?page=1&limit=10&sortBy=name&sortOrder=asc
  *
  * Page size defaults to DEFAULT_PAGE_SIZE — don't pass `pageSize` unless a
  * table genuinely needs to differ, or it becomes a second definition of

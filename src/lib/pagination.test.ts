@@ -17,6 +17,13 @@ describe("pagination", () => {
     expect(PAGE_SIZE_OPTIONS).toContain(DEFAULT_PAGE_SIZE);
   });
 
+  it("opens on 10 rows, not 25", () => {
+    // Deliberate: support scans a short list and pages, rather than
+    // scrolling past 25 rows to reach the pager. Pinned so a future
+    // "sensible default" tweak has to be an explicit decision.
+    expect(DEFAULT_PAGE_SIZE).toBe(10);
+  });
+
   describe("toPageCount", () => {
     it("rounds a partial last page up", () => {
       expect(toPageCount(26, 25)).toBe(2);
