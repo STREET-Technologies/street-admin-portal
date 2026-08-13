@@ -4,10 +4,17 @@ import {
   ArrowRight,
   Clock,
   CreditCard,
+  ChevronRight,
   MapPin,
   RotateCcw,
+  Store,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { useDashboardStatsQuery } from "../api/dashboard-queries";
@@ -32,12 +39,10 @@ function formatGBP(amount: number): string {
 export function DashboardPage() {
   const { data: stats, isLoading, isError, refetch } = useDashboardStatsQuery();
   const attentionItems = getAttentionItems(stats);
+  const faultGroups = getFaultGroups(stats);
   // Every channel counts toward showing the section — an un-geocoded outlet
   // with no order problems is still something to act on.
-  const hasAttention =
-    attentionItems.length > 0 ||
-    (stats?.attention.outlets.length ?? 0) > 0 ||
-    (stats?.attention.unbookableUserAddresses ?? 0) > 0;
+  const hasAttention = attentionItems.length > 0 || faultGroups.length > 0;
 
   if (isError) {
     return (
@@ -68,50 +73,13 @@ export function DashboardPage() {
           <div className="mt-4 space-y-2 border-t pt-5">
             <AttentionRail items={attentionItems} />
 
-            {/* Outlet faults link to the owning retailer, since the portal
-                has no global outlets screen — a bare count would be a dead
-                end. Each row names the branch and what is wrong with it. */}
-            {stats?.attention.outlets.map((outlet) => (
-              <Link
-                key={outlet.outletId}
-                to="/retailers/$retailerId"
-                params={{ retailerId: outlet.vendorId }}
-                search={{ tab: "outlets" }}
-                className="flex items-center gap-3 rounded-md border border-red-300 bg-red-50/50 px-4 py-3 transition-colors hover:bg-muted/50 dark:border-red-900 dark:bg-red-950/20"
-              >
-                <MapPin className="size-4 shrink-0 text-red-600" />
-                <span className="text-sm">
-                  <span className="font-semibold">{outlet.vendorName}</span> ·{" "}
-                  {outlet.outletName}
-                  <span className="text-muted-foreground">
-                    {" — "}
-                    {outlet.reason === "no_coordinates"
-                      ? "no coordinates, invisible in discovery"
-                      : "address not courier-bookable, deliveries will fail"}
-                  </span>
-                </span>
-                <ArrowRight className="ml-auto size-4 text-muted-foreground" />
-              </Link>
+            {/* Grouped by fault, not by record: two retailers failing the
+                same address check are one problem to work through, not two
+                unrelated lines. The header carries the count so the panel
+                stays scannable without expanding anything. */}
+            {faultGroups.map((group) => (
+              <FaultGroup key={group.title} group={group} />
             ))}
-
-            {/* Customer addresses Stuart will refuse. No filtered destination
-                exists yet, so this states the count without pretending to
-                link somewhere useful. */}
-            {(stats?.attention.unbookableUserAddresses ?? 0) > 0 && (
-              <p className="flex items-center gap-3 rounded-md border bg-muted/40 px-4 py-3 text-sm">
-                <MapPin className="size-4 shrink-0 text-muted-foreground" />
-                <span>
-                  <span className="font-semibold tabular-nums">
-                    {stats?.attention.unbookableUserAddresses}
-                  </span>{" "}
-                  customer addresses not courier-bookable
-                  <span className="text-muted-foreground">
-                    {" "}
-                    — deliveries to them will fail
-                  </span>
-                </span>
-              </p>
-            )}
           </div>
         </section>
       )}
@@ -200,6 +168,77 @@ interface AttentionItem {
   tone: "critical" | "warning";
 }
 
+/** One record inside a fault group, with where to go and fix it. */
+interface FaultEntry {
+  id: string;
+  /** Who it belongs to — the retailer or the customer. */
+  owner: string;
+  /** Which record of theirs — the branch, or the postcode. */
+  detail: string | null;
+  link:
+    | { kind: "retailer"; retailerId: string }
+    | { kind: "user"; userId: string };
+}
+
+interface FaultGroupData {
+  title: string;
+  consequence: string;
+  icon: React.ElementType;
+  tone: "critical" | "warning";
+  entries: FaultEntry[];
+}
+
+/**
+ * Faults grouped by what is wrong rather than by which record has it.
+ * Two retailers failing the same postcode check are one job to work through;
+ * listing them as unrelated rows made the panel longer without making it
+ * clearer.
+ */
+function getFaultGroups(stats: DashboardStats | undefined): FaultGroupData[] {
+  if (!stats) return [];
+
+  const outletsBy = (reason: "no_coordinates" | "address_unbookable") =>
+    stats.attention.outlets
+      .filter((o) => o.reason === reason)
+      .map((o) => ({
+        id: o.outletId,
+        owner: o.vendorName,
+        detail: o.outletName,
+        link: { kind: "retailer" as const, retailerId: o.vendorId },
+      }));
+
+  const groups: FaultGroupData[] = [
+    {
+      title: "Retailer address not courier-bookable",
+      consequence: "Stuart will refuse to book collections from these branches",
+      icon: Store,
+      tone: "critical",
+      entries: outletsBy("address_unbookable"),
+    },
+    {
+      title: "Geo location missing",
+      consequence: "these branches are invisible in customer discovery",
+      icon: MapPin,
+      tone: "critical",
+      entries: outletsBy("no_coordinates"),
+    },
+    {
+      title: "Customer address not courier-bookable",
+      consequence: "deliveries to these customers will fail",
+      icon: MapPin,
+      tone: "warning",
+      entries: stats.attention.userAddresses.map((a) => ({
+        id: a.addressId,
+        owner: a.customerName,
+        detail: a.postcode,
+        link: { kind: "user" as const, userId: a.userId },
+      })),
+    },
+  ];
+
+  return groups.filter((group) => group.entries.length > 0);
+}
+
 /**
  * The things a support person can act on right now, each one already
  * non-zero. Returns an empty array when the platform is quiet, which is what
@@ -242,6 +281,83 @@ function getAttentionItems(stats: DashboardStats | undefined): AttentionItem[] {
     },
   ];
   return items.filter((item) => item.count > 0);
+}
+
+/**
+ * A fault and the records carrying it.
+ *
+ * Open by default up to a handful of entries: this section only renders when
+ * something is wrong, so hiding the detail behind a click would undo the
+ * point of surfacing it. Longer lists start collapsed so one noisy fault
+ * cannot bury the others.
+ */
+function FaultGroup({ group }: { group: FaultGroupData }) {
+  const critical = group.tone === "critical";
+
+  return (
+    <Collapsible
+      defaultOpen={group.entries.length <= 5}
+      className={`rounded-md border ${
+        critical
+          ? "border-red-300 bg-red-50/50 dark:border-red-900 dark:bg-red-950/20"
+          : "border-border bg-muted/40"
+      }`}
+    >
+      <CollapsibleTrigger className="group/fault flex w-full items-center gap-3 px-4 py-3 text-left">
+        <group.icon
+          className={`size-4 shrink-0 ${
+            critical ? "text-red-600" : "text-muted-foreground"
+          }`}
+        />
+        <span className="text-sm">
+          <span className="font-semibold tabular-nums">
+            {group.entries.length}
+          </span>{" "}
+          {group.title}
+          <span className="text-muted-foreground"> — {group.consequence}</span>
+        </span>
+        <ChevronRight className="ml-auto size-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]/fault:rotate-90" />
+      </CollapsibleTrigger>
+      <CollapsibleContent>
+        <ul className="border-t">
+          {group.entries.map((entry) => (
+            <li key={entry.id}>
+              {entry.link.kind === "retailer" ? (
+                <Link
+                  to="/retailers/$retailerId"
+                  params={{ retailerId: entry.link.retailerId }}
+                  search={{ tab: "outlets" }}
+                  className="flex items-center gap-2 px-4 py-2 text-sm transition-colors hover:bg-muted/60"
+                >
+                  <span className="font-medium">{entry.owner}</span>
+                  {entry.detail && (
+                    <span className="text-muted-foreground">
+                      · {entry.detail}
+                    </span>
+                  )}
+                  <ArrowRight className="ml-auto size-3.5 text-muted-foreground" />
+                </Link>
+              ) : (
+                <Link
+                  to="/users/$userId"
+                  params={{ userId: entry.link.userId }}
+                  className="flex items-center gap-2 px-4 py-2 text-sm transition-colors hover:bg-muted/60"
+                >
+                  <span className="font-medium">{entry.owner}</span>
+                  {entry.detail && (
+                    <span className="text-muted-foreground">
+                      · {entry.detail}
+                    </span>
+                  )}
+                  <ArrowRight className="ml-auto size-3.5 text-muted-foreground" />
+                </Link>
+              )}
+            </li>
+          ))}
+        </ul>
+      </CollapsibleContent>
+    </Collapsible>
+  );
 }
 
 function AttentionRail({ items }: { items: AttentionItem[] }) {

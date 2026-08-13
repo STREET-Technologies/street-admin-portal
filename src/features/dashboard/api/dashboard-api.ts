@@ -29,7 +29,13 @@ export interface DashboardStats {
    */
   attention: {
     failedBilling: number;
-    unbookableUserAddresses: number;
+    /** Each names the customer, so support knows who to contact. */
+    userAddresses: Array<{
+      addressId: string;
+      userId: string;
+      customerName: string;
+      postcode: string | null;
+    }>;
     /** Carries the retailer because there is no global outlets screen. */
     outlets: Array<{
       outletId: string;
