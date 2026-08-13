@@ -23,6 +23,28 @@ export interface DashboardStats {
     deactivated: number;
     uninstalled: number;
   };
+  /**
+   * Faults a support person can act on (TT-451). Each was already shown as a
+   * per-row badge somewhere and so never seen in aggregate.
+   */
+  attention: {
+    failedBilling: number;
+    /** Each names the customer, so support knows who to contact. */
+    userAddresses: Array<{
+      addressId: string;
+      userId: string;
+      customerName: string;
+      postcode: string | null;
+    }>;
+    /** Carries the retailer because there is no global outlets screen. */
+    outlets: Array<{
+      outletId: string;
+      outletName: string;
+      vendorId: string;
+      vendorName: string;
+      reason: "no_coordinates" | "address_unbookable";
+    }>;
+  };
 }
 
 export function getDashboardStats(): Promise<DashboardStats> {
