@@ -29,7 +29,9 @@ import { DataTableColumnHeader } from "@/components/shared/DataTableColumnHeader
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { CopyButton } from "@/components/shared/CopyButton";
 import { ErrorState } from "@/components/shared/ErrorState";
+import { DateRangeFilter } from "@/components/shared/DateRangeFilter";
 import { useTableParams } from "@/hooks/use-table-params";
+import { useSearchParamState } from "@/hooks/use-search-param";
 import { useTabParam } from "@/hooks/use-tab-param";
 import { useDebounce } from "@/hooks/use-debounce";
 import { formatDate } from "@/lib/format-utils";
@@ -341,6 +343,9 @@ export function OrderListPage() {
   const setTabFilter = setTabParam;
   const [paymentMethodFilter, setPaymentMethodFilter] = useState<string>("all");
   const debouncedSearch = useDebounce(searchValue, 300);
+  // Read straight from the URL — DateRangeFilter owns writing them (TT-447).
+  const [dateFrom] = useSearchParamState("dateFrom");
+  const [dateTo] = useSearchParamState("dateTo");
 
   const tabParams = tabToQueryParams(tabFilter);
 
@@ -357,6 +362,8 @@ export function OrderListPage() {
     returnStatus: tabParams.returnStatus,
     paymentMethod:
       paymentMethodFilter !== "all" ? paymentMethodFilter : undefined,
+    dateFrom,
+    dateTo,
     sortBy: searchParams.sortBy,
     sortOrder: searchParams.sortOrder,
     page: searchParams.page,
@@ -437,6 +444,14 @@ export function OrderListPage() {
             ))}
           </SelectContent>
         </Select>
+
+        {/* Changing the range changes the result set, so page 3 of the old
+            range is meaningless against the new one. */}
+        <DateRangeFilter
+          onChange={() =>
+            onPaginationChange({ pageIndex: 0, pageSize: pagination.pageSize })
+          }
+        />
       </div>
 
       {/* Data table */}

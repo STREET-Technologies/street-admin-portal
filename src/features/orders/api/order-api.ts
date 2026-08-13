@@ -21,6 +21,13 @@ export interface GetOrdersParams {
    * Returned tab. Values: REQUESTED | IN_PROGRESS | PARTIAL | COMPLETE.
    */
   returnStatus?: string;
+  /**
+   * Inclusive date bounds as YYYY-MM-DD (TT-447). Read as London calendar
+   * dates server-side, so send the day the user picked — never a UTC-shifted
+   * one.
+   */
+  dateFrom?: string;
+  dateTo?: string;
   /** Backend allowlist: orderId | customerName | totalAmount | createdAt */
   sortBy?: string;
   sortOrder?: "asc" | "desc";
