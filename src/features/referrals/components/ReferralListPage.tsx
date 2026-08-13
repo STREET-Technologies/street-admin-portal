@@ -160,7 +160,7 @@ export function ReferralListPage() {
     onPaginationChange,
     onSortingChange,
     searchParams,
-  } = useTableParams({ pageSize: 20, sortBy: "createdAt", sortOrder: "desc" });
+  } = useTableParams({ sortBy: "createdAt", sortOrder: "desc" });
 
   const [searchInput, setSearchInput] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");

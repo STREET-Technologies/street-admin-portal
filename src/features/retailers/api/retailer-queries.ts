@@ -45,16 +45,22 @@ export const retailerKeys = {
     [...retailerKeys.lists(), params] as const,
   details: () => [...retailerKeys.all, "detail"] as const,
   detail: (id: string) => [...retailerKeys.details(), id] as const,
-  orders: (id: string) =>
-    [...retailerKeys.detail(id), "orders"] as const,
+  orders: (id: string, params: { page?: number; limit?: number } = {}) =>
+    [...retailerKeys.detail(id), "orders", params] as const,
   staff: (id: string) =>
     [...retailerKeys.detail(id), "staff"] as const,
-  billing: (id: string, billingStatus?: string | null, page = 1) =>
+  billing: (
+    id: string,
+    billingStatus?: string | null,
+    page = 1,
+    limit?: number,
+  ) =>
     [
       ...retailerKeys.detail(id),
       "billing",
       billingStatus ?? "all",
       page,
+      limit ?? "default",
     ] as const,
   outlets: (id: string) =>
     [...retailerKeys.detail(id), "outlets"] as const,
@@ -92,10 +98,14 @@ export function useRetailerQuery(retailerId: string) {
 /**
  * Orders belonging to a specific retailer.
  */
-export function useRetailerOrdersQuery(retailerId: string) {
+export function useRetailerOrdersQuery(
+  retailerId: string,
+  params: { page?: number; limit?: number } = {},
+) {
   return useQuery({
-    queryKey: retailerKeys.orders(retailerId),
-    queryFn: () => getRetailerOrders(retailerId),
+    queryKey: retailerKeys.orders(retailerId, params),
+    queryFn: () => getRetailerOrders(retailerId, params),
+    placeholderData: keepPreviousData,
     enabled: Boolean(retailerId),
   });
 }
@@ -119,10 +129,11 @@ export function useRetailerBillingQuery(
   retailerId: string,
   billingStatus?: string | null,
   page = 1,
+  limit?: number,
 ) {
   return useQuery({
-    queryKey: retailerKeys.billing(retailerId, billingStatus, page),
-    queryFn: () => getRetailerBilling(retailerId, billingStatus, page),
+    queryKey: retailerKeys.billing(retailerId, billingStatus, page, limit),
+    queryFn: () => getRetailerBilling(retailerId, billingStatus, page, limit),
     placeholderData: keepPreviousData,
     enabled: Boolean(retailerId),
   });

@@ -7,7 +7,6 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import type { LucideIcon } from "lucide-react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -16,16 +15,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { TablePagination } from "@/components/shared/TablePagination";
 
 /**
  * Generic, server-driven data table built on TanStack Table + shadcn Table.
@@ -33,9 +25,10 @@ import { EmptyState } from "@/components/shared/EmptyState";
  * All pagination and sorting is manual (server-side). The parent component
  * is responsible for fetching data based on the current pagination/sorting
  * state and passing the results here.
+ *
+ * The pagination bar is TablePagination, shared with the tables that are not
+ * built on this component (TT-445).
  */
-
-const PAGE_SIZE_OPTIONS = [10, 20, 50] as const;
 
 interface DataTableProps<TData> {
   columns: ColumnDef<TData, unknown>[];
@@ -104,7 +97,9 @@ export function DataTable<TData>({
   });
 
   if (isLoading) {
-    return <LoadingState variant="table" rows={pageSize > 10 ? 10 : pageSize} />;
+    return (
+      <LoadingState variant="table" rows={pageSize > 10 ? 10 : pageSize} />
+    );
   }
 
   if (data.length === 0) {
@@ -117,9 +112,8 @@ export function DataTable<TData>({
     );
   }
 
+  // Range maths now lives in TablePagination; only the total is needed here.
   const totalRows = totalItems ?? pageCount * pageSize;
-  const rangeStart = pageIndex * pageSize + 1;
-  const rangeEnd = Math.min((pageIndex + 1) * pageSize, totalRows);
 
   return (
     <div className="space-y-4">
@@ -169,59 +163,12 @@ export function DataTable<TData>({
         </Table>
       </div>
 
-      {/* Pagination bar */}
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          Showing {rangeStart}-{rangeEnd} of {totalRows}
-        </p>
-
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Rows per page</span>
-            <Select
-              value={String(pageSize)}
-              onValueChange={(value) =>
-                onPaginationChange({ pageIndex: 0, pageSize: Number(value) })
-              }
-            >
-              <SelectTrigger size="sm" className="w-16">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent position="popper" align="end">
-                {PAGE_SIZE_OPTIONS.map((size) => (
-                  <SelectItem key={size} value={String(size)}>
-                    {size}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex items-center gap-1">
-            <Button
-              variant="outline"
-              size="icon-sm"
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
-              aria-label="Previous page"
-            >
-              <ChevronLeft className="size-4" />
-            </Button>
-            <span className="min-w-[4rem] text-center text-sm text-muted-foreground">
-              Page {pageIndex + 1} of {pageCount}
-            </span>
-            <Button
-              variant="outline"
-              size="icon-sm"
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
-              aria-label="Next page"
-            >
-              <ChevronRight className="size-4" />
-            </Button>
-          </div>
-        </div>
-      </div>
+      <TablePagination
+        pageIndex={pageIndex}
+        pageSize={pageSize}
+        total={totalRows}
+        onPaginationChange={onPaginationChange}
+      />
     </div>
   );
 }

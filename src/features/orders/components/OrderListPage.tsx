@@ -245,7 +245,7 @@ function createColumns(
 export function OrderListPage() {
   const navigate = useNavigate();
   const { pagination, sorting, onPaginationChange, onSortingChange, searchParams } =
-    useTableParams({ pageSize: 20, sortBy: "createdAt", sortOrder: "desc" });
+    useTableParams({ sortBy: "createdAt", sortOrder: "desc" });
 
   // Filter state. The tab lives in ?tab= so the dashboard (and bookmarks)
   // can deep-link straight into a bucket like /orders?tab=stuck (TT-358).

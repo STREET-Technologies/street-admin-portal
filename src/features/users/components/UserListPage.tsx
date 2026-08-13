@@ -133,7 +133,7 @@ function createColumns(
 export function UserListPage() {
   const navigate = useNavigate();
   const { pagination, sorting, onPaginationChange, onSortingChange, searchParams } =
-    useTableParams({ pageSize: 20, sortBy: "createdAt", sortOrder: "desc" });
+    useTableParams({ sortBy: "createdAt", sortOrder: "desc" });
 
   // Debounced search input
   const [searchInput, setSearchInput] = useState("");

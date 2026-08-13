@@ -84,14 +84,21 @@ interface RawUserOrder {
   [key: string]: unknown;
 }
 
-/** Fetch orders for a user. Flattens the vendor relation. */
+/**
+ * Fetch a page of a user's orders. Flattens the vendor relation.
+ *
+ * Page and limit are explicit: the endpoint defaults to limit=10, so omitting
+ * them silently returned the 10 most recent orders and the tab rendered them
+ * as if that were everything (TT-445).
+ */
 export async function getUserOrders(
   userId: string,
-): Promise<BackendUserOrder[]> {
-  const orders = await api.get<RawUserOrder[]>(
-    `admin/users/${userId}/orders`,
+  params: { page?: number; limit?: number } = {},
+): Promise<PaginatedResponse<BackendUserOrder>> {
+  const { data, meta } = await api.getPaginated<RawUserOrder>(
+    `admin/users/${userId}/orders${toQueryString(params)}`,
   );
-  return orders.map((raw) => ({
+  const orders = data.map((raw) => ({
     id: raw.id,
     orderNumber: raw.orderId ?? null,
     status: raw.status,
@@ -102,6 +109,7 @@ export async function getUserOrders(
     createdAt: raw.createdAt,
     updatedAt: raw.updatedAt,
   }));
+  return { data: orders, meta };
 }
 
 /** Fetch devices for a user. */

@@ -1,8 +1,13 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { CreditCard, AlertTriangle, CheckCircle, Clock, XCircle } from "lucide-react";
+import {
+  CreditCard,
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  XCircle,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -14,7 +19,9 @@ import {
 import { LoadingState } from "@/components/shared/LoadingState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { TablePagination } from "@/components/shared/TablePagination";
 import { formatCurrency, formatDate } from "@/lib/format-utils";
+import { useTableParams } from "@/hooks/use-table-params";
 import { useRetailerBillingQuery } from "../api/retailer-queries";
 import type { RetailerBillingLedgerEntry } from "../api/retailer-api";
 
@@ -22,12 +29,24 @@ interface RetailerBillingTabProps {
   retailerId: string;
 }
 
-function BillingStatusBadge({ status }: { status: RetailerBillingLedgerEntry["billingStatus"] }) {
+function BillingStatusBadge({
+  status,
+}: {
+  status: RetailerBillingLedgerEntry["billingStatus"];
+}) {
   if (status === "charged")
-    return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Charged</Badge>;
+    return (
+      <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
+        Charged
+      </Badge>
+    );
   if (status === "failed") return <Badge variant="destructive">Failed</Badge>;
   if (status === "pending")
-    return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">Pending</Badge>;
+    return (
+      <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">
+        Pending
+      </Badge>
+    );
   return <Badge variant="secondary">Skipped</Badge>;
 }
 
@@ -38,15 +57,21 @@ function BillingStatusBadge({ status }: { status: RetailerBillingLedgerEntry["bi
  */
 function ChargeWorkings({ entry }: { entry: RetailerBillingLedgerEntry }) {
   if (entry.commissionAmount === null) {
-    return <span className="text-xs text-muted-foreground">No pricing breakdown recorded</span>;
+    return (
+      <span className="text-xs text-muted-foreground">
+        No pricing breakdown recorded
+      </span>
+    );
   }
 
   return (
     <span className="text-xs text-muted-foreground tabular-nums">
       {formatCurrency(entry.productTotal)}
-      {entry.commissionPercentage !== null && ` × ${entry.commissionPercentage}%`} ={" "}
-      {formatCurrency(entry.commissionAmount)} commission
-      {entry.expectedDeliveryFee !== null && ` + ${formatCurrency(entry.expectedDeliveryFee)} delivery`}
+      {entry.commissionPercentage !== null &&
+        ` × ${entry.commissionPercentage}%`}{" "}
+      = {formatCurrency(entry.commissionAmount)} commission
+      {entry.expectedDeliveryFee !== null &&
+        ` + ${formatCurrency(entry.expectedDeliveryFee)} delivery`}
       {entry.discountAbsorbed
         ? ` − ${formatCurrency(entry.discountAbsorbed)} STREET credit`
         : ""}
@@ -57,10 +82,17 @@ function ChargeWorkings({ entry }: { entry: RetailerBillingLedgerEntry }) {
 function SubscriptionStatusBadge({ status }: { status: string | null }) {
   if (!status) return <Badge variant="secondary">Unknown</Badge>;
   const upper = status.toUpperCase();
-  if (upper === "ACTIVE") return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Active</Badge>;
-  if (upper === "CANCELLED") return <Badge variant="destructive">Cancelled</Badge>;
+  if (upper === "ACTIVE")
+    return (
+      <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
+        Active
+      </Badge>
+    );
+  if (upper === "CANCELLED")
+    return <Badge variant="destructive">Cancelled</Badge>;
   if (upper === "PENDING") return <Badge variant="secondary">Pending</Badge>;
-  if (upper === "DECLINED") return <Badge variant="destructive">Declined</Badge>;
+  if (upper === "DECLINED")
+    return <Badge variant="destructive">Declined</Badge>;
   return <Badge variant="secondary">{status}</Badge>;
 }
 
@@ -192,11 +224,21 @@ function StatTile({
 }
 
 export function RetailerBillingTab({ retailerId }: RetailerBillingTabProps) {
-  const [statusFilter, setStatusFilter] =
-    useState<RetailerBillingLedgerEntry["billingStatus"] | null>(null);
-  const [page, setPage] = useState(1);
+  const [statusFilter, setStatusFilter] = useState<
+    RetailerBillingLedgerEntry["billingStatus"] | null
+  >(null);
+  // Prefixed so the ledger's paging does not collide with the Orders tab's
+  // on the same route (TT-445).
+  const { pagination, onPaginationChange, searchParams } = useTableParams({
+    prefix: "billing",
+  });
   const { data, isLoading, isError, refetch, isFetching } =
-    useRetailerBillingQuery(retailerId, statusFilter, page);
+    useRetailerBillingQuery(
+      retailerId,
+      statusFilter,
+      searchParams.page,
+      searchParams.limit,
+    );
 
   if (isLoading) return <LoadingState variant="page" />;
 
@@ -222,25 +264,30 @@ export function RetailerBillingTab({ retailerId }: RetailerBillingTabProps) {
 
   // Changing the filter changes the row set, so page 2 of the old filter is
   // meaningless against the new one — always land back on page 1.
-  const toggleFilter = (status: RetailerBillingLedgerEntry["billingStatus"]) => {
+  const resetToFirstPage = () =>
+    onPaginationChange({ pageIndex: 0, pageSize: pagination.pageSize });
+
+  const toggleFilter = (
+    status: RetailerBillingLedgerEntry["billingStatus"],
+  ) => {
     setStatusFilter((current) => (current === status ? null : status));
-    setPage(1);
+    resetToFirstPage();
   };
 
   const clearFilter = () => {
     setStatusFilter(null);
-    setPage(1);
+    resetToFirstPage();
   };
 
   // Filtered and paginated server-side.
   const visibleLedger = data.ledger;
-  const { page: currentPage, total: pageTotal, totalPages } = data.ledgerPage;
+  const { total: pageTotal } = data.ledgerPage;
 
   const capPercent =
     data.subscription && data.subscription.cappedAmount > 0
       ? Math.min(
           100,
-          ((data.orders.chargedAmount / data.subscription.cappedAmount) * 100),
+          (data.orders.chargedAmount / data.subscription.cappedAmount) * 100,
         )
       : null;
 
@@ -262,28 +309,55 @@ export function RetailerBillingTab({ retailerId }: RetailerBillingTabProps) {
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1">
-                <p className="text-xs uppercase tracking-wider text-muted-foreground">Status</p>
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                  Status
+                </p>
                 <SubscriptionStatusBadge status={data.subscription.status} />
               </div>
               <div className="space-y-1">
-                <p className="text-xs uppercase tracking-wider text-muted-foreground">Shop domain</p>
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                  Shop domain
+                </p>
                 <p className="text-sm font-medium">{data.shopDomain ?? "—"}</p>
               </div>
               <div className="space-y-1">
-                <p className="text-xs uppercase tracking-wider text-muted-foreground">Spending cap</p>
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                  Spending cap
+                </p>
                 <p className="text-sm font-medium tabular-nums">
-                  {formatCurrency(data.subscription.cappedAmount, data.subscription.billingCurrency)}
+                  {formatCurrency(
+                    data.subscription.cappedAmount,
+                    data.subscription.billingCurrency,
+                  )}
                 </p>
               </div>
               <div className="space-y-1">
-                <p className="text-xs uppercase tracking-wider text-muted-foreground">Currency</p>
-                <p className="text-sm font-medium">{data.subscription.billingCurrency ?? "—"}</p>
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                  Currency
+                </p>
+                <p className="text-sm font-medium">
+                  {data.subscription.billingCurrency ?? "—"}
+                </p>
               </div>
               {capPercent !== null && (
                 <div className="col-span-2 space-y-1.5">
                   <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>Cap consumed ({formatCurrency(data.orders.chargedAmount, data.subscription!.billingCurrency)} of {formatCurrency(data.subscription!.cappedAmount, data.subscription!.billingCurrency)})</span>
-                    <span className="tabular-nums">{capPercent.toFixed(1)}%</span>
+                    <span>
+                      Cap consumed (
+                      {formatCurrency(
+                        data.orders.chargedAmount,
+                        data.subscription!.billingCurrency,
+                      )}{" "}
+                      of{" "}
+                      {formatCurrency(
+                        data.subscription!.cappedAmount,
+                        data.subscription!.billingCurrency,
+                      )}
+                      )
+                    </span>
+                    <span className="tabular-nums">
+                      {capPercent.toFixed(1)}%
+                    </span>
                   </div>
                   <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
                     <div
@@ -306,7 +380,9 @@ export function RetailerBillingTab({ retailerId }: RetailerBillingTabProps) {
 
       {/* Order billing stats — flat section, doubles as the ledger filter */}
       <section>
-        <h2 className="text-base font-semibold leading-none">Order Billing Breakdown</h2>
+        <h2 className="text-base font-semibold leading-none">
+          Order Billing Breakdown
+        </h2>
         <p className="mt-1.5 text-xs text-muted-foreground">
           Select a status to filter the ledger below.
         </p>
@@ -343,14 +419,9 @@ export function RetailerBillingTab({ retailerId }: RetailerBillingTabProps) {
           )}
         </div>
         <p className="mt-1.5 text-xs text-muted-foreground">
-          {pageTotal === 0
-            ? statusFilter
-              ? `No ${statusFilter} orders.`
-              : "No orders."
-            : `${pageTotal} ${statusFilter ?? ""} order${pageTotal === 1 ? "" : "s"}${
-                totalPages > 1 ? `, page ${currentPage} of ${totalPages}` : ""
-              }.`}{" "}
-          Expected is derived from the order's pricing snapshot; charged is what Shopify was billed.
+          {/* Row counts and page position come from TablePagination below. */}
+          Expected is derived from the order's pricing snapshot; charged is what
+          Shopify was billed.
         </p>
         <div className={`mt-4 border-t pt-5 ${isFetching ? "opacity-60" : ""}`}>
           {visibleLedger.length === 0 ? (
@@ -427,7 +498,9 @@ export function RetailerBillingTab({ retailerId }: RetailerBillingTabProps) {
                         <ChargeWorkings entry={entry} />
                       </TableCell>
                       <TableCell className="align-top text-right text-sm tabular-nums">
-                        {entry.expectedCharge === null ? "—" : formatCurrency(entry.expectedCharge)}
+                        {entry.expectedCharge === null
+                          ? "—"
+                          : formatCurrency(entry.expectedCharge)}
                       </TableCell>
                       <TableCell className="align-top text-right">
                         <span
@@ -457,35 +530,15 @@ export function RetailerBillingTab({ retailerId }: RetailerBillingTabProps) {
             </Table>
           )}
 
-          {/* Also shown when the page overshot the range, so Previous is
-              still reachable rather than stranding an empty list. */}
-          {(totalPages > 1 || currentPage > 1) && (
-            <div className="mt-4 flex items-center justify-between border-t pt-3">
-              <p className="text-xs text-muted-foreground">
-                Page {currentPage} of {totalPages}
-              </p>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={currentPage <= 1 || isFetching}
-                >
-                  Previous
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    setPage((p) => Math.min(totalPages, p + 1))
-                  }
-                  disabled={currentPage >= totalPages || isFetching}
-                >
-                  Next
-                </Button>
-              </div>
-            </div>
-          )}
+          <div className="mt-4 border-t pt-3">
+            <TablePagination
+              pageIndex={pagination.pageIndex}
+              pageSize={pagination.pageSize}
+              total={pageTotal}
+              onPaginationChange={onPaginationChange}
+              isFetching={isFetching}
+            />
+          </div>
         </div>
       </section>
     </div>
