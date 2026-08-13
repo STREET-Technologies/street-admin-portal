@@ -1,5 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { groupDevices, readAppVersion, platformLabel } from "./devices";
+import {
+  groupDevices,
+  readAppVersion,
+  readOsVersion,
+  platformDisplay,
+  platformLabel,
+} from "./devices";
 import type { BackendUserDevice } from "./types";
 
 // The bug this file exists to prevent: staging's heaviest customer has 23
@@ -164,8 +170,75 @@ describe("groupDevices", () => {
     expect(groups[0].appVersion).toBe("1.4.0");
   });
 
+  it("takes the OS version from the newest registration that has one", () => {
+    const groups = groupDevices([
+      row({
+        id: "old",
+        metadata: { osVersion: "14" },
+        lastUsedAt: "2026-08-01T00:00:00.000Z",
+      }),
+      row({
+        id: "new",
+        metadata: { osVersion: "15" },
+        lastUsedAt: "2026-08-09T00:00:00.000Z",
+      }),
+    ]);
+
+    expect(groups[0].osVersion).toBe("15");
+  });
+
+  it("carries the OS version even when the app version is missing", () => {
+    // The two are independent keys; one absent must not suppress the other.
+    const groups = groupDevices([row({ metadata: { osVersion: "18.2" } })]);
+
+    expect(groups[0].osVersion).toBe("18.2");
+    expect(groups[0].appVersion).toBe(null);
+  });
+
+  it("leaves OS null on pre-TT-455 rows", () => {
+    expect(groupDevices([row({ metadata: null })])[0].osVersion).toBe(null);
+  });
+
   it("survives a user with no registrations", () => {
     expect(groupDevices([])).toEqual([]);
+  });
+});
+
+describe("readOsVersion", () => {
+  it("returns the bare version", () => {
+    expect(readOsVersion({ osVersion: "15" })).toBe("15");
+  });
+
+  it("trims and rejects blank or non-string values", () => {
+    expect(readOsVersion({ osVersion: " 18.2 " })).toBe("18.2");
+    expect(readOsVersion({ osVersion: "  " })).toBe(null);
+    expect(readOsVersion({ osVersion: 15 })).toBe(null);
+    expect(readOsVersion(null)).toBe(null);
+  });
+
+  it("ignores the retail PWA's metadata shape", () => {
+    expect(readOsVersion({ timestamp: "2026-06-02", userAgent: "web" })).toBe(
+      null,
+    );
+  });
+});
+
+describe("platformDisplay", () => {
+  it("joins the platform and OS version", () => {
+    // A bare "15" next to "android" reads as a version of nothing.
+    expect(platformDisplay("android", "15")).toBe("Android 15");
+    expect(platformDisplay("ios", "18.2")).toBe("iOS 18.2");
+  });
+
+  it("falls back to the platform alone when the OS is unknown", () => {
+    expect(platformDisplay("android", null)).toBe("Android");
+    expect(platformDisplay("ios", null)).toBe("iOS");
+    expect(platformDisplay("web", null)).toBe("Web");
+  });
+
+  it("capitalises iOS properly rather than relying on CSS", () => {
+    // The old markup used `capitalize` on the raw enum, which renders "Ios".
+    expect(platformDisplay("ios", null)).not.toBe("Ios");
   });
 });
 

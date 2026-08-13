@@ -30,6 +30,8 @@ export interface DeviceGroup {
   isActive: boolean;
   /** App version from the newest registration that reported one. */
   appVersion: string | null;
+  /** OS version from the newest registration that reported one. */
+  osVersion: string | null;
   /** Newest lastUsedAt across the group, falling back to createdAt. */
   lastSeenAt: string | null;
   /** First time this device ever registered. */
@@ -48,6 +50,31 @@ export function readAppVersion(
   return typeof build === "string" && build.trim() !== ""
     ? `${version} (${build})`
     : version;
+}
+
+/** Reads the OS version out of the metadata blob. Bare number, no platform. */
+export function readOsVersion(
+  metadata: Record<string, unknown> | null,
+): string | null {
+  const version = metadata?.osVersion;
+  if (typeof version !== "string" || version.trim() === "") return null;
+  return version.trim();
+}
+
+/**
+ * Platform as support says it, carrying the OS version when we have one:
+ * "Android 15", "iOS 18.2", or just "Android" on older registrations.
+ *
+ * The two are joined rather than shown as separate fields because "android"
+ * followed by a bare "15" reads as a version of nothing in particular.
+ */
+export function platformDisplay(
+  platform: BackendUserDevice["platform"],
+  osVersion: string | null,
+): string {
+  const name =
+    platform === "ios" ? "iOS" : platform === "android" ? "Android" : "Web";
+  return osVersion ? `${name} ${osVersion}` : name;
 }
 
 /** Newest of two ISO timestamps; nulls lose. */
@@ -82,6 +109,7 @@ export function groupDevices(rows: BackendUserDevice[]): DeviceGroup[] {
         deviceId: row.deviceId,
         isActive: row.isActive,
         appVersion: readAppVersion(row.metadata),
+        osVersion: readOsVersion(row.metadata),
         lastSeenAt: seenAt,
         firstSeenAt: row.createdAt,
         registrations: [row],
@@ -107,8 +135,14 @@ export function groupDevices(rows: BackendUserDevice[]): DeviceGroup[] {
     // phone or an upgraded app should read as it is today, not as it was.
     const newest = group.registrations[0];
     group.name = newest.deviceName ?? platformLabel(newest.platform);
+    // Newest-first order means find() takes the most recent registration that
+    // reported one. Older builds sent no metadata at all (TT-455), so this is
+    // frequently the only row carrying either value.
     group.appVersion =
       group.registrations.map((r) => readAppVersion(r.metadata)).find(Boolean) ??
+      null;
+    group.osVersion =
+      group.registrations.map((r) => readOsVersion(r.metadata)).find(Boolean) ??
       null;
   }
 

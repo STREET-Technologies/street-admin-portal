@@ -11,7 +11,13 @@ import { StatusBadge } from "@/components/shared/StatusBadge";
 import { CopyButton } from "@/components/shared/CopyButton";
 import { formatDate, formatDateTime } from "@/lib/format-utils";
 import { useUserDevicesQuery } from "../api/user-queries";
-import { groupDevices, readAppVersion, type DeviceGroup } from "../devices";
+import {
+  groupDevices,
+  platformDisplay,
+  readAppVersion,
+  readOsVersion,
+  type DeviceGroup,
+} from "../devices";
 
 /**
  * Push devices for one customer (TT-452).
@@ -111,7 +117,7 @@ function DeviceRow({ group }: { group: DeviceGroup }) {
             />
           </div>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            <span className="capitalize">{group.platform}</span>
+            {platformDisplay(group.platform, group.osVersion)}
             {group.appVersion && <> · v{group.appVersion}</>}
             {group.lastSeenAt && <> · Last seen {formatDate(group.lastSeenAt)}</>}
           </p>
@@ -134,6 +140,10 @@ function DeviceRow({ group }: { group: DeviceGroup }) {
           <ul className="space-y-2">
             {group.registrations.map((reg) => {
               const version = readAppVersion(reg.metadata);
+              // Per-registration OS, not just the group's: an OS upgrade
+              // between two registrations is exactly the kind of thing that
+              // explains "push stopped working last week".
+              const os = readOsVersion(reg.metadata);
               return (
                 <li
                   key={reg.id}
@@ -158,6 +168,11 @@ function DeviceRow({ group }: { group: DeviceGroup }) {
                   )}
                   {version && (
                     <span className="text-muted-foreground">v{version}</span>
+                  )}
+                  {os && (
+                    <span className="text-muted-foreground">
+                      {platformDisplay(reg.platform, os)}
+                    </span>
                   )}
                   <span className="ml-auto flex items-center gap-1">
                     <span className="font-mono text-muted-foreground">
