@@ -106,37 +106,45 @@ function DeviceRow({ group }: { group: DeviceGroup }) {
 
   return (
     <Collapsible defaultOpen={false}>
-      {/* Single inline row. The device name, its state and everything known
-          about it read left to right; stacking the detail underneath left a
-          wide empty row and pushed the detail down into small type. */}
+      {/* Two lines: what the device IS on top, what identifies it beneath.
+          The identity line lives here rather than inside the panel so the
+          device is fully described without expanding anything — and at text-xs,
+          because a 36-character UUID set at body size dominated everything
+          around it. */}
       <CollapsibleTrigger className="group/device flex w-full items-center gap-2.5 px-4 py-3 text-left transition-colors hover:bg-muted/50">
         <Icon className="size-4 shrink-0 text-muted-foreground" />
-        <span className="shrink-0 text-sm font-medium">{group.name}</span>
-        <StatusBadge
-          status={group.isActive ? "active" : "inactive"}
-          size="sm"
-          className="shrink-0"
-        />
-        <span className="min-w-0 truncate text-sm text-muted-foreground">
-          {platformDisplay(group.platform, group.osVersion)}
-          {group.appVersion && <> · v{group.appVersion}</>}
-          {group.lastSeenAt && <> · Last seen {formatDate(group.lastSeenAt)}</>}
-        </span>
-        <span className="ml-auto shrink-0 text-sm text-muted-foreground tabular-nums">
-          {count} {count === 1 ? "registration" : "registrations"}
-        </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2.5">
+            <span className="shrink-0 text-sm font-medium">{group.name}</span>
+            <StatusBadge
+              status={group.isActive ? "active" : "inactive"}
+              size="sm"
+              className="shrink-0"
+            />
+            <span className="min-w-0 truncate text-sm text-muted-foreground">
+              {platformDisplay(group.platform, group.osVersion)}
+              {group.appVersion && <> · v{group.appVersion}</>}
+              {group.lastSeenAt && (
+                <> · Last seen {formatDate(group.lastSeenAt)}</>
+              )}
+            </span>
+            <span className="ml-auto shrink-0 text-sm text-muted-foreground tabular-nums">
+              {count} {count === 1 ? "registration" : "registrations"}
+            </span>
+          </div>
+          <p className="mt-0.5 truncate text-xs text-muted-foreground">
+            {group.deviceId && (
+              <span className="font-mono">{group.deviceId}</span>
+            )}
+            {group.deviceId && " · "}
+            First registered {formatDate(group.firstSeenAt)}
+          </p>
+        </div>
         <ChevronRight className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]/device:rotate-90" />
       </CollapsibleTrigger>
 
       <CollapsibleContent>
         <div className="border-t bg-muted/30 px-4 py-3">
-          {group.deviceId && (
-            <p className="mb-3 text-sm text-muted-foreground">
-              Device ID{" "}
-              <span className="font-mono break-all">{group.deviceId}</span> ·
-              First registered {formatDate(group.firstSeenAt)}
-            </p>
-          )}
           <ul className="space-y-2">
             {group.registrations.map((reg) => {
               const version = readAppVersion(reg.metadata);
