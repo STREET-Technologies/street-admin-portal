@@ -100,6 +100,13 @@ export function UserDevicesTab({ userId }: { userId: string }) {
   );
 }
 
+/**
+ * One definition of the registration columns, shared by the header and the
+ * rows — declaring the widths twice is how a table quietly stops lining up.
+ */
+const REG_GRID =
+  "grid grid-cols-[7rem_11rem_11rem_minmax(9rem,1fr)_8rem_11rem] gap-x-4";
+
 function DeviceRow({ group }: { group: DeviceGroup }) {
   const Icon = group.platform === "web" ? Monitor : Smartphone;
   const count = group.registrations.length;
@@ -143,55 +150,62 @@ function DeviceRow({ group }: { group: DeviceGroup }) {
         <ChevronRight className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]/device:rotate-90" />
       </CollapsibleTrigger>
 
+      {/* A real table, not a run of labelled spans. Every row repeated
+          "Registered"/"Last used" and nothing lined up, so five registrations
+          read as five sentences instead of a ledger you can scan down. */}
       <CollapsibleContent>
-        <div className="border-t bg-muted/30 px-4 py-3">
-          <ul className="space-y-2">
-            {group.registrations.map((reg) => {
-              const version = readAppVersion(reg.metadata);
-              // Per-registration OS, not just the group's: an OS upgrade
-              // between two registrations is exactly the kind of thing that
-              // explains "push stopped working last week".
-              const os = readOsVersion(reg.metadata);
-              return (
-                <li
-                  key={reg.id}
-                  className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm"
-                >
-                  <span
-                    className={
-                      reg.isActive
-                        ? "font-medium"
-                        : "text-muted-foreground line-through"
-                    }
+        <div className="overflow-x-auto border-t bg-muted/50 px-4 py-3">
+          <div className="min-w-[52rem]">
+            <div className={`${REG_GRID} pb-1.5 text-xs font-medium uppercase tracking-wider text-muted-foreground`}>
+              <span>State</span>
+              <span>Registered</span>
+              <span>Last used</span>
+              <span>App</span>
+              <span>OS</span>
+              <span className="text-right">Token</span>
+            </div>
+            <div className="divide-y divide-border/60">
+              {group.registrations.map((reg) => {
+                const version = readAppVersion(reg.metadata);
+                // Per-registration, not just the group's: an OS or app upgrade
+                // between two registrations is exactly the kind of thing that
+                // explains "push stopped working last week".
+                const os = readOsVersion(reg.metadata);
+                return (
+                  <div
+                    key={reg.id}
+                    className={`${REG_GRID} items-center py-1.5 text-sm`}
                   >
-                    {reg.isActive ? "Active" : "Superseded"}
-                  </span>
-                  <span className="text-muted-foreground tabular-nums">
-                    Registered {formatDateTime(reg.createdAt)}
-                  </span>
-                  {reg.lastUsedAt && (
+                    <span
+                      className={
+                        reg.isActive ? "font-medium" : "text-muted-foreground"
+                      }
+                    >
+                      {reg.isActive ? "Active" : "Superseded"}
+                    </span>
                     <span className="text-muted-foreground tabular-nums">
-                      Last used {formatDateTime(reg.lastUsedAt)}
+                      {formatDateTime(reg.createdAt)}
                     </span>
-                  )}
-                  {version && (
-                    <span className="text-muted-foreground">v{version}</span>
-                  )}
-                  {os && (
+                    <span className="text-muted-foreground tabular-nums">
+                      {reg.lastUsedAt ? formatDateTime(reg.lastUsedAt) : ""}
+                    </span>
                     <span className="text-muted-foreground">
-                      {platformDisplay(reg.platform, os)}
+                      {version ? `v${version}` : ""}
                     </span>
-                  )}
-                  <span className="ml-auto flex items-center gap-1">
-                    <span className="font-mono text-muted-foreground">
-                      {reg.token.slice(0, 12)}…
+                    <span className="text-muted-foreground">
+                      {os ? platformDisplay(reg.platform, os) : ""}
                     </span>
-                    <CopyButton value={reg.token} label="Copy FCM token" />
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
+                    <span className="flex items-center justify-end gap-1">
+                      <span className="font-mono text-xs text-muted-foreground">
+                        {reg.token.slice(0, 12)}…
+                      </span>
+                      <CopyButton value={reg.token} label="Copy FCM token" />
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </CollapsibleContent>
     </Collapsible>
