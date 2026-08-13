@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Loader2, MapPin } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { ArrowRight, Loader2, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
@@ -26,7 +27,10 @@ import {
   useSetOutletActiveMutation,
   useSetOutletPrimaryMutation,
 } from "../api/retailer-queries";
-import type { AdminOutlet, AddressValidationVerdict } from "../api/retailer-api";
+import type {
+  AdminOutlet,
+  AddressValidationVerdict,
+} from "../api/retailer-api";
 
 // Explains the courier-bookability failure and how to fix it (TT-397).
 // Only 'invalid_postcode' and 'postcode_mismatch' warrant a warning — never
@@ -66,7 +70,12 @@ function ConfirmDialog({
   isPending = false,
 }: ConfirmDialogProps) {
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) onCancel(); }}>
+    <Dialog
+      open={open}
+      onOpenChange={(isOpen) => {
+        if (!isOpen) onCancel();
+      }}
+    >
       <DialogContent showCloseButton={false}>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
@@ -77,7 +86,11 @@ function ConfirmDialog({
             Cancel
           </Button>
           <Button onClick={onConfirm} disabled={isPending}>
-            {isPending ? <Loader2 className="size-4 animate-spin" /> : confirmLabel}
+            {isPending ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              confirmLabel
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -99,12 +112,19 @@ type PendingAction =
 
 export function RetailerOutletsTab({ retailerId }: RetailerOutletsTabProps) {
   const { canWrite } = useAdminRole();
-  const { data: outlets, isLoading, isError, refetch } = useRetailerOutletsQuery(retailerId);
+  const {
+    data: outlets,
+    isLoading,
+    isError,
+    refetch,
+  } = useRetailerOutletsQuery(retailerId);
   const publishMutation = useSetOutletPublishedMutation(retailerId);
   const activeMutation = useSetOutletActiveMutation(retailerId);
   const primaryMutation = useSetOutletPrimaryMutation(retailerId);
 
-  const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
+  const [pendingAction, setPendingAction] = useState<PendingAction | null>(
+    null,
+  );
 
   if (isLoading) {
     return (
@@ -156,7 +176,10 @@ export function RetailerOutletsTab({ retailerId }: RetailerOutletsTabProps) {
   // Independent of primary/address, so no confirmation needed.
   async function handleActiveToggle(outlet: AdminOutlet, checked: boolean) {
     try {
-      await activeMutation.mutateAsync({ outletId: outlet.id, isActive: checked });
+      await activeMutation.mutateAsync({
+        outletId: outlet.id,
+        isActive: checked,
+      });
       toast.success(checked ? "Outlet activated" : "Outlet paused");
     } catch {
       toast.error("Failed to update outlet");
@@ -190,30 +213,31 @@ export function RetailerOutletsTab({ retailerId }: RetailerOutletsTabProps) {
 
   const isPrimaryMutationPending = primaryMutation.isPending;
 
-  const dialogProps: Omit<ConfirmDialogProps, "open"> = pendingAction?.kind === "set-primary"
-    ? {
-        title: "Move live position?",
-        body: `This makes ${pendingAction.outlet.name} the store's primary branch. The store's customer-facing address and map position move here immediately.`,
-        confirmLabel: "Set as primary",
-        onConfirm: handleConfirm,
-        onCancel: handleCancel,
-        isPending: isPrimaryMutationPending,
-      }
-    : pendingAction?.kind === "unpublish-primary"
-    ? {
-        title: "Unpublish the primary branch?",
-        body: "The primary branch controls where this store appears to customers. Unpublishing it does not hide the store; set a different branch as primary first if you want to move it.",
-        confirmLabel: "Unpublish",
-        onConfirm: handleConfirm,
-        onCancel: handleCancel,
-        isPending: publishMutation.isPending,
-      }
-    : {
-        title: "",
-        body: "",
-        onConfirm: handleConfirm,
-        onCancel: handleCancel,
-      };
+  const dialogProps: Omit<ConfirmDialogProps, "open"> =
+    pendingAction?.kind === "set-primary"
+      ? {
+          title: "Move live position?",
+          body: `This makes ${pendingAction.outlet.name} the store's primary branch. The store's customer-facing address and map position move here immediately.`,
+          confirmLabel: "Set as primary",
+          onConfirm: handleConfirm,
+          onCancel: handleCancel,
+          isPending: isPrimaryMutationPending,
+        }
+      : pendingAction?.kind === "unpublish-primary"
+        ? {
+            title: "Unpublish the primary branch?",
+            body: "The primary branch controls where this store appears to customers. Unpublishing it does not hide the store; set a different branch as primary first if you want to move it.",
+            confirmLabel: "Unpublish",
+            onConfirm: handleConfirm,
+            onCancel: handleCancel,
+            isPending: publishMutation.isPending,
+          }
+        : {
+            title: "",
+            body: "",
+            onConfirm: handleConfirm,
+            onCancel: handleCancel,
+          };
 
   return (
     <>
@@ -225,7 +249,8 @@ export function RetailerOutletsTab({ retailerId }: RetailerOutletsTabProps) {
             {outlets.length} outlet{outlets.length === 1 ? "" : "s"}
           </h3>
           <p className="mt-1 text-xs text-muted-foreground/70">
-            The primary branch sets the store's live position. Publish flags only affect customers once multi-outlet discovery ships.
+            The primary branch sets the store's live position. Publish flags
+            only affect customers once multi-outlet discovery ships.
           </p>
         </div>
 
@@ -243,7 +268,9 @@ export function RetailerOutletsTab({ retailerId }: RetailerOutletsTabProps) {
             const isThisPrimaryPending =
               isPrimaryMutationPending &&
               primaryMutation.variables === outlet.id;
-            const addressWarning = getAddressWarning(outlet.addressValidationVerdict);
+            const addressWarning = getAddressWarning(
+              outlet.addressValidationVerdict,
+            );
 
             return (
               <div key={outlet.id} className="rounded-md border bg-card p-5">
@@ -260,6 +287,19 @@ export function RetailerOutletsTab({ retailerId }: RetailerOutletsTabProps) {
                   {addressLine && (
                     <p className="text-muted-foreground">{addressLine}</p>
                   )}
+
+                  {/* Deep-links to the Orders tab pre-filtered to this branch
+                      (TT-450), rather than duplicating the orders table here.
+                      This tab configures outlets; orders stay in one place. */}
+                  <Link
+                    to="/retailers/$retailerId"
+                    params={{ retailerId }}
+                    search={{ tab: "orders", ordersOutletId: outlet.id }}
+                    className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                  >
+                    View orders
+                    <ArrowRight className="size-3" />
+                  </Link>
 
                   <div className="flex flex-wrap items-center gap-2">
                     <span
@@ -284,7 +324,10 @@ export function RetailerOutletsTab({ retailerId }: RetailerOutletsTabProps) {
                     {addressWarning && (
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Badge variant="destructive" className="cursor-default">
+                          <Badge
+                            variant="destructive"
+                            className="cursor-default"
+                          >
                             Address not courier-bookable
                           </Badge>
                         </TooltipTrigger>
@@ -330,8 +373,14 @@ export function RetailerOutletsTab({ retailerId }: RetailerOutletsTabProps) {
                       variant="outline"
                       size="sm"
                       className="w-full text-xs"
-                      disabled={!canWrite || isPrimaryMutationPending || isThisPrimaryPending}
-                      onClick={() => setPendingAction({ kind: "set-primary", outlet })}
+                      disabled={
+                        !canWrite ||
+                        isPrimaryMutationPending ||
+                        isThisPrimaryPending
+                      }
+                      onClick={() =>
+                        setPendingAction({ kind: "set-primary", outlet })
+                      }
                     >
                       {isThisPrimaryPending ? (
                         <Loader2 className="size-3 animate-spin" />

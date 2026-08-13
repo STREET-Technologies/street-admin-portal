@@ -64,7 +64,7 @@ interface RawVendorOrder {
  */
 export async function getRetailerOrders(
   retailerId: string,
-  params: { page?: number; limit?: number } = {},
+  params: { page?: number; limit?: number; outletId?: string } = {},
 ): Promise<PaginatedResponse<BackendVendorOrder>> {
   const { data, meta } = await api.getPaginated<RawVendorOrder>(
     `admin/vendors/${retailerId}/orders${toQueryString(params)}`,

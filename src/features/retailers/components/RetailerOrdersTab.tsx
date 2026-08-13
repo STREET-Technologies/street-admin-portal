@@ -25,7 +25,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatDate, formatCurrency } from "@/lib/format-utils";
+import { OutletFilter } from "@/components/shared/OutletFilter";
 import { useTableParams } from "@/hooks/use-table-params";
+import { useSearchParamState } from "@/hooks/use-search-param";
 import { useRetailerOrdersQuery } from "../api/retailer-queries";
 import type { BackendVendorOrder } from "../api/retailer-api";
 
@@ -114,10 +116,14 @@ export function RetailerOrdersTab({ retailerId }: RetailerOrdersTabProps) {
   const { pagination, onPaginationChange, searchParams } = useTableParams({
     prefix: "orders",
   });
+  // Prefixed so it does not collide with the global list's own outlet filter
+  // and survives a reload — the deep link from an outlet card sets it.
+  const [outletId, setOutletId] = useSearchParamState("ordersOutletId");
   const { data, isLoading, isError, refetch, isFetching } =
     useRetailerOrdersQuery(retailerId, {
       page: searchParams.page,
       limit: searchParams.limit,
+      outletId,
     });
   const orders = data?.data ?? [];
   const total = data?.meta.total ?? 0;
@@ -148,8 +154,10 @@ export function RetailerOrdersTab({ retailerId }: RetailerOrdersTabProps) {
 
   // Keyed off the server total, not the current page: an overshot page is
   // empty but the retailer still has orders, and the pager must stay visible
-  // so it is reachable.
-  if (total === 0) {
+  // so it is reachable. Only bail out entirely when NO filter is narrowing
+  // the list — otherwise this would render before the outlet filter and
+  // strand the user with no way to clear it.
+  if (total === 0 && !outletId) {
     return (
       <EmptyState
         icon={Package}
@@ -161,58 +169,79 @@ export function RetailerOrdersTab({ retailerId }: RetailerOrdersTabProps) {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-lg border">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows.map((row) => (
-              <TableRow
-                key={row.id}
-                className="cursor-pointer"
-                onClick={(e) => {
-                  const target = e.target as HTMLElement;
-                  if (target.closest("button") || target.closest("a")) return;
-                  void navigate({
-                    to: "/orders/$orderId",
-                    params: {
-                      orderId: row.original.orderNumber ?? row.original.id,
-                    },
-                  });
-                }}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-
-      <TablePagination
-        pageIndex={pagination.pageIndex}
-        pageSize={pagination.pageSize}
-        total={total}
-        onPaginationChange={onPaginationChange}
-        isFetching={isFetching}
+      {/* Renders itself only when this retailer has more than one branch. */}
+      <OutletFilter
+        retailerId={retailerId}
+        value={outletId}
+        onChange={(next) => {
+          setOutletId(next);
+          onPaginationChange({ pageIndex: 0, pageSize: pagination.pageSize });
+        }}
       />
+
+      {total === 0 ? (
+        <p className="rounded-lg border p-6 text-center text-sm text-muted-foreground">
+          No orders for this outlet.
+        </p>
+      ) : (
+        <div className="rounded-lg border">
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
+                    <TableHead key={header.id}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  className="cursor-pointer"
+                  onClick={(e) => {
+                    const target = e.target as HTMLElement;
+                    if (target.closest("button") || target.closest("a")) return;
+                    void navigate({
+                      to: "/orders/$orderId",
+                      params: {
+                        orderId: row.original.orderNumber ?? row.original.id,
+                      },
+                    });
+                  }}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+
+      {total > 0 && (
+        <TablePagination
+          pageIndex={pagination.pageIndex}
+          pageSize={pagination.pageSize}
+          total={total}
+          onPaginationChange={onPaginationChange}
+          isFetching={isFetching}
+        />
+      )}
     </div>
   );
 }

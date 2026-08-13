@@ -45,10 +45,11 @@ export const retailerKeys = {
     [...retailerKeys.lists(), params] as const,
   details: () => [...retailerKeys.all, "detail"] as const,
   detail: (id: string) => [...retailerKeys.details(), id] as const,
-  orders: (id: string, params: { page?: number; limit?: number } = {}) =>
-    [...retailerKeys.detail(id), "orders", params] as const,
-  staff: (id: string) =>
-    [...retailerKeys.detail(id), "staff"] as const,
+  orders: (
+    id: string,
+    params: { page?: number; limit?: number; outletId?: string } = {},
+  ) => [...retailerKeys.detail(id), "orders", params] as const,
+  staff: (id: string) => [...retailerKeys.detail(id), "staff"] as const,
   billing: (
     id: string,
     billingStatus?: string | null,
@@ -62,8 +63,7 @@ export const retailerKeys = {
       page,
       limit ?? "default",
     ] as const,
-  outlets: (id: string) =>
-    [...retailerKeys.detail(id), "outlets"] as const,
+  outlets: (id: string) => [...retailerKeys.detail(id), "outlets"] as const,
 };
 
 /**
@@ -100,7 +100,7 @@ export function useRetailerQuery(retailerId: string) {
  */
 export function useRetailerOrdersQuery(
   retailerId: string,
-  params: { page?: number; limit?: number } = {},
+  params: { page?: number; limit?: number; outletId?: string } = {},
 ) {
   return useQuery({
     queryKey: retailerKeys.orders(retailerId, params),
