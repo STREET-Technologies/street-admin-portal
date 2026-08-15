@@ -1,6 +1,10 @@
 import { api, toQueryString } from "@/lib/api-client";
 import type { AddressValidationVerdict, PaginatedResponse } from "@/types";
-import type { BackendVendor, RetailerListParams } from "../types";
+import type {
+  BackendVendor,
+  RetailerListParams,
+  RevalidateAddressesResult,
+} from "../types";
 
 export type { AddressValidationVerdict };
 
@@ -305,6 +309,20 @@ export function setOutletPrimary(
 ): Promise<AdminOutlet> {
   return api.patch<AdminOutlet>(
     `admin/vendors/${retailerId}/outlets/${outletId}/primary`,
+  );
+}
+
+/**
+ * Re-run address validation for every outlet of a vendor and rewrite the
+ * verdicts (TT-466/473). Postcode check only — coordinates are not touched.
+ * Empty body: the backend 400s on a null body for internal POSTs.
+ */
+export function revalidateOutletAddresses(
+  retailerId: string,
+): Promise<RevalidateAddressesResult> {
+  return api.post<RevalidateAddressesResult>(
+    `admin/vendors/${retailerId}/outlets/revalidate-addresses`,
+    {},
   );
 }
 

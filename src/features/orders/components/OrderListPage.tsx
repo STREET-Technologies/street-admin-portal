@@ -39,6 +39,7 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { formatDate } from "@/lib/format-utils";
 import { useOrdersQuery } from "../api/order-queries";
 import { OrderPeekSheet } from "./OrderPeekSheet";
+import { RefundBadge } from "./RefundBadge";
 import type { OrderViewModel } from "../types";
 
 // ---------------------------------------------------------------------------
@@ -194,10 +195,18 @@ function createColumns(
       header: "Status",
       enableSorting: false,
       cell: ({ row }) => (
-        <StatusBadge
-          status={row.original.displayStatus.toLowerCase()}
-          size="sm"
-        />
+        <div className="flex flex-col items-start gap-1">
+          <StatusBadge
+            status={row.original.displayStatus.toLowerCase()}
+            size="sm"
+          />
+          {/* TT-473 — refunded orders findable from the list. Icon + text. */}
+          <RefundBadge
+            refundState={row.original.refundState}
+            totalRefundedFormatted={row.original.totalRefundedFormatted}
+            size="sm"
+          />
+        </div>
       ),
     },
     {

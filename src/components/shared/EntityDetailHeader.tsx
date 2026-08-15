@@ -18,6 +18,8 @@ interface EntityDetailHeaderProps {
   subtitle?: string;
   /** Renders a StatusBadge if provided. */
   status?: string;
+  /** Rendered on the same line as the status pill (e.g. a refund badge). */
+  statusExtra?: ReactNode;
   /** URL for the avatar image. */
   avatarUrl?: string;
   /** Initials shown when no avatar image is available. */
@@ -36,6 +38,7 @@ export function EntityDetailHeader({
   title,
   subtitle,
   status,
+  statusExtra,
   avatarUrl,
   avatarFallback,
   avatarShape = "circle",
@@ -74,9 +77,10 @@ export function EntityDetailHeader({
         )}
 
         <div className="space-y-1">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-xl font-semibold tracking-tight">{title}</h1>
             {status && <StatusBadge status={status} size="sm" />}
+            {statusExtra}
           </div>
           {subtitle && (
             <p className="text-sm text-muted-foreground">{subtitle}</p>
