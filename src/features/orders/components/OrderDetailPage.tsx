@@ -1,5 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
-import { AlertTriangle, MapPin, Package, User } from "lucide-react";
+import { MapPin, Package, User } from "lucide-react";
 import { BackButton } from "@/components/shared/BackButton";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -19,12 +19,15 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { formatDateTime } from "@/lib/format-utils";
 import { useOrderDetailQuery } from "../api/order-queries";
 import { toOrderDetailViewModel } from "../types";
-import type { OrderDetailViewModel, OrderItemViewModel } from "../types";
+import type {
+  LineStatus,
+  OrderDetailViewModel,
+  OrderItemViewModel,
+} from "../types";
 import { DeliveryPanel } from "./DeliveryPanel";
 import { OrderActionsControl } from "./OrderActionsControl";
-import { RefundBadge } from "./RefundBadge";
-import { RefundHistorySection } from "./RefundHistorySection";
-import { ReturnsCard } from "./ReturnsCard";
+import { RefundSummary } from "./RefundSummary";
+import { RefundsReturnsSection } from "./RefundsReturnsSection";
 
 interface OrderDetailPageProps {
   orderId: string;
@@ -36,11 +39,6 @@ function formatPaymentMethod(method: string): string {
   if (normalized === "shopify_checkout") return "Shopify";
   if (normalized === "others" || normalized === "other") return "Other";
   return method.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-}
-
-// Friendly return-reason label (e.g. SIZE_TOO_SMALL → "size too small").
-function formatReason(reason: string): string {
-  return reason.replace(/_/g, " ").toLowerCase();
 }
 
 export function OrderDetailPage({ orderId }: OrderDetailPageProps) {
@@ -93,17 +91,16 @@ export function OrderDetailPage({ orderId }: OrderDetailPageProps) {
 
       {/* Header carries the order ID, customer name, and consolidated displayStatus
           pill — supersedes the original order status when a return is active (TT-226).
-          The refund badge sits on the same line (TT-473): money going back is the
-          first thing support needs to know, before any scrolling. */}
+          The refund summary sits on the same line (TT-473): money going back is
+          the first thing support needs to know, before any scrolling. */}
       <EntityDetailHeader
         title={`Order ${orderDetail.orderId}`}
         subtitle={`Placed by ${orderDetail.customerName}`}
         status={orderDetail.displayStatus.toLowerCase()}
         statusExtra={
-          <RefundBadge
+          <RefundSummary
             refundState={orderDetail.refundState}
             totalRefundedFormatted={orderDetail.totalRefundedFormatted}
-            size="sm"
           />
         }
         avatarFallback="#"
@@ -116,8 +113,8 @@ export function OrderDetailPage({ orderId }: OrderDetailPageProps) {
         />
       </EntityDetailHeader>
 
-      {/* Refund history first (TT-473) — only renders when there are refunds. */}
-      <RefundHistorySection orderDetail={orderDetail} />
+      {/* Refunds & returns first (TT-473) — only renders when there are any. */}
+      <RefundsReturnsSection orderDetail={orderDetail} />
 
       {/* Top row: order summary + customer & shipping */}
       <div className="grid gap-x-10 gap-y-8 md:grid-cols-2">
@@ -144,9 +141,6 @@ export function OrderDetailPage({ orderId }: OrderDetailPageProps) {
           orderStatus={orderDetail.status}
         />
       </div>
-
-      {/* Returns + refunds (TT-226) — only renders when there's a return or shipping refund */}
-      <ReturnsCard orderDetail={orderDetail} />
     </div>
   );
 }
@@ -327,6 +321,7 @@ function ItemsSection({ items }: { items: OrderItemViewModel[] }) {
                 <TableHead className="text-right">Qty</TableHead>
                 <TableHead className="text-right">Price</TableHead>
                 <TableHead className="text-right">Total</TableHead>
+                <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -353,24 +348,6 @@ function ItemsSection({ items }: { items: OrderItemViewModel[] }) {
                         <p className="text-sm font-medium">
                           {item.productName}
                         </p>
-                        {item.returnedQuantity > 0 && (
-                          <div className="mt-1 flex items-center gap-1.5 text-xs">
-                            <StatusBadge
-                              status={
-                                item.returnedQuantity >= item.quantity
-                                  ? "returned"
-                                  : "partially_returned"
-                              }
-                              size="sm"
-                            />
-                            <span className="text-muted-foreground">
-                              {item.returnedQuantity}/{item.quantity}
-                              {item.returnReason
-                                ? ` · ${formatReason(item.returnReason)}`
-                                : ""}
-                            </span>
-                          </div>
-                        )}
                       </div>
                     </div>
                   </TableCell>
@@ -391,8 +368,20 @@ function ItemsSection({ items }: { items: OrderItemViewModel[] }) {
                   <TableCell className="text-right text-sm tabular-nums">
                     {item.unitPrice}
                   </TableCell>
-                  <TableCell className="text-right text-sm font-medium tabular-nums">
+                  <TableCell
+                    className={
+                      item.lineStatus === "PAID"
+                        ? "text-right text-sm font-medium tabular-nums"
+                        : "text-right text-sm tabular-nums text-muted-foreground line-through"
+                    }
+                  >
                     {item.totalPrice}
+                  </TableCell>
+                  {/* TT-473 — per-line settlement as a plain label, not a pill.
+                      REFUNDED = removed at acceptance or whole order refunded;
+                      RETURNED = came back on a Return (with the count when partial). */}
+                  <TableCell>
+                    <LineStatusLabel item={item} />
                   </TableCell>
                 </TableRow>
               ))}
@@ -401,6 +390,25 @@ function ItemsSection({ items }: { items: OrderItemViewModel[] }) {
         )}
       </div>
     </section>
+  );
+}
+
+function LineStatusLabel({ item }: { item: OrderItemViewModel }) {
+  const status: LineStatus = item.lineStatus;
+  const label =
+    status === "RETURNED" && item.returnedQuantity < item.quantity
+      ? `Returned ${item.returnedQuantity}/${item.quantity}`
+      : status.charAt(0) + status.slice(1).toLowerCase();
+  return (
+    <span
+      className={
+        status === "PAID"
+          ? "text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"
+          : "text-[11px] font-semibold uppercase tracking-wider text-foreground"
+      }
+    >
+      {label}
+    </span>
   );
 }
 
@@ -459,38 +467,16 @@ function PricingPaymentSection({
           </>
         )}
 
-        {/* TT-473 — concise supporting line; the primary signal is the header
-            badge and the Refunds section at the top of the page. */}
+        {/* TT-473 — one supporting line; the primary signal is the header
+            summary and the Refunds & returns section at the top of the page,
+            where the shipping component is stated per refund. */}
         {orderDetail.totalRefundedFormatted && (
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">
-              {orderDetail.refundState === "FULL"
-                ? "Fully refunded"
-                : "Partially refunded"}
-            </span>
+            <span className="text-muted-foreground">Refunded</span>
             <span className="tabular-nums">
               −{orderDetail.totalRefundedFormatted}
             </span>
           </div>
-        )}
-
-        {orderDetail.totalShippingRefundedFormatted && (
-          <>
-            <Separator />
-            <div className="flex items-start gap-2 rounded-md border bg-muted/50 px-3 py-2 text-xs">
-              <AlertTriangle className="mt-0.5 size-3.5 shrink-0 text-amber-600 dark:text-amber-500" />
-              <div>
-                <p className="font-semibold text-foreground">
-                  Shipping refunded — retailer absorbed{" "}
-                  {orderDetail.totalShippingRefundedFormatted}
-                </p>
-                <p className="mt-0.5 text-muted-foreground">
-                  Stuart leg already paid by STREET and recovered via Shopify
-                  Billing. Not recoverable for retailer.
-                </p>
-              </div>
-            </div>
-          </>
         )}
       </div>
     </section>

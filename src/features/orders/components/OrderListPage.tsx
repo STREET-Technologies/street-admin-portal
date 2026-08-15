@@ -39,7 +39,7 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { formatDate } from "@/lib/format-utils";
 import { useOrdersQuery } from "../api/order-queries";
 import { OrderPeekSheet } from "./OrderPeekSheet";
-import { RefundBadge } from "./RefundBadge";
+import { RefundSummary } from "./RefundSummary";
 import type { OrderViewModel } from "../types";
 
 // ---------------------------------------------------------------------------
@@ -200,11 +200,12 @@ function createColumns(
             status={row.original.displayStatus.toLowerCase()}
             size="sm"
           />
-          {/* TT-473 — refunded orders findable from the list. Icon + text. */}
-          <RefundBadge
+          {/* TT-473 — refunded orders findable from the list, as a caption
+              under the status rather than a second pill. */}
+          <RefundSummary
             refundState={row.original.refundState}
             totalRefundedFormatted={row.original.totalRefundedFormatted}
-            size="sm"
+            className="text-xs font-normal text-muted-foreground"
           />
         </div>
       ),

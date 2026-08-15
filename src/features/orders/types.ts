@@ -212,27 +212,53 @@ export interface OrderDetailViewModel extends OrderViewModel {
   totalShippingRefundedAmount: number;
   totalShippingRefundedFormatted: string | null;
   returns: ReturnViewModel[];
-  /** TT-473 — per-refund history, oldest first. */
-  refunds: RefundViewModel[];
+  /**
+   * TT-473 — one merged timeline of refunds and returns, oldest first. A
+   * refunded Return appears once, on its refund; only a Return with no refund
+   * yet gets its own entry.
+   */
+  refundEvents: RefundEvent[];
+}
+
+/** The Return behind an event, resolved to product names for display. */
+export interface ReturnSummary {
+  shopifyReturnId: string;
+  status: string;
+  customerNote: string | null;
+  lineItems: {
+    id: string;
+    quantity: number;
+    productName: string;
+    condition: string;
+  }[];
 }
 
 /**
- * One refund as the detail page shows it (TT-473). `reason` names its author:
- * a standalone refund carries the retailer's note; a Return-linked refund
- * carries the customer's line-item reasons from the loaded Return. Null only
- * when a standalone refund genuinely has no note.
+ * One row of the Refunds & returns section (TT-473). On a refund, `reason`
+ * names its author: a standalone refund carries the retailer's note; a
+ * Return-linked refund carries the customer's line-item reasons from the
+ * loaded Return. Null only when a standalone refund genuinely has no note.
  */
-export interface RefundViewModel {
-  id: string;
-  refundedAt: string;
-  refundedAmount: number;
-  refundedAmountFormatted: string;
-  shippingRefundAmount: number;
-  shippingRefundAmountFormatted: string | null;
-  /** Shopify Return ID when the refund settled a Return, else null. */
-  shopifyReturnId: string | null;
-  reason: { source: "retailer" | "customer"; text: string | null } | null;
-}
+export type RefundEvent =
+  | {
+      kind: "refund";
+      id: string;
+      date: string;
+      amountFormatted: string;
+      /** Shipping portion, when any — already paid out to the courier. */
+      shippingFormatted: string | null;
+      reason: { source: "retailer" | "customer"; text: string | null } | null;
+      return: ReturnSummary | null;
+    }
+  | {
+      kind: "return";
+      id: string;
+      date: string;
+      return: ReturnSummary;
+    };
+
+/** Per-line settlement, shown as a plain label in the items table (TT-473). */
+export type LineStatus = "PAID" | "REFUNDED" | "RETURNED";
 
 /** Transformed Return record for the detail page (TT-226). */
 export interface ReturnViewModel {
@@ -274,8 +300,12 @@ export interface OrderItemViewModel {
    * 0 = not returned, == quantity = fully returned, between = partial.
    */
   returnedQuantity: number;
-  /** Aggregated reason from the most recent return on this item, if any. */
-  returnReason: string | null;
+  /**
+   * TT-473 — RETURNED when any quantity came back; REFUNDED when the retailer
+   * removed it at acceptance (packingState cancelled) or the whole order was
+   * refunded; otherwise PAID.
+   */
+  lineStatus: LineStatus;
 }
 
 // ---------------------------------------------------------------------------
@@ -412,10 +442,8 @@ function str(
 function toItemViewModel(
   item: BackendOrderItem,
   index: number,
-  returnAggregates?: {
-    returnedQuantity: number;
-    returnReason: string | null;
-  },
+  returnedQuantity: number,
+  orderRefundState: RefundState,
 ): OrderItemViewModel {
   const meta = item.metadata as Record<string, unknown> | null | undefined;
 
@@ -423,10 +451,18 @@ function toItemViewModel(
   const images = meta?.images as Array<{ src?: string }> | undefined;
   const imageUrl = images?.[0]?.src ?? null;
 
-  // Packing status lives in packingState.status
+  // Packing status lives in packingState.status; 'cancelled' is a line the
+  // retailer removed at acceptance (markOrderReady partial refund).
   const packingState = meta?.packingState as
     | Record<string, unknown>
     | undefined;
+  const packingStatus = (packingState?.status as string) ?? null;
+  const lineStatus: LineStatus =
+    returnedQuantity > 0
+      ? "RETURNED"
+      : packingStatus === "cancelled" || orderRefundState === "FULL"
+        ? "REFUNDED"
+        : "PAID";
 
   return {
     id: item.id ?? `item-${index}`,
@@ -448,9 +484,9 @@ function toItemViewModel(
     unitPrice: formatGBP(item.price),
     totalPrice: formatGBP(item.totalPrice),
     imageUrl,
-    packingStatus: (packingState?.status as string) ?? null,
-    returnedQuantity: returnAggregates?.returnedQuantity ?? 0,
-    returnReason: returnAggregates?.returnReason ?? null,
+    packingStatus,
+    returnedQuantity,
+    lineStatus,
   };
 }
 
@@ -477,12 +513,9 @@ export function toOrderDetailViewModel(
       }
     : null;
 
-  // TT-226 — aggregate per-item return state from all returns + return line items.
+  // TT-226 — returned quantity per order item across all returns + line items.
   // Excludes DECLINED/CANCELLED returns since they didn't result in items returned.
-  const returnAggregatesByOrderItem = new Map<
-    string,
-    { returnedQuantity: number; returnReason: string | null }
-  >();
+  const returnedQuantityByOrderItem = new Map<string, number>();
   for (const r of backend.returns ?? []) {
     const status = (r.status ?? "").toUpperCase();
     if (
@@ -495,16 +528,11 @@ export function toOrderDetailViewModel(
     for (const line of r.lineItems ?? []) {
       const orderItemId = line.orderItem?.id;
       if (!orderItemId) continue;
-      const existing = returnAggregatesByOrderItem.get(orderItemId) ?? {
-        returnedQuantity: 0,
-        returnReason: null,
-      };
-      existing.returnedQuantity += line.quantity ?? 0;
-      // Take the first non-UNKNOWN reason we see — close-enough display heuristic.
-      if (!existing.returnReason && line.reason && line.reason !== "UNKNOWN") {
-        existing.returnReason = line.reason;
-      }
-      returnAggregatesByOrderItem.set(orderItemId, existing);
+      returnedQuantityByOrderItem.set(
+        orderItemId,
+        (returnedQuantityByOrderItem.get(orderItemId) ?? 0) +
+          (line.quantity ?? 0),
+      );
     }
   }
 
@@ -513,7 +541,8 @@ export function toOrderDetailViewModel(
     toItemViewModel(
       item,
       idx,
-      item.id ? returnAggregatesByOrderItem.get(item.id) : undefined,
+      item.id ? (returnedQuantityByOrderItem.get(item.id) ?? 0) : 0,
+      base.refundState,
     ),
   );
 
@@ -604,32 +633,55 @@ export function toOrderDetailViewModel(
     };
   });
 
-  // TT-473 — refunds. The "why" splits by author: `note` is the retailer's
-  // text on a refund THEY issued; a Return-linked refund has no note (Shopify
-  // never copies the return reason onto the refund) and its reason is what
-  // the CUSTOMER selected on the Return's line items. Never show the empty
-  // note on a Return-linked refund as if something is missing.
+  // TT-473 — one timeline of refunds and returns. The "why" of a refund
+  // splits by author: `note` is the retailer's text on a refund THEY issued;
+  // a Return-linked refund has no note (Shopify never copies the return reason
+  // onto the refund) and its reason is what the CUSTOMER selected on the
+  // Return's line items. Never show the empty note on a Return-linked refund
+  // as if something is missing. A refunded Return is shown once, on its
+  // refund; a Return with no refund yet is its own entry.
+  const itemNameById = new Map(items.map((i) => [i.id, i.productName]));
+  const summarizeReturn = (r: ReturnViewModel): ReturnSummary => ({
+    shopifyReturnId: r.shopifyReturnId,
+    status: r.status,
+    customerNote: r.customerNote,
+    lineItems: r.lineItems.map((li) => ({
+      id: li.id,
+      quantity: li.quantity,
+      productName:
+        (li.orderItemId && itemNameById.get(li.orderItemId)) || "Unknown item",
+      condition: li.condition,
+    })),
+  });
   const returnsById = new Map(returns.map((r) => [r.id, r]));
-  const refunds: RefundViewModel[] = (backend.refunds ?? []).map((r) => {
+  const refundedReturnIds = new Set<string>();
+  const refundEvents: RefundEvent[] = (backend.refunds ?? []).map((r) => {
     const linkedReturn = r.returnId ? returnsById.get(r.returnId) : undefined;
-    const reason: RefundViewModel["reason"] = r.returnId
-      ? { source: "customer", text: returnReasonText(linkedReturn) }
-      : r.note
-        ? { source: "retailer", text: r.note }
-        : null;
-    const refunded = toNumber(r.refundedAmount);
-    const shippingRefund = toNumber(r.shippingRefundAmount);
+    if (r.returnId) refundedReturnIds.add(r.returnId);
     return {
+      kind: "refund",
       id: r.id,
-      refundedAt: r.refundedAt,
-      refundedAmount: refunded,
-      refundedAmountFormatted: formatGBP(refunded),
-      shippingRefundAmount: shippingRefund,
-      shippingRefundAmountFormatted: formatPositiveGBP(shippingRefund),
-      shopifyReturnId: linkedReturn?.shopifyReturnId ?? null,
-      reason,
+      date: r.refundedAt,
+      amountFormatted: formatGBP(toNumber(r.refundedAmount)),
+      shippingFormatted: formatPositiveGBP(r.shippingRefundAmount),
+      reason: r.returnId
+        ? { source: "customer", text: returnReasonText(linkedReturn) }
+        : r.note
+          ? { source: "retailer", text: r.note }
+          : null,
+      return: linkedReturn ? summarizeReturn(linkedReturn) : null,
     };
   });
+  for (const r of returns) {
+    if (refundedReturnIds.has(r.id)) continue;
+    refundEvents.push({
+      kind: "return",
+      id: r.id,
+      date: r.createdAt,
+      return: summarizeReturn(r),
+    });
+  }
+  refundEvents.sort((a, b) => a.date.localeCompare(b.date));
 
   return {
     ...base,
@@ -644,7 +696,7 @@ export function toOrderDetailViewModel(
     totalShippingRefundedAmount: totalShippingRefunded,
     totalShippingRefundedFormatted,
     returns,
-    refunds,
+    refundEvents,
   };
 }
 

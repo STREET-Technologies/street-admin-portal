@@ -83,30 +83,66 @@ describe("toOrderViewModel refund fields (TT-473)", () => {
   });
 });
 
-describe("toOrderDetailViewModel refunds (TT-473)", () => {
+describe("toOrderDetailViewModel refund events (TT-473)", () => {
   it("shows the retailer's note on a standalone refund", () => {
-    const [standalone] = toOrderDetailViewModel(base).refunds;
+    const [standalone] = toOrderDetailViewModel(base).refundEvents;
     expect(standalone).toMatchObject({
+      kind: "refund",
       id: "r1",
-      refundedAmountFormatted: "£38.00",
-      shippingRefundAmountFormatted: null,
-      shopifyReturnId: null,
-      reason: {
-        source: "retailer",
-        text: "Item(s) unavailable: Out of stock",
+      amountFormatted: "£38.00",
+      shippingFormatted: null,
+      reason: { source: "retailer", text: "Item(s) unavailable: Out of stock" },
+      return: null,
+    });
+  });
+
+  it("shows the customer's return reason and the return detail on a Return-linked refund, never the empty note", () => {
+    const [, linked] = toOrderDetailViewModel(base).refundEvents;
+    expect(linked).toMatchObject({
+      kind: "refund",
+      id: "r2",
+      amountFormatted: "£60.00",
+      shippingFormatted: "£9.99",
+      reason: { source: "customer", text: "Color" },
+      return: {
+        shopifyReturnId: "20336279622",
+        status: "CLOSED",
+        lineItems: [{ quantity: 1, condition: "UNKNOWN" }],
       },
     });
   });
 
-  it("shows the customer's return reason on a Return-linked refund, never the empty note", () => {
-    const [, linked] = toOrderDetailViewModel(base).refunds;
-    expect(linked).toMatchObject({
-      id: "r2",
-      refundedAmountFormatted: "£60.00",
-      shippingRefundAmountFormatted: "£9.99",
-      shopifyReturnId: "20336279622",
-      reason: { source: "customer", text: "Color" },
+  it("does not list a refunded Return a second time as its own event", () => {
+    const events = toOrderDetailViewModel(base).refundEvents;
+    expect(events.map((e) => e.kind)).toEqual(["refund", "refund"]);
+  });
+
+  it("lists an open, not-yet-refunded Return as its own event", () => {
+    const vm = toOrderDetailViewModel({
+      ...base,
+      refunds: [],
+      totalRefundedAmount: "0.00",
+      refundState: "NONE",
+      returns: [{ ...base.returns![0], status: "REQUESTED", closedAt: null }],
     });
+    expect(vm.refundEvents).toEqual([
+      expect.objectContaining({
+        kind: "return",
+        date: "2026-08-15T09:30:00Z",
+        return: expect.objectContaining({
+          shopifyReturnId: "20336279622",
+          status: "REQUESTED",
+        }),
+      }),
+    ]);
+  });
+
+  it("orders events by date, oldest first", () => {
+    const vm = toOrderDetailViewModel({
+      ...base,
+      refunds: [base.refunds![1], base.refunds![0]],
+    });
+    expect(vm.refundEvents.map((e) => e.id)).toEqual(["r1", "r2"]);
   });
 
   it("only reports no reason when a standalone refund genuinely has none", () => {
@@ -114,7 +150,7 @@ describe("toOrderDetailViewModel refunds (TT-473)", () => {
       ...base,
       refunds: [{ ...base.refunds![0], note: null }],
     });
-    expect(vm.refunds[0].reason).toBeNull();
+    expect(vm.refundEvents[0]).toMatchObject({ kind: "refund", reason: null });
   });
 
   it("keeps a Return-linked refund attributed to the customer even when the Return has no usable reasons", () => {
@@ -128,7 +164,9 @@ describe("toOrderDetailViewModel refunds (TT-473)", () => {
       ],
       refunds: [base.refunds![1]],
     });
-    expect(vm.refunds[0].reason).toEqual({ source: "customer", text: null });
+    expect(vm.refundEvents[0]).toMatchObject({
+      reason: { source: "customer", text: null },
+    });
   });
 
   it("de-duplicates repeated line reasons on one Return", () => {
@@ -143,12 +181,61 @@ describe("toOrderDetailViewModel refunds (TT-473)", () => {
       ],
       refunds: [base.refunds![1]],
     });
-    expect(vm.refunds[0].reason?.text).toBe("Color, Size too small");
+    expect(vm.refundEvents[0]).toMatchObject({
+      reason: { text: "Color, Size too small" },
+    });
   });
 
   it("carries the refund total onto the detail so the pricing section needs no payments row", () => {
     const vm = toOrderDetailViewModel({ ...base, paymentStatus: "PAID" });
     expect(vm.totalRefundedFormatted).toBe("£98.00");
     expect(vm.payment).toEqual({ status: "paid", method: "Unknown" });
+  });
+});
+
+describe("line item status (TT-473)", () => {
+  const items = [
+    { id: "item-1", productId: "p1", variantId: "v1", quantity: 1, price: "60.00", totalPrice: "60.00", metadata: { productName: "Hoodie" } },
+    { id: "item-2", productId: "p2", variantId: "v2", quantity: 2, price: "19.00", totalPrice: "38.00", metadata: { productName: "Cap", packingState: { status: "cancelled", cancellationReason: "Out of stock" } } },
+    { id: "item-3", productId: "p3", variantId: "v3", quantity: 1, price: "10.00", totalPrice: "10.00", metadata: { productName: "Socks" } },
+  ];
+
+  it("marks a line removed at acceptance as REFUNDED and a returned line as RETURNED", () => {
+    const vm = toOrderDetailViewModel({
+      ...base,
+      refundState: "PARTIAL",
+      orderItems: items,
+    });
+    expect(vm.items.map((i) => [i.productName, i.lineStatus])).toEqual([
+      ["Hoodie", "RETURNED"],
+      ["Cap", "REFUNDED"],
+      ["Socks", "PAID"],
+    ]);
+  });
+
+  it("marks every remaining PAID line REFUNDED when the whole order is refunded", () => {
+    const vm = toOrderDetailViewModel({
+      ...base,
+      refundState: "FULL",
+      orderItems: items,
+    });
+    expect(vm.items.map((i) => i.lineStatus)).toEqual([
+      "RETURNED",
+      "REFUNDED",
+      "REFUNDED",
+    ]);
+  });
+
+  it("keeps the returned quantity so a partial return can read RETURNED 1/2", () => {
+    const vm = toOrderDetailViewModel({
+      ...base,
+      refundState: "PARTIAL",
+      orderItems: [{ ...items[0], quantity: 2, totalPrice: "120.00" }],
+    });
+    expect(vm.items[0]).toMatchObject({
+      lineStatus: "RETURNED",
+      returnedQuantity: 1,
+      quantity: 2,
+    });
   });
 });
