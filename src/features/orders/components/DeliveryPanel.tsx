@@ -34,7 +34,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { CopyableField } from "@/components/shared/CopyableField";
+import { CopyButton } from "@/components/shared/CopyButton";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { formatDateTime } from "@/lib/format-utils";
 import {
@@ -157,94 +157,108 @@ function DeliveryBody({
     : null;
 
   return (
-    <div className="space-y-5">
-      {/* Courier + ETA grid */}
-      <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-        {hasCourier ? (
+    <div className="space-y-4">
+      {/* Reconciliation first (TT-473) — when a delivery is stuck or was
+          manually resolved, that is what support opened the order for. Only
+          renders when there is something to show. */}
+      <ReconciliationBlock
+        ds={ds}
+        orderUuid={orderUuid}
+        orderDisplayId={orderDisplayId}
+        orderStatus={orderStatus}
+      />
+
+      {/* Courier + ETAs — one compact key/value line each, wrapping only
+          when the column is narrow. */}
+      <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm">
+        <dt className="text-xs font-medium uppercase tracking-wider text-muted-foreground leading-6">
+          Courier
+        </dt>
+        <dd className="flex flex-wrap items-center gap-x-3 leading-6">
+          {hasCourier ? (
+            <>
+              <span>{ds.courier.name ?? "—"}</span>
+              {ds.courier.phone && (
+                <span className="inline-flex items-center gap-1 tabular-nums text-muted-foreground">
+                  {ds.courier.phone}
+                  <CopyButton
+                    value={ds.courier.phone}
+                    label="Copy courier phone"
+                  />
+                </span>
+              )}
+            </>
+          ) : (
+            <span className="text-muted-foreground">Not assigned yet</span>
+          )}
+        </dd>
+
+        {(ds.estimatedPickupAt || ds.estimatedDeliveryAt) && (
           <>
-            <div className="space-y-1">
-              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                Courier
-              </p>
-              <p className="text-sm">{ds.courier.name ?? "—"}</p>
-            </div>
-            {ds.courier.phone && (
-              <CopyableField label="Courier phone" value={ds.courier.phone} />
-            )}
+            <dt className="text-xs font-medium uppercase tracking-wider text-muted-foreground leading-6">
+              ETA
+            </dt>
+            <dd className="flex flex-wrap gap-x-4 tabular-nums leading-6">
+              {ds.estimatedPickupAt && (
+                <span>
+                  <span className="text-muted-foreground">Pickup </span>
+                  {formatDateTime(ds.estimatedPickupAt)}
+                </span>
+              )}
+              {ds.estimatedDeliveryAt && (
+                <span>
+                  <span className="text-muted-foreground">Delivery </span>
+                  {formatDateTime(ds.estimatedDeliveryAt)}
+                </span>
+              )}
+            </dd>
           </>
-        ) : (
-          <p className="col-span-2 text-sm text-muted-foreground">
-            No courier assigned yet.
-          </p>
         )}
-
-        {ds.estimatedPickupAt && (
-          <div className="space-y-1">
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              ETA pickup
-            </p>
-            <p className="text-sm tabular-nums">
-              {formatDateTime(ds.estimatedPickupAt)}
-            </p>
-          </div>
-        )}
-        {ds.estimatedDeliveryAt && (
-          <div className="space-y-1">
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              ETA delivery
-            </p>
-            <p className="text-sm tabular-nums">
-              {formatDateTime(ds.estimatedDeliveryAt)}
-            </p>
-          </div>
-        )}
-
-        {ds.pinCode && (
-          <CopyableField label="Delivery PIN" value={ds.pinCode} mono />
-        )}
-      </div>
+      </dl>
 
       {/* Location + tracking + POD links */}
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm">
-        {mapUrl && (
-          <a
-            href={mapUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-primary hover:underline"
-          >
-            <MapPin className="size-3.5" />
-            Courier location
-            {ds.courier.locationAt && (
-              <span className="text-xs text-muted-foreground">
-                (seen {formatDateTime(ds.courier.locationAt)})
-              </span>
-            )}
-          </a>
-        )}
-        {ds.trackingUrl && (
-          <a
-            href={ds.trackingUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-primary hover:underline"
-          >
-            <ExternalLink className="size-3.5" />
-            Stuart tracking
-          </a>
-        )}
-        {ds.podSignatureUrl && (
-          <a
-            href={ds.podSignatureUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-primary hover:underline"
-          >
-            <ExternalLink className="size-3.5" />
-            Proof of delivery
-          </a>
-        )}
-      </div>
+      {(mapUrl || ds.trackingUrl || ds.podSignatureUrl) && (
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm">
+          {mapUrl && (
+            <a
+              href={mapUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-primary hover:underline"
+            >
+              <MapPin className="size-3.5" />
+              Courier location
+              {ds.courier.locationAt && (
+                <span className="text-xs text-muted-foreground">
+                  (seen {formatDateTime(ds.courier.locationAt)})
+                </span>
+              )}
+            </a>
+          )}
+          {ds.trackingUrl && (
+            <a
+              href={ds.trackingUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-primary hover:underline"
+            >
+              <ExternalLink className="size-3.5" />
+              Stuart tracking
+            </a>
+          )}
+          {ds.podSignatureUrl && (
+            <a
+              href={ds.podSignatureUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-primary hover:underline"
+            >
+              <ExternalLink className="size-3.5" />
+              Proof of delivery
+            </a>
+          )}
+        </div>
+      )}
 
       {/* Provider job reference */}
       <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-muted-foreground">
@@ -267,14 +281,6 @@ function DeliveryBody({
           </span>
         )}
       </div>
-
-      {/* Reconciliation — only when there's something to show (TT-166) */}
-      <ReconciliationBlock
-        ds={ds}
-        orderUuid={orderUuid}
-        orderDisplayId={orderDisplayId}
-        orderStatus={orderStatus}
-      />
     </div>
   );
 }
@@ -395,7 +401,7 @@ function ReconciliationBlock({
   return (
     <>
       {showReconciliation && (
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-t pt-4 text-sm">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b pb-4 text-sm">
           <div className="flex min-w-0 flex-1 items-center gap-2 [&>span]:truncate">
             {state}
           </div>
