@@ -540,7 +540,9 @@ function ReconciliationBlock({
                 Cancel
               </Button>
               <Button type="submit" disabled={mutation.isPending}>
-                {mutation.isPending && <Loader2 className="size-4 animate-spin" />}
+                {mutation.isPending && (
+                  <Loader2 className="size-4 animate-spin" />
+                )}
                 Confirm resolution
               </Button>
             </DialogFooter>
