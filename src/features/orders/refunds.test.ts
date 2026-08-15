@@ -176,7 +176,11 @@ describe("toOrderDetailViewModel refund events (TT-473)", () => {
       returns: [
         {
           ...base.returns![0],
-          lineItems: [li, { ...li, id: "li-2" }, { ...li, id: "li-3", reason: "SIZE_TOO_SMALL" }],
+          lineItems: [
+            li,
+            { ...li, id: "li-2" },
+            { ...li, id: "li-3", reason: "SIZE_TOO_SMALL" },
+          ],
         },
       ],
       refunds: [base.refunds![1]],
@@ -195,9 +199,39 @@ describe("toOrderDetailViewModel refund events (TT-473)", () => {
 
 describe("line item status (TT-473)", () => {
   const items = [
-    { id: "item-1", productId: "p1", variantId: "v1", quantity: 1, price: "60.00", totalPrice: "60.00", metadata: { productName: "Hoodie" } },
-    { id: "item-2", productId: "p2", variantId: "v2", quantity: 2, price: "19.00", totalPrice: "38.00", metadata: { productName: "Cap", packingState: { status: "cancelled", cancellationReason: "Out of stock" } } },
-    { id: "item-3", productId: "p3", variantId: "v3", quantity: 1, price: "10.00", totalPrice: "10.00", metadata: { productName: "Socks" } },
+    {
+      id: "item-1",
+      productId: "p1",
+      variantId: "v1",
+      quantity: 1,
+      price: "60.00",
+      totalPrice: "60.00",
+      metadata: { productName: "Hoodie" },
+    },
+    {
+      id: "item-2",
+      productId: "p2",
+      variantId: "v2",
+      quantity: 2,
+      price: "19.00",
+      totalPrice: "38.00",
+      metadata: {
+        productName: "Cap",
+        packingState: {
+          status: "cancelled",
+          cancellationReason: "Out of stock",
+        },
+      },
+    },
+    {
+      id: "item-3",
+      productId: "p3",
+      variantId: "v3",
+      quantity: 1,
+      price: "10.00",
+      totalPrice: "10.00",
+      metadata: { productName: "Socks" },
+    },
   ];
 
   it("marks a line removed at acceptance as REFUNDED and a returned line as RETURNED", () => {
