@@ -6,10 +6,17 @@ import {
   ExternalLink,
   Loader2,
   MapPin,
+  MoreHorizontal,
   Truck,
   Wrench,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -326,88 +333,73 @@ function ReconciliationBlock({
     );
   }
 
+  // One line (TT-473): state on the left, actions on the right. The RTDB
+  // repair tools sit behind a menu — rare, and two ghost buttons made this
+  // read as a card competing with the delivery facts above it.
+  const state = resolved ? (
+    <>
+      <CheckCircle2 className="size-4 shrink-0 text-muted-foreground" />
+      <span>
+        Resolved as{" "}
+        <span className="font-medium uppercase">{resolved.resolution}</span>
+        <span className="text-muted-foreground tabular-nums">
+          {" · "}
+          {formatDateTime(resolved.resolvedAt)}
+          {resolved.adminUserId ? (
+            <>
+              {" · admin "}
+              <span className="font-mono">
+                {resolved.adminUserId.slice(0, 8)}
+              </span>
+            </>
+          ) : null}
+          {resolved.previousTopic ? (
+            <>
+              {" · was "}
+              <span className="font-mono">{resolved.previousTopic}</span>
+            </>
+          ) : null}
+          {resolved.reason ? (
+            <span className="italic" title={resolved.reason}>
+              {" · “"}
+              {resolved.reason}
+              {"”"}
+            </span>
+          ) : null}
+        </span>
+      </span>
+    </>
+  ) : (
+    <>
+      <AlertTriangle
+        className={
+          isStuck
+            ? "size-4 shrink-0 text-destructive"
+            : "size-4 shrink-0 text-muted-foreground"
+        }
+      />
+      <span>
+        <span className={isStuck ? "font-medium" : undefined}>
+          {isStuck ? "Delivery stuck" : "Delivery reconciling"}
+        </span>
+        <span className="text-muted-foreground tabular-nums">
+          {" · "}
+          {attempts}/{MAX_ATTEMPTS} attempts
+          {isStuck ? " · manual resolution required" : ""}
+          {ds.rtdbClearedAt ? " · polling stopped" : ""}
+        </span>
+      </span>
+    </>
+  );
+
   return (
     <>
       {showReconciliation && (
-        <div
-          className={`space-y-3 rounded-md border p-3 ${
-            resolved
-              ? "border-green-200 bg-green-50/50 dark:border-green-900 dark:bg-green-950/20"
-              : isStuck
-                ? "border-red-200 bg-red-50/50 dark:border-red-900 dark:bg-red-950/20"
-                : "border-border bg-muted/40"
-          }`}
-        >
-          <div className="flex items-center gap-2">
-            {resolved ? (
-              <CheckCircle2 className="size-4 text-green-600" />
-            ) : (
-              <AlertTriangle
-                className={
-                  isStuck
-                    ? "size-4 text-red-600"
-                    : "size-4 text-muted-foreground"
-                }
-              />
-            )}
-            <span className="text-sm font-medium">
-              {resolved
-                ? "Delivery reconciliation — resolved"
-                : isStuck
-                  ? "Delivery stuck — needs manual resolution"
-                  : "Delivery reconciling"}
-            </span>
-            <span
-              className={`ml-auto inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium tabular-nums ${
-                isStuck
-                  ? "border-red-300 bg-red-100 text-red-800"
-                  : "border-border bg-muted text-foreground"
-              }`}
-            >
-              {attempts}/{MAX_ATTEMPTS} attempts
-            </span>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-t pt-4 text-sm">
+          <div className="flex min-w-0 flex-1 items-center gap-2 [&>span]:truncate">
+            {state}
           </div>
-
-          {resolved ? (
-            <div className="text-xs text-green-900 dark:text-green-300">
-              <p>
-                Resolved as{" "}
-                <span className="font-medium uppercase">
-                  {resolved.resolution}
-                </span>{" "}
-                · {formatDateTime(resolved.resolvedAt)}
-                {resolved.adminUserId && (
-                  <>
-                    {" · admin "}
-                    <span className="font-mono">
-                      {resolved.adminUserId.slice(0, 8)}
-                    </span>
-                  </>
-                )}
-              </p>
-              {resolved.reason && (
-                <p className="mt-1">
-                  <span className="font-medium">Reason:</span> {resolved.reason}
-                </p>
-              )}
-              {resolved.previousTopic && (
-                <p className="mt-1 text-green-700 dark:text-green-400">
-                  Was stuck on:{" "}
-                  <span className="font-mono">{resolved.previousTopic}</span>
-                </p>
-              )}
-            </div>
-          ) : (
-            <p className="text-xs text-muted-foreground">
-              {isStuck
-                ? `The reconciliation cron gave up after ${MAX_ATTEMPTS} attempts (~${MAX_ATTEMPTS * 5} minutes). Manual resolution required.`
-                : "The reconciliation cron is trying to recover this delivery automatically."}
-              {ds.rtdbClearedAt && " Polling stopped."}
-            </p>
-          )}
-
-          {/* Actions */}
-          <div className="flex flex-wrap items-center gap-2 pt-1">
+          <div className="flex items-center gap-1">
             {!isOrderTerminal && (
               <Button
                 size="sm"
@@ -418,58 +410,66 @@ function ReconciliationBlock({
                 Manually resolve
               </Button>
             )}
-            <Button
-              size="sm"
-              variant="ghost"
-              className="text-xs text-muted-foreground"
-              disabled={rtdbRepair.resync.isPending}
-              onClick={() =>
-                rtdbRepair.resync.mutate(undefined, {
-                  onSuccess: (r) =>
-                    toast.success(
-                      r.synced
-                        ? "RTDB re-synced from delivery_state"
-                        : "Nothing to sync",
-                    ),
-                  onError: (err) =>
-                    toast.error(
-                      err instanceof Error ? err.message : "RTDB re-sync failed",
-                    ),
-                })
-              }
-            >
-              {rtdbRepair.resync.isPending ? (
-                <Loader2 className="size-3.5 animate-spin" />
-              ) : (
-                "Re-sync RTDB"
-              )}
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="text-xs text-muted-foreground"
-              disabled={rtdbRepair.forceClear.isPending}
-              onClick={() =>
-                rtdbRepair.forceClear.mutate(undefined, {
-                  onSuccess: (r) =>
-                    toast.success(
-                      r.cleared.length > 0
-                        ? `Cleared ${r.cleared.length} RTDB path${r.cleared.length === 1 ? "" : "s"}`
-                        : "No RTDB paths to clear",
-                    ),
-                  onError: (err) =>
-                    toast.error(
-                      err instanceof Error ? err.message : "RTDB clear failed",
-                    ),
-                })
-              }
-            >
-              {rtdbRepair.forceClear.isPending ? (
-                <Loader2 className="size-3.5 animate-spin" />
-              ) : (
-                "Force-clear RTDB"
-              )}
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label="Delivery repair tools"
+                >
+                  {rtdbRepair.resync.isPending ||
+                  rtdbRepair.forceClear.isPending ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <MoreHorizontal className="size-4" />
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  disabled={rtdbRepair.resync.isPending}
+                  onSelect={() =>
+                    rtdbRepair.resync.mutate(undefined, {
+                      onSuccess: (r) =>
+                        toast.success(
+                          r.synced
+                            ? "RTDB re-synced from delivery_state"
+                            : "Nothing to sync",
+                        ),
+                      onError: (err) =>
+                        toast.error(
+                          err instanceof Error
+                            ? err.message
+                            : "RTDB re-sync failed",
+                        ),
+                    })
+                  }
+                >
+                  Re-sync RTDB
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  disabled={rtdbRepair.forceClear.isPending}
+                  onSelect={() =>
+                    rtdbRepair.forceClear.mutate(undefined, {
+                      onSuccess: (r) =>
+                        toast.success(
+                          r.cleared.length > 0
+                            ? `Cleared ${r.cleared.length} RTDB path${r.cleared.length === 1 ? "" : "s"}`
+                            : "No RTDB paths to clear",
+                        ),
+                      onError: (err) =>
+                        toast.error(
+                          err instanceof Error
+                            ? err.message
+                            : "RTDB clear failed",
+                        ),
+                    })
+                  }
+                >
+                  Force-clear RTDB
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       )}
