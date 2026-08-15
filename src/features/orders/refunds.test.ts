@@ -273,3 +273,62 @@ describe("line item status (TT-473)", () => {
     });
   });
 });
+
+/**
+ * TT-471 — Pricing mirrors Shopify's own summary. totalAmount is what was
+ * charged and never shrinks; the Total row is the order as it stands now
+ * (goods remaining + fees − discount); when money came back the section shows
+ * Paid / Refunded / Net paid.
+ */
+describe("pricing summary after a packing removal (TT-471)", () => {
+  const removed: BackendOrder = {
+    ...base,
+    totalAmount: "97.99",
+    subtotal: "46.00",
+    totalRefundedAmount: "42.00",
+    refundState: "PARTIAL",
+    pricingBreakdown: {
+      items: 46,
+      deliveryFee: 9.99,
+      serviceFee: 0,
+      packagingFee: 0,
+      discount: 0,
+      total: 97.99,
+      refundedAmount: 42,
+      shopifyCheckout: true,
+    },
+  };
+
+  it("shows the order as it stands as Total, and what was charged as Paid", () => {
+    const vm = toOrderDetailViewModel(removed);
+    expect(vm.pricing).toMatchObject({
+      subtotal: "£46.00",
+      deliveryFee: "£9.99",
+      total: "£55.99",
+      paid: "£97.99",
+      netPaid: "£55.99",
+    });
+  });
+
+  it("nets a discount off the current total", () => {
+    const vm = toOrderDetailViewModel({
+      ...removed,
+      pricingBreakdown: { ...removed.pricingBreakdown, discount: 5 },
+    });
+    expect(vm.pricing?.total).toBe("£50.99");
+  });
+
+  it("has no net when nothing was refunded", () => {
+    const vm = toOrderDetailViewModel({
+      ...removed,
+      totalAmount: "55.99",
+      totalRefundedAmount: "0",
+      refundState: "NONE",
+    });
+    expect(vm.pricing).toMatchObject({
+      total: "£55.99",
+      paid: "£55.99",
+      netPaid: null,
+    });
+  });
+});

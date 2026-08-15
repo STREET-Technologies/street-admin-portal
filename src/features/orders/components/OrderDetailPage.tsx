@@ -448,14 +448,48 @@ function PricingPaymentSection({
               </div>
             )}
             <Separator />
-            <div className="flex justify-between text-base font-semibold">
+            {/* Mirrors Shopify's summary (TT-471): Total is the order as it
+                stands; when money came back, Paid (what was charged) /
+                Refunded / Net paid follow. The story of each refund is in the
+                Refunds & returns section at the top. */}
+            <div
+              className={
+                pricing.netPaid
+                  ? "flex justify-between text-sm"
+                  : "flex justify-between text-base font-semibold"
+              }
+            >
               <span>Total</span>
               <span className="tabular-nums">{pricing.total}</span>
             </div>
+            {pricing.netPaid && orderDetail.totalRefundedFormatted && (
+              <>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">
+                    Paid
+                    {payment
+                      ? ` with ${formatPaymentMethod(payment.method)}`
+                      : ""}
+                  </span>
+                  <span className="tabular-nums">{pricing.paid}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Refunded</span>
+                  <span className="tabular-nums">
+                    −{orderDetail.totalRefundedFormatted}
+                  </span>
+                </div>
+                <Separator />
+                <div className="flex justify-between text-base font-semibold">
+                  <span>Net paid</span>
+                  <span className="tabular-nums">{pricing.netPaid}</span>
+                </div>
+              </>
+            )}
           </>
         )}
 
-        {payment && (
+        {payment && !pricing?.netPaid && (
           <>
             <Separator />
             <div className="flex justify-between text-sm">
@@ -465,18 +499,6 @@ function PricingPaymentSection({
               </span>
             </div>
           </>
-        )}
-
-        {/* TT-473 — one supporting line; the primary signal is the header
-            summary and the Refunds & returns section at the top of the page,
-            where the shipping component is stated per refund. */}
-        {orderDetail.totalRefundedFormatted && (
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Refunded</span>
-            <span className="tabular-nums">
-              −{orderDetail.totalRefundedFormatted}
-            </span>
-          </div>
         )}
       </div>
     </section>
