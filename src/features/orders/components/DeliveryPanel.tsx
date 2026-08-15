@@ -118,7 +118,7 @@ export function DeliveryPanel({
           </span>
         )}
       </h2>
-      <div className="mt-4 border-t pt-5">
+      <div className="mt-4 border-t pt-4">
         {isLoading ? (
           <p className="text-sm text-muted-foreground">Loading delivery…</p>
         ) : !ds ? (
@@ -157,7 +157,7 @@ function DeliveryBody({
     : null;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Reconciliation first (TT-473) — when a delivery is stuck or was
           manually resolved, that is what support opened the order for. Only
           renders when there is something to show. */}
@@ -401,7 +401,7 @@ function ReconciliationBlock({
   return (
     <>
       {showReconciliation && (
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b pb-4 text-sm">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b pb-3 text-sm">
           <div className="flex min-w-0 flex-1 items-center gap-2 [&>span]:truncate">
             {state}
           </div>
