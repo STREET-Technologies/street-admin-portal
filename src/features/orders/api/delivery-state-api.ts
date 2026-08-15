@@ -38,7 +38,8 @@ export interface DeliveryStateInfo {
   lastEventOccurredAt: string | null;
   trackingUrl: string | null;
   clientTrackingUrl: string | null;
-  pinCode: string | null;
+  // No delivery PIN (TT-473): the customer's proof-of-receipt with the
+  // courier is a fraud vector in a support tool. The backend does not send it.
   podSignatureUrl: string | null;
   /** TT-166 — populated when an admin has manually resolved this order's stuck delivery. */
   latestManualResolution: ManualResolution | null;
