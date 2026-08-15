@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { toRetailerViewModel } from "./types";
+import { formatRevalidateResult, toRetailerViewModel } from "./types";
 import type { BackendVendor } from "./types";
 
 function makeBackendVendor(
@@ -48,5 +48,26 @@ describe("toRetailerViewModel status derivation", () => {
       uninstalledAt: "2026-06-01T00:00:00Z",
     });
     expect(toRetailerViewModel(vendor).status).toBe("uninstalled");
+  });
+});
+
+/**
+ * TT-473 — the re-validate button toasts the endpoint's counts so support can
+ * tell "nothing was stale" from "the call did nothing".
+ */
+describe("formatRevalidateResult", () => {
+  it("pluralises both counts", () => {
+    expect(formatRevalidateResult({ revalidated: 3, changed: 1 })).toBe(
+      "Re-validated 3 outlets, 1 verdict changed",
+    );
+    expect(formatRevalidateResult({ revalidated: 1, changed: 2 })).toBe(
+      "Re-validated 1 outlet, 2 verdicts changed",
+    );
+  });
+
+  it("says so when every verdict already stood", () => {
+    expect(formatRevalidateResult({ revalidated: 2, changed: 0 })).toBe(
+      "Re-validated 2 outlets, no verdicts changed",
+    );
   });
 });

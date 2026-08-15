@@ -14,6 +14,7 @@ import {
   setOutletPublished,
   setOutletActive,
   setOutletPrimary,
+  revalidateOutletAddresses,
   updateRetailer,
   setRetailerActive,
   resyncRetailerFromShopify,
@@ -221,6 +222,24 @@ export function useSetOutletPublishedMutation(retailerId: string) {
       outletId: string;
       isPublished: boolean;
     }) => setOutletPublished(retailerId, outletId, isPublished),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: retailerKeys.outlets(retailerId),
+      });
+    },
+  });
+}
+
+/**
+ * Re-validate every outlet address for a vendor (TT-473). Invalidates the
+ * outlets list on success so a cleared verdict warning disappears without a
+ * reload.
+ */
+export function useRevalidateOutletAddressesMutation(retailerId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => revalidateOutletAddresses(retailerId),
     onSuccess: () => {
       void queryClient.invalidateQueries({
         queryKey: retailerKeys.outlets(retailerId),

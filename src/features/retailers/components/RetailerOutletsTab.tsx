@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, Loader2, MapPin } from "lucide-react";
+import { ArrowRight, Loader2, MapPin, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
@@ -26,20 +26,24 @@ import {
   useSetOutletPublishedMutation,
   useSetOutletActiveMutation,
   useSetOutletPrimaryMutation,
+  useRevalidateOutletAddressesMutation,
 } from "../api/retailer-queries";
 import type {
   AdminOutlet,
   AddressValidationVerdict,
 } from "../api/retailer-api";
+import { formatRevalidateResult } from "../types";
 
 // Explains the courier-bookability failure and how to fix it (TT-397).
 // Only 'invalid_postcode' and 'postcode_mismatch' warrant a warning — never
-// alarm on 'valid', 'unknown', or null (unverified).
+// alarm on 'valid', 'unknown', or null (unverified). Verdicts are otherwise
+// only recomputed when the address changes, so a stale one is cleared with
+// the "Re-validate addresses" action on this tab (TT-466/473).
 const ADDRESS_VERDICT_COPY: Record<string, string> = {
   invalid_postcode:
-    "Postcode does not exist or was terminated — Stuart deliveries from this outlet will fail. Correct the address in the store's Shopify admin; it re-checks on the next sync.",
+    "Postcode does not exist or was terminated — Stuart deliveries from this outlet will fail. Correct the address in the store's Shopify admin, then use Re-validate addresses (or wait for the next sync).",
   postcode_mismatch:
-    "Street and postcode don't match — Stuart deliveries from this outlet may fail. Correct the address in the store's Shopify admin; it re-checks on the next sync.",
+    "Street and postcode don't match — Stuart deliveries from this outlet may fail. Correct the address in the store's Shopify admin, then use Re-validate addresses (or wait for the next sync). If the address is right, re-validating clears a false positive.",
 };
 
 function getAddressWarning(verdict: AddressValidationVerdict): string | null {
@@ -121,6 +125,7 @@ export function RetailerOutletsTab({ retailerId }: RetailerOutletsTabProps) {
   const publishMutation = useSetOutletPublishedMutation(retailerId);
   const activeMutation = useSetOutletActiveMutation(retailerId);
   const primaryMutation = useSetOutletPrimaryMutation(retailerId);
+  const revalidateMutation = useRevalidateOutletAddressesMutation(retailerId);
 
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(
     null,
@@ -186,6 +191,18 @@ export function RetailerOutletsTab({ retailerId }: RetailerOutletsTabProps) {
     }
   }
 
+  // Vendor-level: one click re-checks every outlet's postcode and rewrites the
+  // verdicts (TT-473). Coordinates are deliberately untouched — a mis-geocoded
+  // pin will not move; that is a Shopify address fix + sync.
+  async function handleRevalidate() {
+    try {
+      const result = await revalidateMutation.mutateAsync();
+      toast.success(formatRevalidateResult(result));
+    } catch {
+      toast.error("Failed to re-validate addresses");
+    }
+  }
+
   async function handleSetPrimary(outlet: AdminOutlet) {
     try {
       await primaryMutation.mutateAsync(outlet.id);
@@ -244,14 +261,40 @@ export function RetailerOutletsTab({ retailerId }: RetailerOutletsTabProps) {
       <ConfirmDialog open={pendingAction !== null} {...dialogProps} />
 
       <div className="space-y-4">
-        <div>
-          <h3 className="text-sm font-medium text-muted-foreground">
-            {outlets.length} outlet{outlets.length === 1 ? "" : "s"}
-          </h3>
-          <p className="mt-1 text-xs text-muted-foreground/70">
-            The primary branch sets the store's live position. Publish flags
-            only affect customers once multi-outlet discovery ships.
-          </p>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h3 className="text-sm font-medium text-muted-foreground">
+              {outlets.length} outlet{outlets.length === 1 ? "" : "s"}
+            </h3>
+            <p className="mt-1 text-xs text-muted-foreground/70">
+              The primary branch sets the store's live position. Publish flags
+              only affect customers once multi-outlet discovery ships.
+            </p>
+          </div>
+          {canWrite && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => void handleRevalidate()}
+                  disabled={revalidateMutation.isPending}
+                >
+                  {revalidateMutation.isPending ? (
+                    <Loader2 className="size-3.5 animate-spin" />
+                  ) : (
+                    <RefreshCw className="size-3.5" />
+                  )}
+                  Re-validate addresses
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-64">
+                Re-checks every outlet's postcode and clears stale
+                courier-bookability warnings. Postcode check only: map pins do
+                not move.
+              </TooltipContent>
+            </Tooltip>
+          )}
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

@@ -6,6 +6,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { StatusBadge } from "@/components/shared/StatusBadge";
+import { humanize } from "../types";
 import type { OrderDetailViewModel, ReturnViewModel } from "../types";
 
 interface ReturnsCardProps {
@@ -47,13 +48,6 @@ export function ReturnsCard({ orderDetail }: ReturnsCardProps) {
       </CardContent>
     </Card>
   );
-}
-
-/** "SOMETHING_LIKE_THIS" / "unknown" → "Something like this". */
-function humanize(value: string): string {
-  if (!value) return "";
-  const words = value.replace(/_/g, " ").toLowerCase();
-  return words.charAt(0).toUpperCase() + words.slice(1);
 }
 
 function ReturnEventRow({

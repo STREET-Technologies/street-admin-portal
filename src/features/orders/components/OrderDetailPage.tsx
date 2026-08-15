@@ -22,6 +22,8 @@ import { toOrderDetailViewModel } from "../types";
 import type { OrderDetailViewModel, OrderItemViewModel } from "../types";
 import { DeliveryPanel } from "./DeliveryPanel";
 import { OrderActionsControl } from "./OrderActionsControl";
+import { RefundBadge } from "./RefundBadge";
+import { RefundHistorySection } from "./RefundHistorySection";
 import { ReturnsCard } from "./ReturnsCard";
 
 interface OrderDetailPageProps {
@@ -90,11 +92,20 @@ export function OrderDetailPage({ orderId }: OrderDetailPageProps) {
       <BackButton to="/orders" label="Orders" useHistory />
 
       {/* Header carries the order ID, customer name, and consolidated displayStatus
-          pill — supersedes the original order status when a return is active (TT-226). */}
+          pill — supersedes the original order status when a return is active (TT-226).
+          The refund badge sits on the same line (TT-473): money going back is the
+          first thing support needs to know, before any scrolling. */}
       <EntityDetailHeader
         title={`Order ${orderDetail.orderId}`}
         subtitle={`Placed by ${orderDetail.customerName}`}
         status={orderDetail.displayStatus.toLowerCase()}
+        statusExtra={
+          <RefundBadge
+            refundState={orderDetail.refundState}
+            totalRefundedFormatted={orderDetail.totalRefundedFormatted}
+            size="sm"
+          />
+        }
         avatarFallback="#"
       >
         <OrderActionsControl
@@ -104,6 +115,9 @@ export function OrderDetailPage({ orderId }: OrderDetailPageProps) {
           paymentStatus={orderDetail.paymentStatus ?? ""}
         />
       </EntityDetailHeader>
+
+      {/* Refund history first (TT-473) — only renders when there are refunds. */}
+      <RefundHistorySection orderDetail={orderDetail} />
 
       {/* Top row: order summary + customer & shipping */}
       <div className="grid gap-x-10 gap-y-8 md:grid-cols-2">
@@ -442,15 +456,22 @@ function PricingPaymentSection({
                 {formatPaymentMethod(payment.method)}
               </span>
             </div>
-            {payment.refundedAmount && (
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Refunded</span>
-                <span className="text-destructive tabular-nums">
-                  {payment.refundedAmount}
-                </span>
-              </div>
-            )}
           </>
+        )}
+
+        {/* TT-473 — concise supporting line; the primary signal is the header
+            badge and the Refunds section at the top of the page. */}
+        {orderDetail.totalRefundedFormatted && (
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">
+              {orderDetail.refundState === "FULL"
+                ? "Fully refunded"
+                : "Partially refunded"}
+            </span>
+            <span className="tabular-nums">
+              −{orderDetail.totalRefundedFormatted}
+            </span>
+          </div>
         )}
 
         {orderDetail.totalShippingRefundedFormatted && (

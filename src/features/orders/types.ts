@@ -44,7 +44,6 @@ export interface BackendOrder {
   paymentStatus?: string | null;
   paymentMethod?: string | null;
   pricingBreakdown?: Record<string, unknown> | null;
-  payments?: BackendPayment[] | null;
   stuartJobId?: string | null;
   shopifyOrderId?: string | null;
   // Flat fields from global list raw query (not present on detail endpoint)
@@ -59,6 +58,27 @@ export interface BackendOrder {
   returnStatus?: string | null;
   totalShippingRefundedAmount?: string | number | null;
   returns?: BackendReturn[] | null;
+  // TT-473 — refunds. `refundState` is derived on the backend from the money
+  // (never stored, never from paymentStatus); `refunds` are the per-refund
+  // rows, oldest first, present on the detail endpoint only.
+  totalRefundedAmount?: string | number | null;
+  refundState?: RefundState | null;
+  refunds?: BackendOrderRefund[] | null;
+}
+
+/** NONE / PARTIAL / FULL, computed by the backend (TT-469/473). */
+export type RefundState = "NONE" | "PARTIAL" | "FULL";
+
+/** One `order_refunds` row (TT-469). */
+export interface BackendOrderRefund {
+  id: string;
+  /** Set when the refund settled a customer Return; null on retailer refunds. */
+  returnId: string | null;
+  refundedAmount: string | number;
+  shippingRefundAmount: string | number;
+  /** Retailer/staff text on the refund itself. Null on Return-linked refunds. */
+  note: string | null;
+  refundedAt: string;
 }
 
 /** Return record attached to an order (TT-226). */
@@ -95,17 +115,6 @@ export interface BackendOrderItem {
   price: string | number;
   totalPrice: string | number;
   metadata?: Record<string, unknown> | null;
-}
-
-/** Payment record attached to an order. */
-export interface BackendPayment {
-  id: string;
-  status: string;
-  provider: string;
-  providerPaymentId?: string;
-  amount: number;
-  currency: string;
-  refundedAmount?: number | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -147,6 +156,10 @@ export interface OrderViewModel {
    * Examples: DELIVERED, RETURNED, PARTIALLY_RETURNED, RETURN_REQUESTED.
    */
   displayStatus: string;
+  /** TT-473 — backend-derived; NONE when nothing has been refunded. */
+  refundState: RefundState;
+  /** Formatted refund total ("£98.00"), null when nothing has been refunded. */
+  totalRefundedFormatted: string | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -171,12 +184,10 @@ export interface OrderDetailViewModel extends OrderViewModel {
   } | null;
   /** Line items */
   items: OrderItemViewModel[];
-  /** Payment info */
+  /** Payment info (capture status + rail; refunds live on `refunds`). */
   payment: {
     status: string;
     method: string;
-    amount: string;
-    refundedAmount: string | null;
   } | null;
   /** Shipping address from shippingAddress JSONB */
   shippingAddress: {
@@ -201,6 +212,26 @@ export interface OrderDetailViewModel extends OrderViewModel {
   totalShippingRefundedAmount: number;
   totalShippingRefundedFormatted: string | null;
   returns: ReturnViewModel[];
+  /** TT-473 — per-refund history, oldest first. */
+  refunds: RefundViewModel[];
+}
+
+/**
+ * One refund as the detail page shows it (TT-473). `reason` names its author:
+ * a standalone refund carries the retailer's note; a Return-linked refund
+ * carries the customer's line-item reasons from the loaded Return. Null only
+ * when a standalone refund genuinely has no note.
+ */
+export interface RefundViewModel {
+  id: string;
+  refundedAt: string;
+  refundedAmount: number;
+  refundedAmountFormatted: string;
+  shippingRefundAmount: number;
+  shippingRefundAmountFormatted: string | null;
+  /** Shopify Return ID when the refund settled a Return, else null. */
+  shopifyReturnId: string | null;
+  reason: { source: "retailer" | "customer"; text: string | null } | null;
 }
 
 /** Transformed Return record for the detail page (TT-226). */
@@ -343,7 +374,24 @@ export function toOrderViewModel(backend: BackendOrder): OrderViewModel {
     paymentStatus: backend.paymentStatus?.toLowerCase(),
     returnStatus,
     displayStatus,
+    refundState: backend.refundState ?? "NONE",
+    totalRefundedFormatted: formatPositiveGBP(backend.totalRefundedAmount),
   };
+}
+
+/** Number from a decimal that may arrive as a string; 0 when absent. */
+function toNumber(value: string | number | null | undefined): number {
+  if (value == null) return 0;
+  const num = typeof value === "string" ? parseFloat(value) : value;
+  return Number.isNaN(num) ? 0 : num;
+}
+
+/** Formatted GBP when > 0, else null — for "only show when it happened" rows. */
+function formatPositiveGBP(
+  value: string | number | null | undefined,
+): string | null {
+  const num = toNumber(value);
+  return num > 0 ? formatGBP(num) : null;
 }
 
 // ---------------------------------------------------------------------------
@@ -469,25 +517,14 @@ export function toOrderDetailViewModel(
     ),
   );
 
-  // Payment (prefer payments array, fall back to top-level fields)
-  const primaryPayment = backend.payments?.[0];
-  const payment = primaryPayment
+  // Payment — capture status + rail. (The Stripe-era `payments` relation was
+  // dropped in TT-473; refunds are their own rows below.)
+  const payment = backend.paymentStatus
     ? {
-        status: primaryPayment.status.toLowerCase(),
-        method: primaryPayment.provider,
-        amount: formatGBP(primaryPayment.amount),
-        refundedAmount: primaryPayment.refundedAmount
-          ? formatGBP(primaryPayment.refundedAmount)
-          : null,
+        status: backend.paymentStatus.toLowerCase(),
+        method: backend.paymentMethod ?? "Unknown",
       }
-    : backend.paymentStatus
-      ? {
-          status: backend.paymentStatus.toLowerCase(),
-          method: backend.paymentMethod ?? "Unknown",
-          amount: base.totalAmount,
-          refundedAmount: null,
-        }
-      : null;
+    : null;
 
   // Shipping address from JSONB
   const sa = backend.shippingAddress as
@@ -567,6 +604,33 @@ export function toOrderDetailViewModel(
     };
   });
 
+  // TT-473 — refunds. The "why" splits by author: `note` is the retailer's
+  // text on a refund THEY issued; a Return-linked refund has no note (Shopify
+  // never copies the return reason onto the refund) and its reason is what
+  // the CUSTOMER selected on the Return's line items. Never show the empty
+  // note on a Return-linked refund as if something is missing.
+  const returnsById = new Map(returns.map((r) => [r.id, r]));
+  const refunds: RefundViewModel[] = (backend.refunds ?? []).map((r) => {
+    const linkedReturn = r.returnId ? returnsById.get(r.returnId) : undefined;
+    const reason: RefundViewModel["reason"] = r.returnId
+      ? { source: "customer", text: returnReasonText(linkedReturn) }
+      : r.note
+        ? { source: "retailer", text: r.note }
+        : null;
+    const refunded = toNumber(r.refundedAmount);
+    const shippingRefund = toNumber(r.shippingRefundAmount);
+    return {
+      id: r.id,
+      refundedAt: r.refundedAt,
+      refundedAmount: refunded,
+      refundedAmountFormatted: formatGBP(refunded),
+      shippingRefundAmount: shippingRefund,
+      shippingRefundAmountFormatted: formatPositiveGBP(shippingRefund),
+      shopifyReturnId: linkedReturn?.shopifyReturnId ?? null,
+      reason,
+    };
+  });
+
   return {
     ...base,
     shopifyOrderId: backend.shopifyOrderId ?? null,
@@ -580,5 +644,30 @@ export function toOrderDetailViewModel(
     totalShippingRefundedAmount: totalShippingRefunded,
     totalShippingRefundedFormatted,
     returns,
+    refunds,
   };
+}
+
+/** "SOMETHING_LIKE_THIS" → "Something like this". */
+export function humanize(value: string): string {
+  if (!value) return "";
+  const words = value.replace(/_/g, " ").toLowerCase();
+  return words.charAt(0).toUpperCase() + words.slice(1);
+}
+
+/**
+ * The customer's reasons on a Return, de-duplicated and humanized, or null
+ * when the Return carries none we can show (all UNKNOWN, or not loaded).
+ */
+function returnReasonText(ret: ReturnViewModel | undefined): string | null {
+  if (!ret) return null;
+  const reasons = Array.from(
+    new Set(
+      ret.lineItems
+        .map((li) => li.reason)
+        .filter((reason) => reason && reason.toUpperCase() !== "UNKNOWN")
+        .map(humanize),
+    ),
+  );
+  return reasons.length > 0 ? reasons.join(", ") : null;
 }

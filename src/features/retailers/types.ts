@@ -137,3 +137,25 @@ export interface RetailerListParams {
   page?: number;
   limit?: number;
 }
+
+/** Response of POST /admin/vendors/:id/outlets/revalidate-addresses (TT-466). */
+export interface RevalidateAddressesResult {
+  revalidated: number;
+  changed: number;
+}
+
+/**
+ * Toast copy for the re-validate action (TT-473). Both counts are stated so
+ * "nothing was stale" reads differently from "the call did nothing".
+ */
+export function formatRevalidateResult({
+  revalidated,
+  changed,
+}: RevalidateAddressesResult): string {
+  const outlets = `${revalidated} outlet${revalidated === 1 ? "" : "s"}`;
+  const verdicts =
+    changed === 0
+      ? "no verdicts changed"
+      : `${changed} verdict${changed === 1 ? "" : "s"} changed`;
+  return `Re-validated ${outlets}, ${verdicts}`;
+}
