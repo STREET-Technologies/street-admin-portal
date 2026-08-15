@@ -197,7 +197,12 @@ export interface OrderDetailViewModel extends OrderViewModel {
     postcode: string;
     country: string;
   } | null;
-  /** Pricing breakdown from pricingBreakdown JSONB */
+  /**
+   * Pricing breakdown from pricingBreakdown JSONB. Mirrors Shopify's summary
+   * (TT-471): `total` is the order as it stands now (goods remaining + fees −
+   * discount); `paid` is what was charged (`totalAmount`, never shrinks);
+   * `netPaid` is paid − refunded, present only when money came back.
+   */
   pricing: {
     subtotal: string;
     deliveryFee: string;
@@ -205,6 +210,8 @@ export interface OrderDetailViewModel extends OrderViewModel {
     /** Formatted discount (e.g. "£5.00"), or null when no code was used. */
     discount: string | null;
     total: string;
+    paid: string;
+    netPaid: string | null;
     isShopifyOrder: boolean;
   } | null;
   /** TT-226 — return state and per-return details */
@@ -582,15 +589,34 @@ export function toOrderDetailViewModel(
   // TT-326 — customer discount lives in pricingBreakdown.discount (also
   // backfilled onto historical orders). Only surface it when non-zero.
   const discountRaw = typeof pb?.discount === "number" ? pb.discount : 0;
+  const totalRefundedRaw = toNumber(backend.totalRefundedAmount);
+  const chargedRaw = toNumber(backend.totalAmount);
   const pricing = pb
-    ? {
-        subtotal: formatGBP((pb.items as number) ?? backend.subtotal),
-        deliveryFee: formatGBP(pb.deliveryFee as number | null),
-        serviceFee: formatGBP(pb.serviceFee as number | null),
-        discount: discountRaw > 0 ? formatGBP(discountRaw) : null,
-        total: formatGBP((pb.total as number) ?? backend.totalAmount),
-        isShopifyOrder,
-      }
+    ? (() => {
+        const items = toNumber((pb.items as number) ?? backend.subtotal);
+        const deliveryFee = toNumber(pb.deliveryFee as number | null);
+        const serviceFee = toNumber(pb.serviceFee as number | null);
+        const packagingFee = toNumber(pb.packagingFee as number | null);
+        // The order as it stands now — Shopify's "Total" line (TT-471).
+        const currentTotal =
+          Math.max(0, items - discountRaw) +
+          deliveryFee +
+          serviceFee +
+          packagingFee;
+        return {
+          subtotal: formatGBP(items),
+          deliveryFee: formatGBP(deliveryFee),
+          serviceFee: formatGBP(serviceFee),
+          discount: discountRaw > 0 ? formatGBP(discountRaw) : null,
+          total: formatGBP(currentTotal),
+          paid: formatGBP(chargedRaw),
+          netPaid:
+            totalRefundedRaw > 0
+              ? formatGBP(Math.max(0, chargedRaw - totalRefundedRaw))
+              : null,
+          isShopifyOrder,
+        };
+      })()
     : null;
 
   // TT-226 — returns
