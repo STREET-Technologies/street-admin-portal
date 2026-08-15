@@ -15,7 +15,7 @@ import { CopyButton } from "@/components/shared/CopyButton";
 import { formatDate } from "@/lib/format-utils";
 import { useOrderDetailQuery } from "../api/order-queries";
 import { OrderActionsControl } from "./OrderActionsControl";
-import { RefundBadge } from "./RefundBadge";
+import { RefundSummary } from "./RefundSummary";
 import { toOrderDetailViewModel } from "../types";
 import type { OrderViewModel } from "../types";
 
@@ -109,15 +109,8 @@ export function OrderPeekSheet({ order, onOpenChange }: OrderPeekSheetProps) {
                   {order.orderId}
                 </SheetTitle>
                 <CopyButton value={order.orderId} label="Copy order ID" />
-                <span className="ml-auto flex flex-wrap items-center justify-end gap-1.5">
+                <span className="ml-auto">
                   <StatusBadge status={order.displayStatus} size="sm" />
-                  {/* TT-473 — the list row already carries refundState, so this
-                      shows before the detail query lands. */}
-                  <RefundBadge
-                    refundState={order.refundState}
-                    totalRefundedFormatted={order.totalRefundedFormatted}
-                    size="sm"
-                  />
                 </span>
               </div>
               <SheetDescription className="text-xs">
@@ -126,6 +119,13 @@ export function OrderPeekSheet({ order, onOpenChange }: OrderPeekSheetProps) {
                 {order.outletName ? ` · ${order.outletName}` : ""} ·{" "}
                 {formatDate(order.createdAt)}
               </SheetDescription>
+              {/* TT-473 — the list row already carries refundState, so this
+                  shows before the detail query lands. */}
+              <RefundSummary
+                refundState={order.refundState}
+                totalRefundedFormatted={order.totalRefundedFormatted}
+                className="text-xs"
+              />
             </SheetHeader>
 
             <div className="space-y-5 px-4 pb-4">
