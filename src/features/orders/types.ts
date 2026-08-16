@@ -64,6 +64,10 @@ export interface BackendOrder {
   totalRefundedAmount?: string | number | null;
   refundState?: RefundState | null;
   refunds?: BackendOrderRefund[] | null;
+  // TT-477 — Shopify's own words, verbatim from the latest order webhook.
+  shopifyFinancialStatus?: string | null;
+  shopifyFulfillmentStatus?: string | null;
+  shopifyStatusAt?: string | null;
 }
 
 /** NONE / PARTIAL / FULL, computed by the backend (TT-469/473). */
@@ -160,6 +164,23 @@ export interface OrderViewModel {
   refundState: RefundState;
   /** Formatted refund total ("£98.00"), null when nothing has been refunded. */
   totalRefundedFormatted: string | null;
+  /**
+   * TT-477 — what Shopify itself last said about this order. Support has no
+   * access to the retailer's store in production, so this is the line they
+   * read to a customer; the retailer sees the same in Shopify admin. Null
+   * when Shopify has never told us. `disagreesWithRefundState` is a bug
+   * signal for us (our derived state vs Shopify's words), never hidden.
+   */
+  shopifySays: ShopifySays | null;
+}
+
+export interface ShopifySays {
+  financialStatus: string | null;
+  fulfillmentStatus: string | null;
+  at: string;
+  /** "partially_refunded · fulfilled" */
+  label: string;
+  disagreesWithRefundState: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -413,6 +434,35 @@ export function toOrderViewModel(backend: BackendOrder): OrderViewModel {
     displayStatus,
     refundState: backend.refundState ?? "NONE",
     totalRefundedFormatted: formatPositiveGBP(backend.totalRefundedAmount),
+    shopifySays: toShopifySays(backend),
+  };
+}
+
+/**
+ * Shopify's financial_status → the refund state it implies, for the
+ * disagreement check. Statuses that say nothing about refunds map to null.
+ */
+const SHOPIFY_FINANCIAL_TO_REFUND_STATE: Record<string, RefundState> = {
+  refunded: "FULL",
+  partially_refunded: "PARTIAL",
+};
+
+function toShopifySays(backend: BackendOrder): ShopifySays | null {
+  if (!backend.shopifyStatusAt) return null;
+  const financialStatus = backend.shopifyFinancialStatus ?? null;
+  const fulfillmentStatus = backend.shopifyFulfillmentStatus ?? null;
+  const implied = financialStatus
+    ? SHOPIFY_FINANCIAL_TO_REFUND_STATE[financialStatus.toLowerCase()]
+    : undefined;
+  const ours = backend.refundState ?? "NONE";
+  return {
+    financialStatus,
+    fulfillmentStatus,
+    at: backend.shopifyStatusAt,
+    label: `${financialStatus ?? "—"} · ${fulfillmentStatus ?? "unfulfilled"}`,
+    // Only statuses that assert a refund can disagree; and NONE vs a refund
+    // status is a disagreement too (Shopify saw money move, we did not).
+    disagreesWithRefundState: implied !== undefined && implied !== ours,
   };
 }
 

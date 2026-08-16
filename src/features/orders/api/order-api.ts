@@ -14,6 +14,8 @@ export interface GetOrdersParams {
    */
   status?: string;
   paymentMethod?: string;
+  /** TT-477 — Shopify's own financial_status, verbatim (partially_refunded, refunded, ...). */
+  shopifyFinancialStatus?: string;
   /** When true, only orders whose reconciliation cron gave up (powers the Stuck tab). */
   stuck?: boolean;
   /**

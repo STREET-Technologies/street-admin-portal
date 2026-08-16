@@ -332,3 +332,70 @@ describe("pricing summary after a packing removal (TT-471)", () => {
     });
   });
 });
+
+/**
+ * TT-477 — Shopify's own words on the order, verbatim, so support can read
+ * the retailer's view to a customer without store access. Our pill = the
+ * goods (ours), the money line = derived from refunds; this line is Shopify's
+ * financial/fulfilment status as last sent, and a disagreement with our
+ * derived refund state is a bug signal, not something to hide.
+ */
+describe("shopifySays (TT-477)", () => {
+  it("formats financial and fulfilment status with the payload time", () => {
+    const vm = toOrderViewModel({
+      ...base,
+      refundState: "PARTIAL",
+      shopifyFinancialStatus: "partially_refunded",
+      shopifyFulfillmentStatus: "fulfilled",
+      shopifyStatusAt: "2026-08-15T10:17:34.000Z",
+    });
+    expect(vm.shopifySays).toEqual({
+      financialStatus: "partially_refunded",
+      fulfillmentStatus: "fulfilled",
+      at: "2026-08-15T10:17:34.000Z",
+      label: "partially_refunded · fulfilled",
+      disagreesWithRefundState: false,
+    });
+  });
+
+  it("reads 'unfulfilled' when Shopify sends no fulfilment status", () => {
+    const vm = toOrderViewModel({
+      ...base,
+      refundState: "NONE",
+      totalRefundedAmount: "0",
+      shopifyFinancialStatus: "paid",
+      shopifyFulfillmentStatus: null,
+      shopifyStatusAt: "2026-08-15T10:17:34.000Z",
+    });
+    expect(vm.shopifySays?.label).toBe("paid · unfulfilled");
+    expect(vm.shopifySays?.disagreesWithRefundState).toBe(false);
+  });
+
+  it("is null when Shopify has never told us (older orders, backstop-only paths)", () => {
+    expect(toOrderViewModel(base).shopifySays).toBeNull();
+  });
+
+  it("flags disagreement between Shopify's financial_status and our derived refund state", () => {
+    // Shopify says fully refunded, we derive PARTIAL → something is off on our side.
+    const vm = toOrderViewModel({
+      ...base,
+      refundState: "PARTIAL",
+      shopifyFinancialStatus: "refunded",
+      shopifyFulfillmentStatus: "fulfilled",
+      shopifyStatusAt: "2026-08-15T10:17:34.000Z",
+    });
+    expect(vm.shopifySays?.disagreesWithRefundState).toBe(true);
+  });
+
+  it("does not flag statuses that say nothing about refunds (paid, authorized, pending, voided)", () => {
+    for (const fs of ["paid", "authorized", "pending", "voided"]) {
+      const vm = toOrderViewModel({
+        ...base,
+        refundState: "NONE",
+        shopifyFinancialStatus: fs,
+        shopifyStatusAt: "2026-08-15T10:17:34.000Z",
+      });
+      expect(vm.shopifySays?.disagreesWithRefundState).toBe(false);
+    }
+  });
+});
