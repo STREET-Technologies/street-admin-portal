@@ -16,6 +16,7 @@ import { formatDate } from "@/lib/format-utils";
 import { useOrderDetailQuery } from "../api/order-queries";
 import { OrderActionsControl } from "./OrderActionsControl";
 import { RefundSummary } from "./RefundSummary";
+import { ShopifySaysLine } from "./ShopifySaysLine";
 import { toOrderDetailViewModel } from "../types";
 import type { OrderViewModel } from "../types";
 
@@ -126,6 +127,8 @@ export function OrderPeekSheet({ order, onOpenChange }: OrderPeekSheetProps) {
                 totalRefundedFormatted={order.totalRefundedFormatted}
                 className="text-xs"
               />
+              {/* TT-477 — the list row carries it, so no wait on the detail. */}
+              <ShopifySaysLine shopifySays={order.shopifySays} />
             </SheetHeader>
 
             <div className="space-y-5 px-4 pb-4">

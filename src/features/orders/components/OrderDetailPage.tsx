@@ -27,6 +27,7 @@ import type {
 import { DeliveryPanel } from "./DeliveryPanel";
 import { OrderActionsControl } from "./OrderActionsControl";
 import { RefundSummary } from "./RefundSummary";
+import { ShopifySaysLine } from "./ShopifySaysLine";
 import { RefundsReturnsSection } from "./RefundsReturnsSection";
 
 interface OrderDetailPageProps {
@@ -102,6 +103,12 @@ export function OrderDetailPage({ orderId }: OrderDetailPageProps) {
             refundState={orderDetail.refundState}
             totalRefundedFormatted={orderDetail.totalRefundedFormatted}
           />
+        }
+        // TT-477 — Shopify's own words, for support without store access.
+        below={
+          orderDetail.shopifyOrderId ? (
+            <ShopifySaysLine shopifySays={orderDetail.shopifySays} />
+          ) : null
         }
         avatarFallback="#"
       >

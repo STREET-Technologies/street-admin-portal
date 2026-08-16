@@ -102,6 +102,20 @@ function tabToQueryParams(tab: TabKey): {
   }
 }
 
+/**
+ * TT-477 — Shopify's financial_status values, verbatim. Support reads these
+ * to customers; they are what the retailer sees in Shopify admin.
+ */
+const SHOPIFY_FINANCIAL_STATUS_OPTIONS = [
+  { value: "all", label: "Shopify: any" },
+  { value: "paid", label: "Shopify: paid" },
+  { value: "partially_refunded", label: "Shopify: partially refunded" },
+  { value: "refunded", label: "Shopify: refunded" },
+  { value: "authorized", label: "Shopify: authorized" },
+  { value: "voided", label: "Shopify: voided" },
+  { value: "pending", label: "Shopify: pending" },
+] as const;
+
 const PAYMENT_METHOD_OPTIONS = [
   { value: "all", label: "All types" },
   { value: "shopify_checkout", label: "Shopify Checkout" },
@@ -365,6 +379,8 @@ export function OrderListPage() {
   ) as TabKey;
   const setTabFilter = setTabParam;
   const [paymentMethodFilter, setPaymentMethodFilter] = useState<string>("all");
+  // TT-477 — filter on what Shopify itself says about the money.
+  const [shopifyStatusFilter, setShopifyStatusFilter] = useState<string>("all");
   const debouncedSearch = useDebounce(searchValue, 300);
   // Read straight from the URL — DateRangeFilter owns writing them (TT-447).
   const [dateFrom] = useSearchParamState("dateFrom");
@@ -390,6 +406,8 @@ export function OrderListPage() {
     returnStatus: tabParams.returnStatus,
     paymentMethod:
       paymentMethodFilter !== "all" ? paymentMethodFilter : undefined,
+    shopifyFinancialStatus:
+      shopifyStatusFilter !== "all" ? shopifyStatusFilter : undefined,
     dateFrom,
     dateTo,
     vendorId,
@@ -468,6 +486,24 @@ export function OrderListPage() {
           </SelectTrigger>
           <SelectContent position="popper">
             {PAYMENT_METHOD_OPTIONS.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>
+                {opt.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Shopify's own financial_status (TT-477) — support has no store
+            access, so this is the retailer's view of the money. */}
+        <Select
+          value={shopifyStatusFilter}
+          onValueChange={setShopifyStatusFilter}
+        >
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder="Shopify says" />
+          </SelectTrigger>
+          <SelectContent position="popper">
+            {SHOPIFY_FINANCIAL_STATUS_OPTIONS.map((opt) => (
               <SelectItem key={opt.value} value={opt.value}>
                 {opt.label}
               </SelectItem>

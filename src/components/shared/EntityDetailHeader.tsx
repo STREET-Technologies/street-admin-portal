@@ -20,6 +20,8 @@ interface EntityDetailHeaderProps {
   status?: string;
   /** Rendered on the same line as the status pill (e.g. a refund badge). */
   statusExtra?: ReactNode;
+  /** Rendered under the subtitle (e.g. a "Shopify says" line). */
+  below?: ReactNode;
   /** URL for the avatar image. */
   avatarUrl?: string;
   /** Initials shown when no avatar image is available. */
@@ -39,6 +41,7 @@ export function EntityDetailHeader({
   subtitle,
   status,
   statusExtra,
+  below,
   avatarUrl,
   avatarFallback,
   avatarShape = "circle",
@@ -85,6 +88,7 @@ export function EntityDetailHeader({
           {subtitle && (
             <p className="text-sm text-muted-foreground">{subtitle}</p>
           )}
+          {below}
         </div>
       </div>
 
